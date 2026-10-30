@@ -3,9 +3,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 
 import type { DemoAction, DemoDatabase } from '@/app/store/types'
 import type { CompatibilityRule, FashionMetadata, FashionMetadataOption } from '@/entities/product/model/types'
-import { Button, Modal, SelectField, TextField, useToast } from '@/shared/ui'
-
-import { StatusBadge } from './AdminCommon'
+import { Button, Modal, SelectField, TextField, ToggleSwitch, useToast } from '@/shared/ui'
 
 interface AdminAiPanelProps {
   database: DemoDatabase
@@ -67,8 +65,22 @@ function createRuleFormFromRule(rule: CompatibilityRule): RuleFormState {
   }
 }
 
-function statusTone(active: boolean) {
-  return active ? 'success' : 'neutral'
+const metadataColorSwatches: Record<string, string> = {
+  white: '#F8F4EF',
+  black: '#242124',
+  cream: '#F1E5D6',
+  camel: '#C59A72',
+  blue: '#8FAEC9',
+  green: '#6F8B72',
+  red: '#A94B4B',
+  plum: '#684B5A',
+  navy: '#24344D',
+}
+
+function metadataColorHex(group: MetadataGroup, id: string) {
+  if (group !== 'colors') return null
+  if (/^#[\da-f]{6}$/i.test(id)) return id
+  return metadataColorSwatches[id.toLowerCase()] ?? '#C4A5B0'
 }
 
 export function AdminAiPanel({ database, dispatch }: AdminAiPanelProps) {
@@ -218,93 +230,85 @@ export function AdminAiPanel({ database, dispatch }: AdminAiPanelProps) {
       {activeTab === 'metadata' ? (
         <div className="grid gap-4 xl:grid-cols-2">
           {metadataGroups.map(group => (
-            <section key={group} className="rounded-lg bg-white p-4 shadow-[0_10px_28px_rgba(58,54,50,0.07)]">
-              <h2 className="font-display text-2xl font-semibold text-[#222222]">{metadataGroupLabels[group]}</h2>
-              <div className="mt-4 grid gap-2">
-                {database.fashionMetadata[group].map(option => (
-                  <article key={option.id} className="grid gap-3 rounded-lg border border-[#E3DAD0] p-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-semibold text-[#222222]">{option.label}</p>
-                        <StatusBadge tone={statusTone(option.active)}>{option.active ? 'Đang bật' : 'Đã tắt'}</StatusBadge>
+            <section key={group} className="overflow-hidden rounded-xl border border-[#E5E0D8] bg-white p-4 shadow-[0_8px_24px_rgba(58,54,50,0.06)]">
+              <h2 className="font-display text-xl font-semibold text-[#222222]">{metadataGroupLabels[group]}</h2>
+              <div className="mt-2 divide-y divide-[#E5E0D8]">
+                {database.fashionMetadata[group].map(option => {
+                  const colorHex = metadataColorHex(group, option.id)
+
+                  return (
+                    <div key={option.id} className="group flex min-h-11 items-center justify-between gap-3 py-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        {colorHex && <span aria-hidden="true" className="h-3.5 w-3.5 shrink-0 rounded-full border border-[#D8D0C6]" style={{ backgroundColor: colorHex }} />}
+                        <span className="truncate font-semibold text-[#222222]">{option.label}</span>
+                        <span className="max-w-40 truncate rounded-md bg-[#F5F2EE] px-2 py-0.5 text-xs text-[#6F6B67]" title={option.id}>{option.id}</span>
                       </div>
-                      <p className="mt-1 break-all text-sm font-semibold text-[#684B5A]">{option.id}</p>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <ToggleSwitch
+                          checked={option.active}
+                          label={`${metadataGroupLabels[group]}: ${option.label}`}
+                          onCheckedChange={active => {
+                            dispatch({ type: 'admin/fashionMetadataOptionStatusChanged', payload: { group, optionId: option.id, active } })
+                            toast.info(active ? 'Đã bật thuộc tính AI.' : 'Đã tắt thuộc tính AI.')
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="w-9 px-0 opacity-70 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100"
+                          aria-label={`Sửa thuộc tính ${option.label}`}
+                          title="Sửa thuộc tính"
+                          icon={<Pencil size={14} aria-hidden="true" />}
+                          onClick={() => openEditMetadataModal(group, option.id)}
+                        />
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 md:justify-end">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        className="min-h-9 px-3"
-                        icon={<Pencil size={16} aria-hidden="true" />}
-                        onClick={() => openEditMetadataModal(group, option.id)}
-                      >
-                        Sửa thuộc tính {option.id}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={option.active ? 'danger' : 'secondary'}
-                        className="min-h-9 px-3"
-                        onClick={() => {
-                          dispatch({
-                            type: 'admin/fashionMetadataOptionStatusChanged',
-                            payload: { group, optionId: option.id, active: !option.active },
-                          })
-                          toast.info(option.active ? 'Đã tắt thuộc tính AI.' : 'Đã bật thuộc tính AI.')
-                        }}
-                      >
-                        {option.active ? `Tắt thuộc tính ${option.id}` : `Bật thuộc tính ${option.id}`}
-                      </Button>
-                    </div>
-                  </article>
-                ))}
+                  )
+                })}
               </div>
             </section>
           ))}
         </div>
       ) : (
-        <div className="grid gap-3">
+        <div className="overflow-hidden rounded-xl border border-[#E5E0D8] bg-white shadow-[0_8px_24px_rgba(58,54,50,0.06)]">
           {compatibilityRules.length === 0 ? (
-            <p className="rounded-lg bg-white p-4 text-sm text-[#6F6B67] shadow-[0_10px_28px_rgba(58,54,50,0.07)]">
-              Chưa có luật tương thích nào.
-            </p>
+            <p className="p-6 text-center text-sm text-[#6F6B67]">Chưa có luật tương thích nào.</p>
           ) : (
-            compatibilityRules.map(rule => (
-              <article key={rule.id} className="grid gap-4 rounded-lg bg-white p-4 shadow-[0_10px_28px_rgba(58,54,50,0.07)] xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="break-all font-display text-2xl font-semibold text-[#222222]">{rule.id}</h2>
-                    <StatusBadge tone={statusTone(rule.active)}>{rule.active ? 'Đang bật' : 'Đã tắt'}</StatusBadge>
+            <div className="divide-y divide-[#E5E0D8]">
+              {compatibilityRules.map(rule => (
+                <div key={rule.id} className="group grid gap-3 px-4 py-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-[#222222]">{rule.sourceType} <span className="text-[#9D9894]">→</span> {rule.targetType}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#6F6B67]">
+                      <span className="rounded-md bg-[#F5F2EE] px-2 py-0.5">{rule.id}</span>
+                      <span>Điểm {rule.score}</span>
+                      {rule.note && <span className="max-w-2xl truncate">{rule.note}</span>}
+                    </div>
                   </div>
-                  <p className="mt-2 break-all text-sm leading-6 text-[#6F6B67]">
-                    {rule.sourceType} → {rule.targetType} · Điểm {rule.score}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-[#3A3632]">{rule.note}</p>
+                  <div className="flex items-center justify-end gap-2">
+                    <ToggleSwitch
+                      checked={rule.active}
+                      label={`Luật tương thích ${rule.sourceType} đến ${rule.targetType}`}
+                      onCheckedChange={active => {
+                        dispatch({ type: 'admin/compatibilityRuleStatusChanged', payload: { ruleId: rule.id, active } })
+                        toast.info(active ? 'Đã bật luật tương thích.' : 'Đã tắt luật tương thích.')
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="w-9 px-0 opacity-70 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100"
+                      aria-label="Sửa luật tương thích"
+                      title="Sửa luật"
+                      icon={<Pencil size={14} aria-hidden="true" />}
+                      onClick={() => openEditRuleModal(rule.id)}
+                    />
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2 xl:justify-end">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    icon={<Pencil size={16} aria-hidden="true" />}
-                    onClick={() => openEditRuleModal(rule.id)}
-                  >
-                    Sửa luật {rule.id}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={rule.active ? 'danger' : 'secondary'}
-                    onClick={() => {
-                      dispatch({
-                        type: 'admin/compatibilityRuleStatusChanged',
-                        payload: { ruleId: rule.id, active: !rule.active },
-                      })
-                      toast.info(rule.active ? 'Đã tắt luật tương thích.' : 'Đã bật luật tương thích.')
-                    }}
-                  >
-                    {rule.active ? `Tắt luật ${rule.id}` : `Bật luật ${rule.id}`}
-                  </Button>
-                </div>
-              </article>
-            ))
+              ))}
+            </div>
           )}
         </div>
       )}

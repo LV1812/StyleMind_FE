@@ -1,17 +1,34 @@
 import type { ReactNode } from 'react'
+import type { LucideIcon } from 'lucide-react'
 
 interface MetricCardProps {
   label: string
   value: ReactNode
   helper?: string
+  icon: LucideIcon
+  tone?: 'accent' | 'ai' | 'success' | 'warning'
 }
 
-export function MetricCard({ label, value, helper }: MetricCardProps) {
+const metricToneClass = {
+  accent: 'bg-blush text-accent',
+  ai: 'bg-ai-light text-ai-purple',
+  success: 'bg-success-bg text-success',
+  warning: 'bg-warning-bg text-warning-ink',
+}
+
+export function MetricCard({ label, value, helper, icon: Icon, tone = 'accent' }: MetricCardProps) {
   return (
-    <article className="rounded-lg bg-white p-4 shadow-[0_10px_28px_rgba(58,54,50,0.07)]">
-      <p className="text-xs font-semibold text-[#7D746E]">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tabular-nums text-[#222222]">{value}</p>
-      {helper && <p className="mt-2 text-xs leading-5 text-[#6F6B67]">{helper}</p>}
+    <article className="flex min-h-32 min-w-0 flex-col justify-between gap-5 rounded-xl border border-sand-dark/70 bg-white p-4 shadow-[0_8px_24px_rgba(58,54,50,0.07)] md:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-semibold text-secondary">{label}</p>
+        <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg ${metricToneClass[tone]}`}>
+          <Icon aria-hidden="true" size={19} strokeWidth={1.9} />
+        </span>
+      </div>
+      <div className="min-w-0">
+        <p className="break-words text-2xl font-semibold tabular-nums tracking-tight text-charcoal">{value}</p>
+        {helper && <p className="mt-1.5 text-sm leading-5 text-secondary">{helper}</p>}
+      </div>
     </article>
   )
 }
@@ -22,16 +39,16 @@ interface StatusBadgeProps {
 }
 
 const toneClass = {
-  neutral: 'bg-[#EEE8E1] text-[#3A3632]',
-  success: 'bg-[#EAF2EC] text-[#48755A]',
-  warning: 'bg-[#FBF1E0] text-[#B67A32]',
-  danger: 'bg-[#FCEAEA] text-[#A94B4B]',
-  accent: 'bg-[#F4E7E8] text-[#684B5A]',
+  neutral: 'bg-sand text-ink',
+  success: 'bg-success-bg text-success',
+  warning: 'bg-warning-bg text-warning-ink',
+  danger: 'bg-error-bg text-error',
+  accent: 'bg-blush text-accent',
 }
 
 export function StatusBadge({ children, tone = 'neutral' }: StatusBadgeProps) {
   return (
-    <span className={`inline-flex w-fit items-center rounded-md px-2.5 py-1 text-xs font-semibold ${toneClass[tone]}`}>
+    <span className={`inline-flex w-fit items-center rounded-md px-2.5 py-1 text-sm font-semibold ${toneClass[tone]}`}>
       {children}
     </span>
   )

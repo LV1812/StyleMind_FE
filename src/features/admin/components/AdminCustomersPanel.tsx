@@ -1,115 +1,284 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 
-import type { DemoAction, DemoDatabase } from '@/app/store/types'
-import type { UserRole, UserStatus } from '@/entities/user/model/types'
-import { userRoleLabel, userStatusLabel } from '@/features/admin/model/adminLabels'
-import { selectAdminCustomers } from '@/features/admin/model/adminSelectors'
-import type { AdminCustomerFilters } from '@/features/admin/model/adminTypes'
-import { Button, SelectField, TextField, useToast } from '@/shared/ui'
+import { useAuth } from '@/features/auth'
+import {
+  identityApi,
+  identityErrorMessage,
+  type IdentityAccountStatus,
+  type IdentityRole,
+  type ManagedUser,
+} from '@/shared/api/identityApi'
+import { Button, SelectField, TextField } from '@/shared/ui'
 
 import { StatusBadge } from './AdminCommon'
 
-interface AdminCustomersPanelProps {
-  database: DemoDatabase
-  dispatch: React.Dispatch<DemoAction>
-  actorId: string
+type StatusFilter = 'all' | IdentityAccountStatus
+type RoleFilter = 'all' | IdentityRole
+
+const statusLabels: Record<IdentityAccountStatus, string> = {
+  ACTIVE: 'Đang hoạt động',
+  PENDING_VERIFICATION: 'Chờ xác thực email',
+  SUSPENDED: 'Tạm khóa',
 }
 
-function statusTone(status: UserStatus) {
-  return status === 'active' ? 'success' : 'danger'
+const roleLabels: Record<IdentityRole, string> = {
+  CUSTOMER: 'Khách hàng',
+  ADMIN: 'Quản trị viên',
 }
 
-function roleActionLabel(role: UserRole) {
-  return role === 'admin' ? 'quản trị viên' : 'khách hàng'
+function sameRoles(left: IdentityRole[], right: IdentityRole[]) {
+  return left.length === right.length && left.every(role => right.includes(role))
 }
 
-export function AdminCustomersPanel({ database, dispatch, actorId }: AdminCustomersPanelProps) {
-  const toast = useToast()
-  const [filters, setFilters] = useState<AdminCustomerFilters>({ query: '', role: 'all', status: 'all' })
-  const rows = useMemo(() => selectAdminCustomers(database, filters), [database, filters])
+export function AdminCustomersPanel() {
+  const { currentUser } = useAuth()
+  const [users, setUsers] = useState<ManagedUser[]>([])
+  const [query, setQuery] = useState('')
+  const [role, setRole] = useState<RoleFilter>('all')
+  const [status, setStatus] = useState<StatusFilter>('all')
+  const [appliedFilters, setAppliedFilters] = useState({ query: '', role: 'all' as RoleFilter, status: 'all' as StatusFilter })
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [actionId, setActionId] = useState('')
+  const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+  const [editingRolesFor, setEditingRolesFor] = useState('')
+  const [roleDraft, setRoleDraft] = useState<IdentityRole[]>([])
 
-  const changeStatus = (userId: string, status: UserStatus) => {
-    dispatch({ type: 'admin/userStatusChanged', payload: { userId, status, actorId } })
-    toast.success(status === 'locked' ? 'Đã khóa tài khoản.' : 'Đã mở khóa tài khoản.')
+  useEffect(() => {
+    let active = true
+    setLoading(true)
+    setError('')
+    void identityApi.listUsers({
+      page,
+      size: 20,
+      ...(appliedFilters.query.trim() ? { email_contains: appliedFilters.query.trim() } : {}),
+      ...(appliedFilters.role !== 'all' ? { role: appliedFilters.role } : {}),
+      ...(appliedFilters.status !== 'all' ? { status: appliedFilters.status } : {}),
+    }).then(response => {
+      if (!active) return
+      setUsers(response.items)
+      setTotalPages(response.total_pages)
+      setTotalElements(response.total_elements)
+    }).catch(requestError => {
+      if (active) setError(identityErrorMessage(requestError, 'Không thể tải danh sách tài khoản.'))
+    }).finally(() => {
+      if (active) setLoading(false)
+    })
+    return () => {
+      active = false
+    }
+  }, [page, appliedFilters])
+
+  const applyFilters = () => {
+    setPage(0)
+    setAppliedFilters({ query, role, status })
+  }
+
+  const changeStatus = async (user: ManagedUser) => {
+    const nextStatus = user.account_status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE'
+    setActionId(user.account_id)
+    setError('')
+    setNotice('')
+    try {
+      const updated = await identityApi.updateUserStatus(user.account_id, nextStatus)
+      setUsers(current => current.map(item => item.account_id === updated.account_id
+        ? { ...item, account_status: updated.account_status, email_verified_at: updated.email_verified_at }
+        : item))
+      setNotice(nextStatus === 'SUSPENDED' ? 'Đã tạm khóa tài khoản.' : 'Đã kích hoạt lại tài khoản.')
+    } catch (requestError) {
+      setError(identityErrorMessage(requestError, 'Không thể cập nhật trạng thái tài khoản.'))
+    } finally {
+      setActionId('')
+    }
+  }
+
+  const startRoleEdit = (user: ManagedUser) => {
+    setEditingRolesFor(user.account_id)
+    setRoleDraft([...user.roles])
+    setError('')
+    setNotice('')
+  }
+
+  const saveRoles = async (user: ManagedUser) => {
+    if (roleDraft.length === 0) {
+      setError('Mỗi tài khoản cần có ít nhất một vai trò.')
+      return
+    }
+    if (sameRoles(user.roles, roleDraft)) {
+      setEditingRolesFor('')
+      return
+    }
+    setActionId(user.account_id)
+    setError('')
+    setNotice('')
+    try {
+      const updated = await identityApi.replaceUserRoles(user.account_id, roleDraft)
+      setUsers(current => current.map(item => item.account_id === updated.account_id ? { ...item, roles: updated.roles } : item))
+      setEditingRolesFor('')
+      setNotice('Đã cập nhật vai trò tài khoản.')
+    } catch (requestError) {
+      setError(identityErrorMessage(requestError, 'Không thể cập nhật vai trò tài khoản.'))
+    } finally {
+      setActionId('')
+    }
+  }
+
+  const toggleRole = (selectedRole: IdentityRole) => {
+    setRoleDraft(current => current.includes(selectedRole)
+      ? current.filter(item => item !== selectedRole)
+      : [...current, selectedRole])
   }
 
   return (
     <section className="grid gap-5">
       <div>
-        <p className="text-sm font-semibold text-[#684B5A]">Tài khoản người dùng</p>
-        <h1 className="mt-2 font-display text-3xl font-semibold leading-tight text-[#222222] md:text-4xl">
-          Quản lý khách hàng
-        </h1>
+        <p className="text-sm font-semibold text-[#684B5A]">Identity Service</p>
+        <h1 className="mt-2 font-display text-3xl font-semibold leading-tight text-[#222222] md:text-4xl">Quản lý tài khoản</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6F6B67]">
-          Xem thông tin khách hàng, số đơn, bộ phối và khóa tài khoản khi cần hỗ trợ vận hành.
+          Lọc tài khoản theo email, trạng thái và vai trò. Thay đổi trạng thái hoặc toàn bộ vai trò sẽ được Identity kiểm tra quyền quản trị.
         </p>
       </div>
 
-      <div className="grid gap-3 rounded-lg bg-white p-4 shadow-[0_10px_28px_rgba(58,54,50,0.07)] md:grid-cols-[minmax(220px,1fr)_180px_180px]">
-        <TextField
-          label="Tìm khách hàng"
-          value={filters.query ?? ''}
-          onChange={event => setFilters(current => ({ ...current, query: event.target.value }))}
-          placeholder="Nhập tên hoặc email"
-        />
-        <SelectField
-          label="Vai trò"
-          value={filters.role ?? 'all'}
-          onChange={event => setFilters(current => ({ ...current, role: event.target.value as AdminCustomerFilters['role'] }))}
-        >
+      <div className="grid gap-3 rounded-lg bg-white p-4 shadow-[0_10px_28px_rgba(58,54,50,0.07)] md:grid-cols-[minmax(220px,1fr)_180px_200px_auto] md:items-end">
+        <TextField label="Tìm theo email" value={query} onChange={event => setQuery(event.target.value)} placeholder="Nhập một phần email" />
+        <SelectField label="Vai trò" value={role} onChange={event => setRole(event.target.value as RoleFilter)}>
           <option value="all">Tất cả vai trò</option>
-          <option value="customer">{userRoleLabel.customer}</option>
-          <option value="admin">{userRoleLabel.admin}</option>
+          <option value="CUSTOMER">{roleLabels.CUSTOMER}</option>
+          <option value="ADMIN">{roleLabels.ADMIN}</option>
         </SelectField>
-        <SelectField
-          label="Trạng thái"
-          value={filters.status ?? 'all'}
-          onChange={event => setFilters(current => ({ ...current, status: event.target.value as AdminCustomerFilters['status'] }))}
-        >
+        <SelectField label="Trạng thái" value={status} onChange={event => setStatus(event.target.value as StatusFilter)}>
           <option value="all">Tất cả trạng thái</option>
-          <option value="active">{userStatusLabel.active}</option>
-          <option value="locked">{userStatusLabel.locked}</option>
+          <option value="ACTIVE">{statusLabels.ACTIVE}</option>
+          <option value="PENDING_VERIFICATION">{statusLabels.PENDING_VERIFICATION}</option>
+          <option value="SUSPENDED">{statusLabels.SUSPENDED}</option>
         </SelectField>
+        <Button type="button" variant="secondary" onClick={applyFilters}>Lọc</Button>
       </div>
 
-      <div className="grid gap-3">
-        {rows.map(row => {
-          const isCurrentAdmin = row.id === actorId
-          const nextStatus: UserStatus = row.status === 'active' ? 'locked' : 'active'
+      {error && <p className="rounded-lg bg-[#FCEAEA] px-4 py-3 text-sm font-semibold text-[#A94B4B]" role="alert">{error}</p>}
+      {notice && <p className="rounded-lg bg-[#EAF2EC] px-4 py-3 text-sm font-semibold text-[#294C36]" role="status">{notice}</p>}
+      {loading && <p className="text-sm text-[#6F6B67]" role="status">Đang tải danh sách tài khoản…</p>}
 
-          return (
-            <article key={row.id} className="grid gap-4 rounded-lg bg-white p-4 shadow-[0_10px_28px_rgba(58,54,50,0.07)] xl:grid-cols-[minmax(0,1fr)_auto]">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="font-display text-2xl font-semibold text-[#222222]">{row.fullName}</h2>
-                  <StatusBadge tone={statusTone(row.status)}>{userStatusLabel[row.status]}</StatusBadge>
-                  <StatusBadge tone="accent">{userRoleLabel[row.role]}</StatusBadge>
-                </div>
-                <p className="mt-1 break-all text-sm font-semibold text-[#684B5A]">{row.id}</p>
-                <p className="mt-2 break-all text-sm leading-6 text-[#6F6B67]">{row.email}</p>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-[#3A3632]">
-                  <span className="rounded-md bg-[#FAF8F5] px-2.5 py-1">{row.orderCount} đơn hàng</span>
-                  <span className="rounded-md bg-[#FAF8F5] px-2.5 py-1">{row.outfitCount} bộ phối</span>
-                  {row.heightCm && <span className="rounded-md bg-[#FAF8F5] px-2.5 py-1">Cao {row.heightCm} cm</span>}
-                  {row.weightKg && <span className="rounded-md bg-[#FAF8F5] px-2.5 py-1">Nặng {row.weightKg} kg</span>}
-                </div>
-              </div>
-              {isCurrentAdmin ? (
-                <Button type="button" variant="secondary" disabled>
-                  Không thể tự khóa
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  variant={row.status === 'active' ? 'danger' : 'secondary'}
-                  onClick={() => changeStatus(row.id, nextStatus)}
-                >
-                  {row.status === 'active' ? `Khóa ${roleActionLabel(row.role)} ${row.id}` : `Mở khóa ${roleActionLabel(row.role)} ${row.id}`}
-                </Button>
-              )}
-            </article>
-          )
-        })}
+      {!loading && users.length === 0 && (
+        <section className="rounded-lg border border-dashed border-[#D8D0C6] bg-white p-8">
+          <h2 className="font-display text-2xl font-semibold text-[#222222]">Không tìm thấy tài khoản</h2>
+          <p className="mt-2 text-sm text-[#6F6B67]">Thử thay đổi bộ lọc email, trạng thái hoặc vai trò.</p>
+        </section>
+      )}
+
+      <div className="overflow-hidden rounded-xl border border-[#E5E0D8] bg-white shadow-[0_8px_24px_rgba(58,54,50,0.06)]">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
+            <thead className="bg-[#FAF8F5] text-xs font-semibold uppercase tracking-wide text-[#6F6B67]">
+              <tr>
+                <th scope="col" className="px-4 py-3">Tài khoản</th>
+                <th scope="col" className="px-4 py-3">Vai trò</th>
+                <th scope="col" className="px-4 py-3">Xác thực & ngày tạo</th>
+                <th scope="col" className="px-4 py-3">Trạng thái</th>
+                <th scope="col" className="px-4 py-3 text-right">Hành động</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E5E0D8]">
+              {users.map(user => {
+                const isSelf = user.account_id === currentUser?.id
+                const isEditingRoles = editingRolesFor === user.account_id
+                const canChangeStatus = user.account_status !== 'PENDING_VERIFICATION' && !isSelf
+                const roleTone = (item: IdentityRole) => item === 'ADMIN' ? 'accent' : 'neutral'
+                const statusTone = user.account_status === 'ACTIVE' ? 'success' : user.account_status === 'PENDING_VERIFICATION' ? 'warning' : 'neutral'
+
+                return (
+                  <Fragment key={user.account_id}>
+                    <tr className="align-middle hover:bg-[#FAF8F5]/70">
+                      <th scope="row" className="px-4 py-3 text-left font-normal">
+                        <div className="flex min-w-64 items-center gap-3">
+                          <span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#F4E7E8] text-sm font-semibold uppercase text-[#684B5A]">
+                            {user.email.trim().charAt(0) || '?'}
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block break-all font-semibold text-[#222222]">{user.email}</span>
+                            <span className="mt-0.5 block text-xs text-[#6F6B67]" title={user.account_id}>
+                              ID {user.account_id.slice(0, 8)}…
+                            </span>
+                            {isSelf && <span className="mt-1 inline-flex rounded-md bg-[#F5F2EE] px-2 py-0.5 text-[11px] font-semibold text-[#3A3632]">Tài khoản của bạn</span>}
+                          </span>
+                        </div>
+                      </th>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1.5">
+                          {user.roles.map(item => <StatusBadge key={item} tone={roleTone(item)}>{roleLabels[item]}</StatusBadge>)}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <StatusBadge tone={user.email_verified_at ? 'success' : 'warning'}>
+                          {user.email_verified_at ? 'Email đã xác thực' : 'Email chưa xác thực'}
+                        </StatusBadge>
+                        <p className="mt-1.5 whitespace-nowrap text-xs text-[#6F6B67]">Đăng ký {new Date(user.registered_at).toLocaleDateString('vi-VN')}</p>
+                      </td>
+                      <td className="px-4 py-3"><StatusBadge tone={statusTone}>{statusLabels[user.account_status]}</StatusBadge></td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          {!isEditingRoles && (
+                            <Button type="button" size="sm" variant="ghost" className="border border-[#E5E0D8]" onClick={() => startRoleEdit(user)}>
+                              Sửa vai trò
+                            </Button>
+                          )}
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={user.account_status === 'SUSPENDED' ? 'soft' : 'ghost'}
+                            className={user.account_status === 'SUSPENDED' ? '' : 'border border-[#E5E0D8]'}
+                            disabled={!canChangeStatus || actionId === user.account_id}
+                            loading={actionId === user.account_id}
+                            onClick={() => void changeStatus(user)}
+                          >
+                            {user.account_status === 'ACTIVE' ? 'Khóa' : user.account_status === 'SUSPENDED' ? 'Mở khóa' : 'Chờ xác thực'}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                    {isEditingRoles && (
+                      <tr className="bg-[#FAF8F5]">
+                        <td colSpan={5} className="px-4 py-3">
+                          <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+                            <span className="text-sm font-semibold text-[#3A3632]">Vai trò</span>
+                            {(['CUSTOMER', 'ADMIN'] as IdentityRole[]).map(item => (
+                              <label key={item} className="inline-flex items-center gap-2 text-sm font-medium text-[#3A3632]">
+                                <input
+                                  type="checkbox"
+                                  checked={roleDraft.includes(item)}
+                                  disabled={isSelf || actionId === user.account_id}
+                                  onChange={() => toggleRole(item)}
+                                  className="h-4 w-4 accent-[#684B5A]"
+                                />
+                                {roleLabels[item]}
+                              </label>
+                            ))}
+                            {isSelf && <p className="text-xs text-[#6F6B67]">BE không cho phép tự thay đổi vai trò.</p>}
+                            <div className="ml-auto flex items-center gap-2">
+                              <Button size="sm" type="button" loading={actionId === user.account_id} disabled={isSelf || roleDraft.length === 0} onClick={() => void saveRoles(user)}>Lưu</Button>
+                              <Button size="sm" type="button" variant="ghost" className="border border-[#E5E0D8]" disabled={actionId === user.account_id} onClick={() => setEditingRolesFor('')}>Hủy</Button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#E3DAD0] bg-white p-4">
+        <p className="text-sm text-[#6F6B67]">{totalElements} tài khoản · Trang {totalPages ? page + 1 : 0} / {totalPages}</p>
+        <div className="flex gap-2">
+          <Button type="button" variant="secondary" disabled={loading || page <= 0} onClick={() => setPage(value => Math.max(0, value - 1))}>Trước</Button>
+          <Button type="button" variant="secondary" disabled={loading || totalPages === 0 || page + 1 >= totalPages} onClick={() => setPage(value => value + 1)}>Sau</Button>
+        </div>
       </div>
     </section>
   )
