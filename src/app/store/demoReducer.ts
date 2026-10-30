@@ -143,6 +143,12 @@ export function demoReducer(state: DemoDatabase, action: DemoAction): DemoDataba
     }
     case 'session/loggedOut':
       return { ...state, session: null }
+    case 'identity/sessionSynced':
+      return normalizeDemoDatabase({
+        ...state,
+        users: [...state.users.filter(user => user.id !== action.payload.user.id), action.payload.user],
+        session: { userId: action.payload.user.id, persistent: action.payload.persistent },
+      })
     case 'user/registered':
       return normalizeDemoDatabase({ ...state, users: [...state.users, action.payload] })
     case 'user/profileUpdated':

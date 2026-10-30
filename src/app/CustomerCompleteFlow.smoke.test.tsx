@@ -50,11 +50,13 @@ describe('complete customer flow smoke', () => {
     const user = userEvent.setup()
     const router = renderAt('/account')
 
-    await user.clear(await screen.findByLabelText('Chiều cao (cm)'))
+    const heightInput = await screen.findByDisplayValue('160')
+    await user.clear(heightInput)
     await user.type(screen.getByLabelText('Chiều cao (cm)'), '166')
-    await user.clear(screen.getByLabelText('Cân nặng (kg)'))
+    const weightInput = await screen.findByDisplayValue('52')
+    await user.clear(weightInput)
     await user.type(screen.getByLabelText('Cân nặng (kg)'), '53')
-    await user.click(screen.getByRole('button', { name: 'Lưu hồ sơ' }))
+    await user.click(screen.getByRole('button', { name: 'Lưu thông tin phong cách' }))
 
     await waitFor(() => {
       const customer = getDatabase().users.find(userRecord => userRecord.id === 'usr-customer-01')

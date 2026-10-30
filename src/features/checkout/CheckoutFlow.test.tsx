@@ -104,7 +104,7 @@ describe('Checkout flow', () => {
     const user = userEvent.setup()
     renderCheckoutWithCustomerAndCart()
 
-    await user.click(screen.getByLabelText('Thanh toán khi nhận hàng'))
+    await user.click(await screen.findByLabelText('Thanh toán khi nhận hàng'))
     await user.click(screen.getByRole('button', { name: 'Đặt hàng' }))
 
     expect(await screen.findByText('Đặt hàng thành công')).toBeInTheDocument()
@@ -112,10 +112,10 @@ describe('Checkout flow', () => {
     expect(getDatabase().cartLines).toHaveLength(0)
   })
 
-  it('does not create an order when an expired QR is confirmed', () => {
+  it('does not create an order when an expired QR is confirmed', async () => {
     renderExpiredQrSession()
 
-    expect(screen.getByText('Thanh toán đã hết hạn')).toBeInTheDocument()
+    expect(await screen.findByText('Thanh toán đã hết hạn')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Tôi đã thanh toán' })).not.toBeInTheDocument()
     expect(getDatabase().orders).toHaveLength(0)
   })
@@ -171,9 +171,9 @@ describe('Checkout flow', () => {
     const user = userEvent.setup()
     renderCheckoutWithCustomerAndCart()
 
-    expect(screen.getByRole('link', { name: 'Quản lý địa chỉ' })).toHaveAttribute('href', '/account/addresses')
+    expect(await screen.findByRole('link', { name: 'Quản lý địa chỉ' })).toHaveAttribute('href', '/account/addresses')
 
-    await user.selectOptions(screen.getByLabelText('Chọn địa chỉ'), 'adr-customer-office')
+    await user.selectOptions(await screen.findByLabelText('Chọn địa chỉ'), 'adr-customer-office')
     await user.click(screen.getByLabelText('Thanh toán khi nhận hàng'))
     await user.click(screen.getByRole('button', { name: 'Đặt hàng' }))
 

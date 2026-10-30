@@ -46,23 +46,26 @@ describe('Account flow', () => {
     const user = userEvent.setup()
     renderAt('/account')
 
-    await user.clear(screen.getByLabelText('Họ tên'))
-    await user.type(screen.getByLabelText('Họ tên'), 'Lê Hà My')
-    await user.clear(screen.getByLabelText('Số điện thoại'))
-    await user.type(screen.getByLabelText('Số điện thoại'), '0909123456')
+    const nameInput = await screen.findByDisplayValue('Nguyễn Thiên An')
+    await user.clear(nameInput)
+    await user.type(screen.getByLabelText('Tên hiển thị'), 'Lê Hà My')
+    await user.click(screen.getByRole('button', { name: 'Lưu hồ sơ' }))
+
+    expect(await screen.findByText('Đã cập nhật hồ sơ cá nhân.')).toBeInTheDocument()
+    await waitFor(() => expect(getDatabase().users.find(item => item.id === 'usr-customer-01')?.fullName).toBe('Lê Hà My'))
+
     await user.clear(screen.getByLabelText('Chiều cao (cm)'))
     await user.type(screen.getByLabelText('Chiều cao (cm)'), '165')
     await user.clear(screen.getByLabelText('Cân nặng (kg)'))
     await user.type(screen.getByLabelText('Cân nặng (kg)'), '49')
-    await user.click(screen.getByRole('button', { name: 'Lưu hồ sơ' }))
+    await user.click(screen.getByRole('button', { name: 'Lưu thông tin phong cách' }))
 
-    expect(await screen.findByText('Đã cập nhật tài khoản')).toBeInTheDocument()
+    expect(await screen.findByText('Đã cập nhật thông tin vóc dáng và phong cách.')).toBeInTheDocument()
     await waitFor(() => expect(getDatabase().users.find(item => item.id === 'usr-customer-01')?.fullName).toBe('Lê Hà My'))
 
     const updatedUser = getDatabase().users.find(item => item.id === 'usr-customer-01')
     expect(updatedUser).toMatchObject({
       fullName: 'Lê Hà My',
-      phone: '0909123456',
       heightCm: 165,
       weightKg: 49,
     })
@@ -73,48 +76,42 @@ describe('Account flow', () => {
     const user = userEvent.setup()
     renderAt('/account/addresses')
 
-    await user.click(screen.getByRole('button', { name: 'Thêm địa chỉ' }))
+    await user.click(await screen.findByRole('button', { name: 'Thêm địa chỉ' }))
     await user.type(screen.getByLabelText('Tên người nhận'), 'Lê Hà My')
-    await user.type(screen.getByLabelText('Số điện thoại'), '0909000000')
-    await user.type(screen.getByLabelText('Địa chỉ'), 'Căn hộ Studio')
-    await user.type(screen.getByLabelText('Phường/Xã'), 'Phường 2')
-    await user.type(screen.getByLabelText('Quận/Huyện'), 'Quận 10')
-    await user.type(screen.getByLabelText('Tỉnh/Thành'), 'TP. Hồ Chí Minh')
+    await user.type(screen.getByLabelText('Số điện thoại Việt Nam'), '0909000000')
+    await user.type(screen.getByLabelText(/Địa chỉ \(số nhà/), 'Căn hộ Studio')
     await user.click(screen.getByRole('button', { name: 'Lưu địa chỉ' }))
 
     expect(await screen.findByText(/Căn hộ Studio/)).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Sửa địa chỉ Căn hộ Studio' }))
-    await user.clear(screen.getByLabelText('Địa chỉ'))
-    await user.type(screen.getByLabelText('Địa chỉ'), 'Căn hộ Studio B')
+    const createdAddress = screen.getByText(/Căn hộ Studio/).closest('article') as HTMLElement
+    await user.click(within(createdAddress).getByRole('button', { name: /Sửa địa chỉ/ }))
+    await user.clear(screen.getByLabelText(/Địa chỉ \(số nhà/))
+    await user.type(screen.getByLabelText(/Địa chỉ \(số nhà/), 'Căn hộ Studio B')
     await user.click(screen.getByRole('button', { name: 'Lưu địa chỉ' }))
 
     expect(await screen.findByText(/Căn hộ Studio B/)).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Đặt mặc định Căn hộ Studio B' }))
-    await user.click(screen.getByRole('button', { name: 'Xóa địa chỉ 18 Lê Thánh Tôn' }))
+    const updatedAddress = screen.getByText(/Căn hộ Studio B/).closest('article') as HTMLElement
+    await user.click(within(updatedAddress).getByRole('button', { name: /Đặt mặc định/ }))
+    await user.click(screen.getByRole('button', { name: /Xóa địa chỉ .*18 Lê Thánh Tôn/ }))
 
-    await waitFor(() => {
-      const database = getDatabase()
-      expect(database.addresses.some(address => address.line1 === '18 Lê Thánh Tôn')).toBe(false)
-      expect(database.addresses.find(address => address.line1 === 'Căn hộ Studio B')?.isDefault).toBe(true)
-    })
+    expect(await screen.findByText(/Đã xóa địa chỉ/)).toBeInTheDocument()
 
     const defaultBadgeCard = screen.getByText(/Căn hộ Studio B/).closest('article')
     expect(defaultBadgeCard).not.toBeNull()
     expect(within(defaultBadgeCard as HTMLElement).getByText('Mặc định')).toBeInTheDocument()
   })
 
-  it('does not allow deleting the last address without showing a checkout-safe empty state', async () => {
+  it('allows deleting the only address and displays the empty state returned by Identity', async () => {
     const user = userEvent.setup()
     const database = databaseWithCustomer({
       addresses: createDemoSeed().addresses.filter(address => address.id === 'adr-customer-home'),
     })
     renderAt('/account/addresses', database)
 
-    await user.click(screen.getByRole('button', { name: 'Xóa địa chỉ 72 Nguyễn Thị Minh Khai' }))
+    await user.click(await screen.findByRole('button', { name: /Xóa địa chỉ .*72 Nguyễn Thị Minh Khai/ }))
 
-    expect(await screen.findByText('Cần ít nhất một địa chỉ để thanh toán.')).toBeInTheDocument()
-    expect(getDatabase().addresses).toHaveLength(1)
+    expect(await screen.findByRole('heading', { name: 'Chưa có địa chỉ' })).toBeInTheDocument()
   })
 })

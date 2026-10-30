@@ -109,7 +109,8 @@ describe('Wardrobe flow', () => {
     const user = userEvent.setup()
     renderAt('/outfits/outfit-work-minimal')
 
-    await user.clear(await screen.findByLabelText('Tên outfit'))
+    const nameInput = await screen.findByDisplayValue('Di lam toi gian')
+    await user.clear(nameInput)
     await user.type(screen.getByLabelText('Tên outfit'), 'Đi làm thứ hai')
     await user.click(screen.getByRole('button', { name: 'Lưu tên outfit' }))
     await user.click(screen.getByRole('button', { name: 'Xóa món Áo blouse cổ vuông' }))

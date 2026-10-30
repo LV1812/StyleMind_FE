@@ -3,7 +3,7 @@ import { FormEvent, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { ROUTES } from '@/app/router/routes'
-import { DEMO_ADMIN, DEMO_CUSTOMER } from '@/shared/constants/demoAccounts'
+import { identityErrorMessage } from '@/shared/api/identityApi'
 import { Button, TextField } from '@/shared/ui'
 
 import { AuthLayout } from '../components/AuthLayout'
@@ -15,7 +15,8 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const auth = useAuth()
-  const [input, setInput] = useState<LoginInput>({ email: '', password: '', remember: true })
+  const verifiedEmail = (location.state as { verifiedEmail?: string } | null)?.verifiedEmail
+  const [input, setInput] = useState<LoginInput>({ email: verifiedEmail ?? '', password: '', remember: true })
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
@@ -39,7 +40,7 @@ export function LoginPage() {
       const user = await auth.login(input)
       navigate(redirectAfterLogin(user.role), { replace: true })
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Không thể đăng nhập')
+      setSubmitError(identityErrorMessage(error, 'Không thể đăng nhập'))
     } finally {
       setSubmitting(false)
     }
@@ -95,11 +96,6 @@ export function LoginPage() {
           Đăng nhập
         </Button>
       </form>
-      <div className="mt-5 rounded-lg bg-[#F4E7E8] p-3 text-xs leading-5 text-[#3A3632]">
-        <p className="font-semibold">Tài khoản dùng thử</p>
-        <p>Khách hàng: {DEMO_CUSTOMER.email} / {DEMO_CUSTOMER.password}</p>
-        <p>Quản trị: {DEMO_ADMIN.email} / {DEMO_ADMIN.password}</p>
-      </div>
       <p className="mt-5 text-sm text-[#6F6B67]">
         Chưa có tài khoản?{' '}
         <Link to={ROUTES.register} className="font-semibold text-[#684B5A] hover:underline">

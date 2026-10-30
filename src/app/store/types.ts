@@ -52,6 +52,7 @@ export type DemoAction =
   | { type: 'database/replaced'; payload: DemoDatabase }
   | { type: 'session/loggedIn'; payload: { userId: string; persistent: boolean } }
   | { type: 'session/loggedOut' }
+  | { type: 'identity/sessionSynced'; payload: { user: User; persistent: boolean } }
   | { type: 'user/registered'; payload: User }
   | { type: 'user/profileUpdated'; payload: Partial<Pick<User, 'fullName' | 'phone' | 'heightCm' | 'weightKg' | 'avatarUrl' | 'avatarInitials'>> & { userId: string } }
   | { type: 'user/passwordChanged'; payload: { userId: string; password: string } }
