@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type { ProductSize } from '@/entities/product/model/types'
 import { Button } from '@/shared/ui'
 
-import type { CatalogFilters, CatalogSort } from '../model/types'
+import type { CatalogFilters } from '../model/types'
 
 interface Option {
   id: string
@@ -49,55 +49,66 @@ export function FilterPanel({ filters, categories, styles, occasions, colors, si
             key={category.id}
             label={category.label}
             checked={filters.categoryIds.includes(category.id)}
-            onChange={() => onChange({ ...filters, categoryIds: toggle(filters.categoryIds, category.id) })}
+            onChange={() => onChange({
+              ...filters,
+              categoryIds: filters.categoryIds.includes(category.id) ? [] : [category.id],
+            })}
           />
         ))}
       </FilterGroup>
-      <FilterGroup title="Màu sắc">
-        {colors.map(color => (
-          <Checkbox
-            key={color}
-            label={color}
-            checked={filters.colors.includes(color)}
-            onChange={() => onChange({ ...filters, colors: toggle(filters.colors, color) })}
-          />
-        ))}
-      </FilterGroup>
-      <FilterGroup title="Kích thước">
-        <div className="grid grid-cols-3 gap-2">
-          {sizes.map(size => (
-            <label key={size} className="inline-flex items-center gap-2 text-sm font-semibold text-[#3A3632]">
-              <input
-                type="checkbox"
-                checked={filters.sizes.includes(size)}
-                onChange={() => onChange({ ...filters, sizes: toggleSize(filters.sizes, size) })}
-                className="h-4 w-4 accent-[#684B5A]"
-              />
-              {size}
-            </label>
+      {colors.length > 0 && (
+        <FilterGroup title="Màu sắc">
+          {colors.map(color => (
+            <Checkbox
+              key={color}
+              label={color}
+              checked={filters.colors.includes(color)}
+              onChange={() => onChange({ ...filters, colors: toggle(filters.colors, color) })}
+            />
           ))}
-        </div>
-      </FilterGroup>
-      <FilterGroup title="Phong cách">
-        {styles.map(style => (
-          <Checkbox
-            key={style.id}
-            label={style.label}
-            checked={filters.styles.includes(style.id)}
-            onChange={() => onChange({ ...filters, styles: toggle(filters.styles, style.id) })}
-          />
-        ))}
-      </FilterGroup>
-      <FilterGroup title="Dịp sử dụng">
-        {occasions.map(occasion => (
-          <Checkbox
-            key={occasion.id}
-            label={occasion.label}
-            checked={filters.occasions.includes(occasion.id)}
-            onChange={() => onChange({ ...filters, occasions: toggle(filters.occasions, occasion.id) })}
-          />
-        ))}
-      </FilterGroup>
+        </FilterGroup>
+      )}
+      {sizes.length > 0 && (
+        <FilterGroup title="Kích thước">
+          <div className="grid grid-cols-3 gap-2">
+            {sizes.map(size => (
+              <label key={size} className="inline-flex items-center gap-2 text-sm font-semibold text-[#3A3632]">
+                <input
+                  type="checkbox"
+                  checked={filters.sizes.includes(size)}
+                  onChange={() => onChange({ ...filters, sizes: toggleSize(filters.sizes, size) })}
+                  className="h-4 w-4 accent-[#684B5A]"
+                />
+                {size}
+              </label>
+            ))}
+          </div>
+        </FilterGroup>
+      )}
+      {styles.length > 0 && (
+        <FilterGroup title="Phong cách">
+          {styles.map(style => (
+            <Checkbox
+              key={style.id}
+              label={style.label}
+              checked={filters.styles.includes(style.id)}
+              onChange={() => onChange({ ...filters, styles: toggle(filters.styles, style.id) })}
+            />
+          ))}
+        </FilterGroup>
+      )}
+      {occasions.length > 0 && (
+        <FilterGroup title="Dịp sử dụng">
+          {occasions.map(occasion => (
+            <Checkbox
+              key={occasion.id}
+              label={occasion.label}
+              checked={filters.occasions.includes(occasion.id)}
+              onChange={() => onChange({ ...filters, occasions: toggle(filters.occasions, occasion.id) })}
+            />
+          ))}
+        </FilterGroup>
+      )}
       <FilterGroup title="Khoảng giá">
         <div className="grid grid-cols-2 gap-2">
           <label className="grid gap-1 text-xs font-semibold text-[#6F6B67]">
@@ -124,19 +135,6 @@ export function FilterPanel({ filters, categories, styles, occasions, colors, si
           </label>
         </div>
       </FilterGroup>
-      <label className="grid gap-2 text-sm font-semibold text-[#3A3632]">
-        Sắp xếp
-        <select
-          value={filters.sort}
-          onChange={event => onChange({ ...filters, sort: event.target.value as CatalogSort })}
-          className="min-h-11 rounded-lg border border-[#D8D0C6] bg-white px-3 text-sm outline-none focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20"
-        >
-          <option value="featured">Nổi bật</option>
-          <option value="newest">Mới nhất</option>
-          <option value="price-asc">Giá tăng dần</option>
-          <option value="price-desc">Giá giảm dần</option>
-        </select>
-      </label>
     </aside>
   )
 }

@@ -1,13 +1,15 @@
-import { useState } from 'react'
-import type { AppState } from '../types'
-import { mockProducts } from '../data/mockData'
+import { useEffect, useState } from 'react'
+import type { AppState, Product } from '../types'
 import PageHeader from '../components/ui/PageHeader'
 import Money from '../components/ui/Money'
 import { UnavailableBadge } from '../components/ui/Badges'
 import EmptyState from '../components/ui/EmptyState'
+import { commerceApi } from '../api/commerce'
+import { commerceProductToUi } from '../api/commerce.adapters'
+import { CommerceApiError } from '../api/http'
 
-const categories = ['All', 'Tops', 'Bottoms', 'Outerwear', 'Dresses', 'Shoes', 'Bags', 'Accessories']
-const sortOptions = ['Recommended', 'Wardrobe Synergy', 'Price: Low to High', 'Price: High to Low']
+const categories = ["Tất cả", "Áo", "Quần và chân váy", "Áo khoác", "Đầm", "Giày dép", "Túi xách", "Phụ kiện"]
+const sortOptions = ["Phù hợp với bạn", "Dễ phối với đồ đã có", "Giá: Thấp đến cao", "Giá: Cao đến thấp"]
 
 interface Props {
   onNavigate: (screen: string, opts?: any) => void
@@ -15,10 +17,39 @@ interface Props {
 }
 
 export default function Shop({ onNavigate }: Props) {
-  const [activeCategory, setActiveCategory] = useState('All')
-  const [sort, setSort] = useState('Recommended')
+  const [activeCategory, setActiveCategory] = useState("Tất cả")
+  const [sort, setSort] = useState("Phù hợp với bạn")
   const [search, setSearch] = useState('')
   const [favorited, setFavorited] = useState<Set<string>>(new Set(['p1']))
+  const [products, setProducts] = useState<Product[]>([])
+  const [categoryOptions, setCategoryOptions] = useState<string[]>(categories)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadCatalog = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const [productPage, categoryList] = await Promise.all([
+        commerceApi.products.list({ page: 0, size: 100 }),
+        commerceApi.categories.list(),
+      ])
+      setProducts(productPage.items.map(commerceProductToUi))
+      setCategoryOptions([categories[0], ...categoryList.items.map(category => category.name)])
+    } catch (requestError) {
+      setError(
+        requestError instanceof CommerceApiError
+          ? requestError.message
+          : 'Không thể tải danh mục sản phẩm. Vui lòng thử lại.',
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void loadCatalog()
+  }, [])
 
   const toggleFav = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -29,10 +60,10 @@ export default function Shop({ onNavigate }: Props) {
     })
   }
 
-  const filtered = mockProducts
+  const filtered = products
     .filter(p => {
       const matchCat =
-        activeCategory === 'All' ||
+        activeCategory === "Tất cả" ||
         p.category.toLowerCase() === activeCategory.toLowerCase() ||
         p.tags.some(t => t.toLowerCase() === activeCategory.toLowerCase())
       const matchSearch =
@@ -42,30 +73,30 @@ export default function Shop({ onNavigate }: Props) {
       return matchCat && matchSearch
     })
     .sort((a, b) => {
-      if (sort === 'Price: Low to High') return a.price - b.price
-      if (sort === 'Price: High to Low') return b.price - a.price
-      if (sort === 'Wardrobe Synergy') return b.wardrobeMatches - a.wardrobeMatches
+      if (sort === "Giá: Thấp đến cao") return a.price - b.price
+      if (sort === "Giá: Cao đến thấp") return b.price - a.price
+      if (sort === "Dễ phối với đồ đã có") return b.wardrobeMatches - a.wardrobeMatches
       return 0
     })
 
   return (
-    <div style={{ background: '#FAF8F5', minHeight: '100vh' }}>
+    <div style={{ background: "var(--color-ivory)", minHeight: '100vh' }}>
       <PageHeader
-        category="Curated Catalog"
-        title="Collection"
-        subtitle="Pieces designed to integrate seamlessly into your existing wardrobe, selected for high versatility."
+        category="Mua sắm theo phong cách của bạn"
+        title="Bộ sưu tập"
+        subtitle="Khám phá những món dễ mặc, dễ phối cùng quần áo bạn đã có."
         actions={
           <div className="flex items-center gap-3">
-            <label htmlFor="shop-sort" className="sr-only">Sort products</label>
+            <label htmlFor="shop-sort" className="sr-only">Sắp xếp sản phẩm</label>
             <select
               id="shop-sort"
               value={sort}
               onChange={e => setSort(e.target.value)}
-              className="text-xs px-4 py-2.5 rounded-full border border-[#D8D0C6] bg-white text-[#222222] outline-none focus:border-[#684B5A]"
+              className="text-xs px-4 py-2.5 rounded-full border border-sand-dark bg-surface text-charcoal outline-none focus:border-accent"
             >
               {sortOptions.map(opt => (
                 <option key={opt} value={opt}>
-                  Sort: {opt}
+                  Sắp xếp: {opt}
                 </option>
               ))}
             </select>
@@ -74,9 +105,9 @@ export default function Shop({ onNavigate }: Props) {
       />
 
       {/* Category Tabs */}
-      <div className="px-6 md:px-16 border-b border-[#EEE8E1]" role="tablist" aria-label="Product categories">
+      <div className="px-6 md:px-16 border-b border-sand" role="tablist" aria-label="Danh mục sản phẩm">
         <div className="flex gap-2 overflow-x-auto pb-0" style={{ scrollbarWidth: 'none' }}>
-          {categories.map(cat => {
+          {categoryOptions.map(cat => {
             const isSelected = activeCategory === cat
             return (
               <button
@@ -84,10 +115,10 @@ export default function Shop({ onNavigate }: Props) {
                 role="tab"
                 aria-selected={isSelected}
                 onClick={() => setActiveCategory(cat)}
-                className={`flex-none px-5 py-3.5 text-xs sm:text-sm font-medium whitespace-nowrap border-b-2 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] ${
+                className={`flex-none px-5 py-3.5 text-xs sm:text-sm font-medium whitespace-nowrap border-b-2 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                   isSelected
-                    ? 'border-[#684B5A] text-[#684B5A] font-semibold'
-                    : 'border-transparent text-[#6F6B67] hover:text-[#222222]'
+                    ? 'border-accent text-accent font-semibold'
+                    : 'border-transparent text-secondary hover:text-charcoal'
                 }`}
               >
                 {cat}
@@ -99,14 +130,22 @@ export default function Shop({ onNavigate }: Props) {
 
       {/* Main Grid Content */}
       <div className="px-6 md:px-16 py-8 pb-24">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="py-20 text-center text-sm text-secondary" role="status">Đang tải sản phẩm...</div>
+        ) : error ? (
           <EmptyState
-            title="No items found"
-            description="We couldn't find any products in this category matching your selection. Try clearing filters."
+            title="Không thể tải cửa hàng"
+            description={error}
+            primaryAction={{ label: 'Thử lại', onClick: () => void loadCatalog() }}
+          />
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            title="Không tìm thấy sản phẩm"
+            description="Chưa có sản phẩm phù hợp. Bạn thử chọn danh mục khác hoặc đặt lại bộ lọc nhé."
             primaryAction={{
-              label: 'Reset Filters',
+              label: "Đặt lại bộ lọc",
               onClick: () => {
-                setActiveCategory('All')
+                setActiveCategory("Tất cả")
                 setSearch('')
               },
             }}
@@ -121,15 +160,15 @@ export default function Shop({ onNavigate }: Props) {
                 <div
                   key={product.id}
                   onClick={() => onNavigate('product-detail', { productId: product.id })}
-                  className={`group rounded-2xl bg-white border overflow-hidden p-3.5 flex flex-col justify-between transition-all duration-200 cursor-pointer ${
+                  className={`group rounded-2xl bg-surface border overflow-hidden p-3.5 flex flex-col justify-between transition-all duration-200 cursor-pointer ${
                     isOutOfStock
-                      ? 'border-[#D8D0C6] opacity-85 hover:border-[#9D9894]'
-                      : 'border-[#EEE8E1] hover:border-[#684B5A]/40 hover:shadow-md'
+                      ? 'border-sand-dark opacity-85 hover:border-muted'
+                      : 'border-sand hover:border-accent/40 hover:shadow-md'
                   }`}
                 >
                   <div>
                     {/* Thumbnail */}
-                    <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#EEE8E1] mb-3">
+                    <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-sand mb-3">
                       <img
                         src={product.image}
                         alt={product.name}
@@ -142,10 +181,10 @@ export default function Shop({ onNavigate }: Props) {
                       <button
                         type="button"
                         onClick={e => toggleFav(product.id, e)}
-                        aria-label={isFav ? `Remove ${product.name} from favorites` : `Add ${product.name} to favorites`}
-                        className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-sm shadow-xs transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+                        aria-label={isFav ? `Xóa ${product.name} khỏi danh sách yêu thích` : `Thêm ${product.name} vào danh sách yêu thích`}
+                        className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-surface/90 backdrop-blur-xs flex items-center justify-center text-sm shadow-xs transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
-                        <span style={{ color: isFav ? '#A94B4B' : '#9D9894' }}>
+                        <span style={{ color: isFav ? "var(--color-error)" : "var(--color-muted)" }}>
                           {isFav ? '♥' : '♡'}
                         </span>
                       </button>
@@ -153,10 +192,10 @@ export default function Shop({ onNavigate }: Props) {
                       {/* Status badge: either Out of Stock or Wardrobe matches */}
                       <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
                         {isOutOfStock ? (
-                          <UnavailableBadge reason="Out of Stock" />
+                          <UnavailableBadge reason="Hết hàng" />
                         ) : (
-                          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#FAF8F5]/92 backdrop-blur-xs text-[#48755A] border border-[#48755A]/25 shadow-2xs truncate">
-                            ✓ {product.wardrobeMatches} wardrobe matches
+                          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-ivory/92 backdrop-blur-xs text-success border border-success/25 shadow-2xs truncate">
+                            ✓ {product.wardrobeMatches} món trong tủ có thể phối cùng
                           </span>
                         )}
                       </div>
@@ -164,24 +203,24 @@ export default function Shop({ onNavigate }: Props) {
 
                     {/* Metadata */}
                     <div className="px-1">
-                      <div className="flex items-center justify-between text-[11px] uppercase tracking-wider font-semibold text-[#B98791] mb-1">
+                      <div className="flex items-center justify-between text-[11px] uppercase tracking-wider font-semibold text-rose mb-1">
                         <span>{product.brand}</span>
-                        <span className="text-[#6F6B67] normal-case tracking-normal">{product.fit} fit</span>
+                        <span className="text-secondary normal-case tracking-normal">{product.fit === 'Cỡ duy nhất' ? product.fit : `Dáng ${product.fit.toLocaleLowerCase('vi-VN')}`}</span>
                       </div>
 
-                      <h3 className="font-sans text-sm font-medium text-[#222222] truncate mb-1" title={product.name}>
+                      <h3 className="font-sans text-sm font-medium text-charcoal truncate mb-1" title={product.name}>
                         {product.name}
                       </h3>
 
                       <div className="flex items-center justify-between pt-1">
-                        <Money amount={product.price} className="text-sm font-semibold text-[#222222]" />
+                        <Money amount={product.price} className="text-sm font-semibold text-charcoal" />
 
                         {/* Color swatches with visible title */}
-                        <div className="flex gap-1" aria-label={`Available colors for ${product.name}`}>
+                        <div className="flex gap-1" aria-label={`Màu có sẵn cho ${product.name}`}>
                           {product.colors.map(c => (
                             <div
                               key={c.name}
-                              className="w-3.5 h-3.5 rounded-full border border-black/15"
+                              className="w-3.5 h-3.5 rounded-full border border-overlay/15"
                               style={{ backgroundColor: c.hex }}
                               title={c.name}
                             />
@@ -192,16 +231,16 @@ export default function Shop({ onNavigate }: Props) {
                   </div>
 
                   {/* Quick Card Footer */}
-                  <div className="pt-3 mt-2 border-t border-[#EEE8E1] px-1 flex items-center justify-between text-xs text-[#6F6B67]">
+                  <div className="pt-3 mt-2 border-t border-sand px-1 flex items-center justify-between text-xs text-secondary">
                     <span>
                       {isOutOfStock ? (
-                        <span className="text-[#A94B4B] font-medium">Temporarily unavailable</span>
+                        <span className="text-error font-medium">Tạm hết hàng</span>
                       ) : (
-                        <span>Sizes: {product.availableSizes.join(', ')}</span>
+                        <span>Cỡ có sẵn: {product.availableSizes.join(', ')}</span>
                       )}
                     </span>
-                    <span className="text-[#684B5A] font-medium group-hover:underline">
-                      View →
+                    <span className="text-accent font-medium group-hover:underline">
+                      Xem →
                     </span>
                   </div>
                 </div>

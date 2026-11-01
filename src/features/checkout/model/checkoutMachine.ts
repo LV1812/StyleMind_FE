@@ -15,6 +15,7 @@ export interface QrSession {
   transferContent: string
   expiresAt: string
   orderId: string | null
+  commerceOrderId?: string
   pendingOrder?: Order
 }
 

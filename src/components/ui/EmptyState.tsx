@@ -30,15 +30,15 @@ export default function EmptyState({
     <div className={`flex flex-col items-center justify-center text-center px-6 py-16 md:py-24 max-w-lg mx-auto ${className}`}>
       <div
         className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mb-6 text-2xl md:text-3xl"
-        style={{ background: '#EEE8E1', color: '#684B5A' }}
+        style={{ background: "var(--color-sand)", color: "var(--color-accent)" }}
         aria-hidden="true"
       >
         {icon}
       </div>
-      <h2 className="font-display text-2xl md:text-3xl font-light mb-3 text-[#222222]">
+      <h2 className="font-display text-2xl md:text-3xl font-light mb-3 text-charcoal">
         {title}
       </h2>
-      <p className="text-sm md:text-base text-[#6F6B67] mb-8 leading-relaxed">
+      <p className="text-sm md:text-base text-secondary mb-8 leading-relaxed">
         {description}
       </p>
       {(primaryAction || secondaryAction) && (

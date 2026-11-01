@@ -7,12 +7,12 @@ import Button from '../components/ui/Button'
 import Money from '../components/ui/Money'
 
 const promptChips = [
-  'Travel to Da Lat (4 days)',
-  'Work meeting capsule',
-  'Dinner date look',
-  'Weekend café hopping',
-  'Styling my cream blouse',
-  'Rainy season layers',
+  "Du lịch Đà Lạt (4 ngày)",
+  "Phối đồ đi họp",
+  "Trang phục hẹn hò buổi tối",
+  "Dạo quán cà phê cuối tuần",
+  "Phối áo lụa màu kem của tôi",
+  "Phối nhiều lớp mùa mưa",
 ]
 
 interface Message {
@@ -27,7 +27,7 @@ const initialMessages: Message[] = [
     id: 'm1',
     role: 'ai',
     content:
-      "Hello Lan. I'm ready to style you. Tell me where you're heading, what occasion you're preparing for, or ask how to style a specific piece in your wardrobe.",
+      "Chào Lan! Hôm nay bạn muốn phối đồ đi đâu? Kể mình nghe về dịp sắp tới, chuyến đi hoặc món đồ bạn muốn mặc nhé.",
   },
 ]
 
@@ -52,7 +52,7 @@ export default function AIStylest({ onNavigate, app }: Props) {
   // If navigated with an occasion parameter
   useEffect(() => {
     if (app?.opts?.occasion && messages.length === 1) {
-      handleSendMessage(`I need an outfit for ${app.opts.occasion}`)
+      handleSendMessage(`Gợi ý cho tôi cách phối đồ phù hợp với dịp: ${app.opts.occasion}`)
     }
   }, [app?.opts?.occasion])
 
@@ -73,20 +73,20 @@ export default function AIStylest({ onNavigate, app }: Props) {
     // Simulate grounded AI stylist response
     setTimeout(() => {
       setIsThinking(false)
-      const isDaLat = query.toLowerCase().includes('da lat') || query.toLowerCase().includes('travel')
+      const isDaLat = /da lat|du lich|travel/.test(query.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase())
 
       const generatedOutfit: OutfitSuggestion = {
         ...mockOutfitSuggestion,
-        title: isDaLat ? 'Feminine Minimalist — Da Lat Arrival' : `Curated Capsule — ${query}`,
-        occasion: isDaLat ? 'Travel · Day 1 Arrival & Mountain Café' : query,
+        title: isDaLat ? "Nhẹ nhàng, nữ tính — Ngày đầu ở Đà Lạt" : `Gợi ý phối đồ — ${query}`,
+        occasion: isDaLat ? "Du lịch · Ngày 1: Đến Đà Lạt và dạo quán cà phê" : query,
       }
 
       const aiMsg: Message = {
         id: `ai-${Date.now()}`,
         role: 'ai',
         content: isDaLat
-          ? "I've built a capsule specifically for Da Lat's mountain weather. To avoid unnecessary spending, you already own 3 of the 5 pieces (your silk blouse, linen trousers, and loafers). I've paired them with TOTÊME's Linen Blazer and an A.P.C. bag to add structure."
-          : `Here is a curated look for "${query}". I maximized your wardrobe items so you only need to add 2 versatile pieces to complete the look.`,
+          ? "Bạn có thể phối áo lụa, quần linen và giày lười đã có sẵn cho ngày đầu ở Đà Lạt. Mình gợi ý thêm blazer linen TOTÊME để khoác khi trời se lạnh và túi A.P.C. làm điểm nhấn. Bạn chọn món phù hợp với nhu cầu của mình nhé."
+          : `Với yêu cầu “${query}”, mình gợi ý cách phối dưới đây, ưu tiên những món bạn đã có. Bạn có thể chọn thêm các món được đề xuất nếu muốn thay đổi phong cách.`,
         outfit: generatedOutfit,
       }
 
@@ -116,12 +116,12 @@ export default function AIStylest({ onNavigate, app }: Props) {
         name: item.name,
         brand: item.brand,
         size: item.size || 'M',
-        color: item.color || 'Oat',
+        color: item.color || "Be yến mạch",
         colorHex: item.colorHex,
         price: item.price || 0,
         image: item.image,
         available: true,
-        aiRec: `Recommended by StyleMind for ${selectedOutfit.occasion}`,
+        aiRec: `StyleMind gợi ý cho ${selectedOutfit.occasion}`,
       })
     })
 
@@ -140,28 +140,28 @@ export default function AIStylest({ onNavigate, app }: Props) {
   }, 0)
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex flex-col bg-[#FAF8F5]">
+    <div className="min-h-[calc(100vh-64px)] flex flex-col bg-ivory">
       {/* Mobile Toggle Bar */}
-      <div className="lg:hidden flex border-b border-[#EEE8E1] bg-white sticky top-14 z-30">
+      <div className="lg:hidden flex border-b border-sand bg-surface sticky top-14 z-30">
         <button
           onClick={() => setActiveMobileView('chat')}
           className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all ${
             activeMobileView === 'chat'
-              ? 'border-[#684B5A] text-[#684B5A]'
-              : 'border-transparent text-[#6F6B67]'
+              ? 'border-accent text-accent'
+              : 'border-transparent text-secondary'
           }`}
         >
-          ✦ Stylist Chat
+          ✦ Trò chuyện tư vấn
         </button>
         <button
           onClick={() => setActiveMobileView('outfit')}
           className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wider border-b-2 transition-all ${
             activeMobileView === 'outfit'
-              ? 'border-[#684B5A] text-[#684B5A]'
-              : 'border-transparent text-[#6F6B67]'
+              ? 'border-accent text-accent'
+              : 'border-transparent text-secondary'
           }`}
         >
-          Curated Outfit ({currentOutfit.items.length})
+          Gợi ý phối đồ ({currentOutfit.items.length})
         </button>
       </div>
 
@@ -169,23 +169,23 @@ export default function AIStylest({ onNavigate, app }: Props) {
       <div className="flex-1 grid lg:grid-cols-[1fr_520px] xl:grid-cols-[1fr_580px] overflow-hidden">
         {/* Left Column: Chat Conversation */}
         <div
-          className={`flex flex-col border-r border-[#EEE8E1] bg-[#FAF8F5] ${
+          className={`flex flex-col border-r border-sand bg-ivory ${
             activeMobileView === 'chat' ? 'flex' : 'hidden lg:flex'
           }`}
         >
           {/* Stylist Header */}
-          <div className="p-4 md:p-6 border-b border-[#EEE8E1] bg-white/70 backdrop-blur-xs flex items-center justify-between">
+          <div className="p-4 md:p-6 border-b border-sand bg-surface/70 backdrop-blur-xs flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#F4E7E8] text-[#684B5A] flex items-center justify-center font-bold text-sm">
+              <div className="w-9 h-9 rounded-full bg-blush text-accent flex items-center justify-center font-bold text-sm">
                 ✦
               </div>
               <div>
-                <h1 className="font-display text-lg font-normal text-[#222222]">StyleMind AI Stylist</h1>
-                <p className="text-xs text-[#6F6B67]">Grounded in your 8 wardrobe pieces</p>
+                <h1 className="font-display text-lg font-normal text-charcoal">Trợ lý phối đồ StyleMind AI</h1>
+                <p className="text-xs text-secondary">Tư vấn dựa trên tủ đồ của bạn</p>
               </div>
             </div>
-            <span className="text-xs px-2.5 py-1 rounded-full bg-[#EAF2EC] text-[#48755A] font-semibold border border-[#48755A]/20">
-              ● Online
+            <span className="text-xs px-2.5 py-1 rounded-full bg-success-bg text-success font-semibold border border-success/20">
+              ● Trực tuyến
             </span>
           </div>
 
@@ -197,22 +197,22 @@ export default function AIStylest({ onNavigate, app }: Props) {
                 className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'ai' && (
-                  <div className="w-8 h-8 rounded-full bg-[#684B5A] text-white flex items-center justify-center text-xs flex-none mt-1">
+                  <div className="w-8 h-8 rounded-full bg-accent text-on-accent flex items-center justify-center text-xs flex-none mt-1">
                     ✦
                   </div>
                 )}
                 <div
                   className={`max-w-xl rounded-2xl p-4 text-sm leading-relaxed ${
                     msg.role === 'user'
-                      ? 'bg-[#684B5A] text-white rounded-tr-xs'
-                      : 'bg-white border border-[#EEE8E1] text-[#222222] shadow-2xs rounded-tl-xs'
+                      ? 'bg-accent text-on-accent rounded-tr-xs'
+                      : 'bg-surface border border-sand text-charcoal shadow-2xs rounded-tl-xs'
                   }`}
                 >
                   <p>{msg.content}</p>
 
                   {msg.outfit && (
-                    <div className="mt-3 pt-3 border-t border-[#EEE8E1] flex items-center justify-between">
-                      <span className="text-xs font-semibold text-[#684B5A]">
+                    <div className="mt-3 pt-3 border-t border-sand flex items-center justify-between">
+                      <span className="text-xs font-semibold text-accent">
                         ✦ {msg.outfit.title}
                       </span>
                       <button
@@ -220,9 +220,9 @@ export default function AIStylest({ onNavigate, app }: Props) {
                           setSelectedOutfit(msg.outfit!)
                           setActiveMobileView('outfit')
                         }}
-                        className="text-xs font-semibold text-[#684B5A] underline hover:opacity-80"
+                        className="text-xs font-semibold text-accent underline hover:opacity-80"
                       >
-                        Inspect Outfit →
+                        Xem bộ đồ →
                       </button>
                     </div>
                   )}
@@ -232,12 +232,12 @@ export default function AIStylest({ onNavigate, app }: Props) {
 
             {isThinking && (
               <div className="flex gap-3 justify-start">
-                <div className="w-8 h-8 rounded-full bg-[#684B5A] text-white flex items-center justify-center text-xs flex-none mt-1">
+                <div className="w-8 h-8 rounded-full bg-accent text-on-accent flex items-center justify-center text-xs flex-none mt-1">
                   ✦
                 </div>
-                <div className="bg-white border border-[#EEE8E1] rounded-2xl p-4 shadow-2xs text-xs text-[#6F6B67] flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#684B5A] animate-ping" />
-                  <span>Cross-referencing your wardrobe against catalog silhouettes...</span>
+                <div className="bg-surface border border-sand rounded-2xl p-4 shadow-2xs text-xs text-secondary flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-accent animate-ping" />
+                  <span>Đang tìm cách phối phù hợp từ tủ đồ của bạn...</span>
                 </div>
               </div>
             )}
@@ -245,14 +245,14 @@ export default function AIStylest({ onNavigate, app }: Props) {
           </div>
 
           {/* Quick Prompt Chips */}
-          <div className="px-4 md:px-6 py-2 border-t border-[#EEE8E1] bg-white/50 overflow-x-auto">
+          <div className="px-4 md:px-6 py-2 border-t border-sand bg-surface/50 overflow-x-auto">
             <div className="flex gap-2 pb-1" style={{ scrollbarWidth: 'none' }}>
               {promptChips.map(chip => (
                 <button
                   key={chip}
                   type="button"
                   onClick={() => handleSendMessage(chip)}
-                  className="flex-none px-3 py-1.5 rounded-full text-xs font-medium bg-[#FAF8F5] border border-[#D8D0C6] text-[#3A3632] hover:bg-[#F4E7E8] hover:border-[#684B5A] transition-colors"
+                  className="flex-none px-3 py-1.5 rounded-full text-xs font-medium bg-ivory border border-sand-dark text-ink hover:bg-blush hover:border-accent transition-colors"
                 >
                   ✦ {chip}
                 </button>
@@ -261,7 +261,7 @@ export default function AIStylest({ onNavigate, app }: Props) {
           </div>
 
           {/* Chat Input */}
-          <div className="p-4 md:p-6 border-t border-[#EEE8E1] bg-white">
+          <div className="p-4 md:p-6 border-t border-sand bg-surface">
             <form
               onSubmit={e => {
                 e.preventDefault()
@@ -269,13 +269,13 @@ export default function AIStylest({ onNavigate, app }: Props) {
               }}
               className="flex items-center gap-2"
             >
-              <label htmlFor="stylist-input" className="sr-only">Ask StyleMind for styling advice</label>
+              <label htmlFor="stylist-input" className="sr-only">Hỏi StyleMind cách phối đồ</label>
               <input
                 id="stylist-input"
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder="Ask StyleMind: 'Outfit for a weekend in Da Lat' or 'How to wear my camel coat'..."
-                className="flex-1 px-4 py-3 rounded-full border border-[#D8D0C6] bg-[#FAF8F5] text-sm text-[#222222] outline-none focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20"
+                placeholder="Hỏi StyleMind: 'Đi Đà Lạt cuối tuần mặc gì?' hoặc 'Phối áo khoác dạ camel thế nào?'..."
+                className="flex-1 px-4 py-3 rounded-full border border-sand-dark bg-ivory text-sm text-charcoal outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
               />
               <Button
                 type="submit"
@@ -283,7 +283,7 @@ export default function AIStylest({ onNavigate, app }: Props) {
                 size="md"
                 disabled={!input.trim() || isThinking}
               >
-                Send
+                Gửi
               </Button>
             </form>
           </div>
@@ -291,45 +291,45 @@ export default function AIStylest({ onNavigate, app }: Props) {
 
         {/* Right Column: Grounded Outfit Analysis Workspace */}
         <div
-          className={`flex flex-col bg-[#FDFCFA] overflow-y-auto ${
+          className={`flex flex-col bg-surface-soft overflow-y-auto ${
             activeMobileView === 'outfit' ? 'flex' : 'hidden lg:flex'
           }`}
         >
           {/* Header */}
-          <div className="p-6 border-b border-[#EEE8E1] bg-white sticky top-0 z-20">
+          <div className="p-6 border-b border-sand bg-surface sticky top-0 z-20">
             <div className="flex items-center justify-between gap-3 mb-1">
-              <span className="text-xs uppercase tracking-wider font-semibold text-[#B98791]">
+              <span className="text-xs uppercase tracking-wider font-semibold text-rose">
                 {currentOutfit.occasion}
               </span>
               <div className="flex gap-2">
-                <OwnedBadge label={`${ownedPieces.length} Owned`} />
-                <ShopBadge label={`${shopPieces.length} To Buy`} price={totalSelectedPrice} />
+                <OwnedBadge label={`Đã có ${ownedPieces.length} món`} />
+                <ShopBadge label={`Gợi ý thêm ${shopPieces.length} món`} price={totalSelectedPrice} />
               </div>
             </div>
-            <h2 className="font-display text-2xl font-light text-[#222222]">
+            <h2 className="font-display text-2xl font-light text-charcoal">
               {currentOutfit.title}
             </h2>
           </div>
 
           <div className="p-6 space-y-8 flex-1">
             {/* Stylist Reason Note */}
-            <div className="p-4 rounded-2xl bg-[#F4E7E8] border border-[#684B5A]/20 text-xs text-[#3A3632] leading-relaxed">
-              <p className="font-bold text-[#684B5A] mb-1">Stylist Note:</p>
+            <div className="p-4 rounded-2xl bg-blush border border-accent/20 text-xs text-ink leading-relaxed">
+              <p className="font-bold text-accent mb-1">Lời khuyên phối đồ:</p>
               <p>{currentOutfit.notes}</p>
             </div>
 
             {/* ZONE 1: YOU ALREADY OWN (Principle 1) */}
             <div>
-              <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#EEE8E1]">
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-sand">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#EAF2EC] text-[#48755A] flex items-center justify-center text-xs font-bold">
+                  <span className="w-5 h-5 rounded-full bg-success-bg text-success flex items-center justify-center text-xs font-bold">
                     ✓
                   </span>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#48755A]">
-                    Already In Your Wardrobe ({ownedPieces.length} Items)
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-success">
+                    Đã có trong tủ đồ ({ownedPieces.length} món)
                   </h3>
                 </div>
-                <span className="text-xs text-[#6F6B67]">Zero additional spend</span>
+                <span className="text-xs text-secondary">Không cần mua thêm</span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -345,17 +345,17 @@ export default function AIStylest({ onNavigate, app }: Props) {
 
             {/* ZONE 2: RECOMMENDED TO BUY (Principle 1 & 2) */}
             <div>
-              <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#EEE8E1]">
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-sand">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#F4E7E8] text-[#684B5A] flex items-center justify-center text-xs font-bold">
+                  <span className="w-5 h-5 rounded-full bg-blush text-accent flex items-center justify-center text-xs font-bold">
                     +
                   </span>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#684B5A]">
-                    Recommended To Complete Look ({shopPieces.length} Items)
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-accent">
+                    Gợi ý mua thêm để phối cùng ({shopPieces.length} món)
                   </h3>
                 </div>
-                <span className="text-xs font-semibold text-[#222222]">
-                  Subtotal: <Money amount={totalSelectedPrice} />
+                <span className="text-xs font-semibold text-charcoal">
+                  Tạm tính: <Money amount={totalSelectedPrice} />
                 </span>
               </div>
 
@@ -373,7 +373,7 @@ export default function AIStylest({ onNavigate, app }: Props) {
             </div>
 
             {/* Actions Bar */}
-            <div className="pt-4 border-t border-[#EEE8E1] space-y-3">
+            <div className="pt-4 border-t border-sand space-y-3">
               <Button
                 variant="primary"
                 fullWidth
@@ -381,7 +381,7 @@ export default function AIStylest({ onNavigate, app }: Props) {
                 onClick={handleAddSelectedToCart}
                 icon={<span>🛒</span>}
               >
-                Add {selectedShopPieces.size} Selected to Bag · {formatVND(totalSelectedPrice)}
+                Thêm {selectedShopPieces.size} món đã chọn vào giỏ · {formatVND(totalSelectedPrice)}
               </Button>
               <div className="flex gap-2">
                 <Button
@@ -390,7 +390,7 @@ export default function AIStylest({ onNavigate, app }: Props) {
                   size="md"
                   onClick={() => onNavigate('outfit-result')}
                 >
-                  Full Breakdown
+                  Xem chi tiết cách phối
                 </Button>
                 <Button
                   variant="outline"
@@ -398,7 +398,7 @@ export default function AIStylest({ onNavigate, app }: Props) {
                   size="md"
                   onClick={() => onNavigate('studio')}
                 >
-                  3D Studio
+                  Phòng thử đồ 3D
                 </Button>
               </div>
             </div>

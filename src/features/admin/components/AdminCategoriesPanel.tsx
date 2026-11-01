@@ -1,8 +1,10 @@
 import { Pencil, Plus } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
 
+import { commerceApi } from '@/api/commerce'
 import type { DemoAction, DemoDatabase } from '@/app/store/types'
 import type { ProductCategory } from '@/entities/product/model/types'
+import { commerceCategoryToEntity } from '@/features/commerce/data/commerceEntityAdapters'
 import { Button, Modal, TextField, ToggleSwitch, useToast } from '@/shared/ui'
 
 interface AdminCategoriesPanelProps {
@@ -52,6 +54,7 @@ export function AdminCategoriesPanel({ database, dispatch }: AdminCategoriesPane
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
   const [form, setForm] = useState<CategoryFormState>(() => createInitialForm(nextOrder))
   const [formError, setFormError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
 
   const categories = useMemo(
     () => [...database.categories].sort((first, second) => first.order - second.order),
@@ -80,7 +83,7 @@ export function AdminCategoriesPanel({ database, dispatch }: AdminCategoriesPane
     setForm(current => ({ ...current, [field]: value }))
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const categoryId = editingCategoryId ?? form.id.trim()
     const duplicate = database.categories.some(category => category.id === categoryId && category.id !== editingCategoryId)
@@ -95,9 +98,21 @@ export function AdminCategoriesPanel({ database, dispatch }: AdminCategoriesPane
       return
     }
 
-    dispatch({ type: 'admin/categoryUpserted', payload: buildCategory(form, editingCategory) })
-    toast.success(editingCategoryId ? 'Đã cập nhật danh mục.' : 'Đã thêm danh mục demo.')
-    setModalOpen(false)
+    const next = buildCategory(form, editingCategory)
+    setSaving(true)
+    try {
+      const input = { name: next.label, slug: next.description || form.id.trim(), is_active: next.active }
+      const response = editingCategoryId
+        ? await commerceApi.categories.replace(editingCategoryId, input)
+        : await commerceApi.categories.create(input)
+      dispatch({ type: 'admin/categoryUpserted', payload: commerceCategoryToEntity(response, next.order) })
+      toast.success(editingCategoryId ? 'Đã cập nhật danh mục.' : 'Đã thêm danh mục.')
+      setModalOpen(false)
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Không thể lưu danh mục')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -145,8 +160,14 @@ export function AdminCategoriesPanel({ database, dispatch }: AdminCategoriesPane
                       checked={category.active}
                       label={`Danh mục ${category.label}`}
                       onCheckedChange={active => {
-                        dispatch({ type: 'admin/categoryStatusChanged', payload: { categoryId: category.id, active } })
-                        toast.info(active ? 'Đã bật danh mục.' : 'Đã tắt danh mục.')
+                        void commerceApi.categories.replace(category.id, {
+                          name: category.label,
+                          slug: category.description || category.id,
+                          is_active: active,
+                        }).then(response => {
+                          dispatch({ type: 'admin/categoryUpserted', payload: commerceCategoryToEntity(response, category.order) })
+                          toast.info(active ? 'Đã bật danh mục.' : 'Đã tắt danh mục.')
+                        }).catch(error => toast.error(error instanceof Error ? error.message : 'Không thể cập nhật danh mục'))
                       }}
                     />
                   </td>
@@ -197,7 +218,7 @@ export function AdminCategoriesPanel({ database, dispatch }: AdminCategoriesPane
             <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>
               Hủy
             </Button>
-            <Button type="submit">Lưu danh mục</Button>
+            <Button loading={saving} type="submit">Lưu danh mục</Button>
           </div>
         </form>
       </Modal>
