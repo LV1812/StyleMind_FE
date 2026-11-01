@@ -97,8 +97,32 @@ body {
   padding: 0;
 }
 
+:root {
+  --container-wide: 1280px;
+  --color-overlay: rgba(34, 34, 34, 0.42);
+  --z-sticky: 40;
+  --z-modal: 80;
+  --z-toast: 90;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+body:has([role='dialog'][aria-modal='true']) {
+  overscroll-behavior: contain;
+}
+
 .font-display {
   font-family: var(--font-display);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 ::-webkit-scrollbar {

@@ -28,17 +28,17 @@ export default function OutfitItemCard({
     <div
       className={`group relative rounded-2xl overflow-hidden border transition-all duration-200 flex flex-col justify-between ${
         isOwned
-          ? 'bg-ivory border-sand-dark hover:border-success/50'
+          ? 'bg-[#FAF8F5] border-[#D8D0C6] hover:border-[#48755A]/50'
           : isShop
           ? selected
-            ? 'bg-surface border-accent ring-2 ring-accent/20 shadow-md'
-            : 'bg-surface border-sand hover:border-accent/40 shadow-xs'
-          : 'bg-disabled-bg border-sand-dark opacity-80'
+            ? 'bg-[#FFFFFF] border-[#684B5A] ring-2 ring-[#684B5A]/20 shadow-md'
+            : 'bg-[#FFFFFF] border-[#EEE8E1] hover:border-[#684B5A]/40 shadow-xs'
+          : 'bg-[#F2EFEA] border-[#D8D0C6] opacity-80'
       } ${className}`}
     >
       <div>
         {/* Thumbnail container */}
-        <div className="relative aspect-[3/4] w-full overflow-hidden bg-sand">
+        <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EEE8E1]">
           <img
             src={item.image}
             alt={item.name}
@@ -48,13 +48,13 @@ export default function OutfitItemCard({
           {/* Top badge indicating OWNED vs BUY vs UNAVAILABLE */}
           <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1">
             {isOwned && (
-              <OwnedBadge label={item.reused ? "Tận dụng đồ đã có" : "Đã có"} />
+              <OwnedBadge label={item.reused ? 'Reused (Owned)' : 'Owned'} />
             )}
             {isShop && (
               <ShopBadge price={item.price} />
             )}
             {isUnavailable && (
-              <UnavailableBadge reason={item.status === 'size_unavailable' ? "Cỡ này đã hết hàng" : "Hết hàng"} />
+              <UnavailableBadge reason={item.status === 'size_unavailable' ? 'Size unavailable' : 'Out of Stock'} />
             )}
 
             {/* Quick check toggle for shop items */}
@@ -65,11 +65,11 @@ export default function OutfitItemCard({
                   e.stopPropagation()
                   onToggleSelect(item)
                 }}
-                aria-label={`${selected ? "Bỏ chọn" : "Chọn"} ${item.name} để mua`}
+                aria-label={`${selected ? 'Deselect' : 'Select'} ${item.name} for purchase`}
                 className={`w-7 h-7 rounded-full flex items-center justify-center transition-all shadow-xs border ${
                   selected
-                    ? 'bg-accent text-on-accent border-accent'
-                    : 'bg-surface/90 text-secondary border-sand-dark hover:border-accent'
+                    ? 'bg-[#684B5A] text-white border-[#684B5A]'
+                    : 'bg-white/90 text-[#6F6B67] border-[#D8D0C6] hover:border-[#684B5A]'
                 }`}
               >
                 {selected ? '✓' : '+'}
@@ -80,7 +80,7 @@ export default function OutfitItemCard({
           {/* Slot tag (Top, Bottom, Outerwear, etc.) */}
           {item.slot && (
             <div className="absolute bottom-2 left-2.5">
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-overlay/65 text-on-accent backdrop-blur-xs">
+              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-black/65 text-white backdrop-blur-xs">
                 {item.slot}
               </span>
             </div>
@@ -90,26 +90,26 @@ export default function OutfitItemCard({
         {/* Content details */}
         <div className="p-3.5 sm:p-4">
           <div className="flex items-center justify-between gap-2 mb-1">
-            <p className="text-[11px] uppercase tracking-wider font-semibold text-rose">
+            <p className="text-[11px] uppercase tracking-wider font-semibold text-[#B98791]">
               {item.brand}
             </p>
             {item.size && (
-              <span className="text-[11px] text-secondary font-medium">
-                Cỡ {item.size}
+              <span className="text-[11px] text-[#6F6B67] font-medium">
+                Size {item.size}
               </span>
             )}
           </div>
 
-          <h3 className="font-sans text-sm font-medium text-charcoal line-clamp-1 mb-1.5" title={item.name}>
+          <h3 className="font-sans text-sm font-medium text-[#222222] line-clamp-1 mb-1.5" title={item.name}>
             {item.name}
           </h3>
 
           {/* Color metadata with visible text label */}
           {item.color && (
-            <div className="flex items-center gap-1.5 text-xs text-secondary mb-2">
+            <div className="flex items-center gap-1.5 text-xs text-[#6F6B67] mb-2">
               {item.colorHex && (
                 <span
-                  className="w-3 h-3 rounded-full border border-overlay/15 flex-none"
+                  className="w-3 h-3 rounded-full border border-black/15 flex-none"
                   style={{ backgroundColor: item.colorHex }}
                   aria-hidden="true"
                 />
@@ -121,19 +121,19 @@ export default function OutfitItemCard({
       </div>
 
       {/* Footer / CTA Area */}
-      <div className="px-3.5 pb-3.5 pt-0 sm:px-4 sm:pb-4 border-t border-sand/60 mt-1">
+      <div className="px-3.5 pb-3.5 pt-0 sm:px-4 sm:pb-4 border-t border-[#EEE8E1]/60 mt-1">
         {isOwned && (
-          <div className="flex items-center justify-between text-xs text-success font-medium pt-2">
+          <div className="flex items-center justify-between text-xs text-[#48755A] font-medium pt-2">
             <span className="flex items-center gap-1">
-              <span>✓</span> Đã có trong tủ đồ
+              <span>✓</span> In your wardrobe
             </span>
             {onViewDetails && (
               <button
                 type="button"
                 onClick={() => onViewDetails(item)}
-                className="text-accent hover:underline text-xs"
+                className="text-[#684B5A] hover:underline text-xs"
               >
-                Xem
+                View
               </button>
             )}
           </div>
@@ -143,7 +143,7 @@ export default function OutfitItemCard({
           <div className="flex items-center justify-between pt-2">
             <div>
               {item.price !== undefined && (
-                <Money amount={item.price} className="text-sm font-semibold text-charcoal" />
+                <Money amount={item.price} className="text-sm font-semibold text-[#222222]" />
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -151,9 +151,9 @@ export default function OutfitItemCard({
                 <button
                   type="button"
                   onClick={() => onViewDetails(item)}
-                  className="text-xs text-secondary hover:text-accent underline underline-offset-2"
+                  className="text-xs text-[#6F6B67] hover:text-[#684B5A] underline underline-offset-2"
                 >
-                  Chi tiết
+                  Details
                 </button>
               )}
               {onToggleSelect && (
@@ -162,11 +162,11 @@ export default function OutfitItemCard({
                   onClick={() => onToggleSelect(item)}
                   className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
                     selected
-                      ? 'bg-accent text-on-accent'
-                      : 'bg-blush text-accent hover:bg-blush-dark'
+                      ? 'bg-[#684B5A] text-white'
+                      : 'bg-[#F4E7E8] text-[#684B5A] hover:bg-[#E8D0D2]'
                   }`}
                 >
-                  {selected ? "✓ Đã thêm" : "+ Thêm"}
+                  {selected ? '✓ Added' : '+ Add'}
                 </button>
               )}
             </div>
@@ -175,16 +175,16 @@ export default function OutfitItemCard({
 
         {isUnavailable && (
           <div className="pt-2">
-            <p className="text-[11px] text-error mb-2 font-medium">
-              {item.unavailableReason || "Hiện đã hết hàng"}
+            <p className="text-[11px] text-[#A94B4B] mb-2 font-medium">
+              {item.unavailableReason || 'Currently unavailable'}
             </p>
             {onFindAlternative && (
               <button
                 type="button"
                 onClick={() => onFindAlternative(item)}
-                className="w-full text-xs py-1.5 px-3 rounded-lg border border-sand-dark text-ink hover:bg-sand transition-all"
+                className="w-full text-xs py-1.5 px-3 rounded-lg border border-[#D8D0C6] text-[#3A3632] hover:bg-[#EEE8E1] transition-all"
               >
-                Tìm món thay thế
+                Find Alternative
               </button>
             )}
           </div>
