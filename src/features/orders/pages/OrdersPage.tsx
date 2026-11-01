@@ -1,8 +1,10 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 import { ROUTES } from '@/app/router/routes'
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
 import { useAuth } from '@/features/auth'
+import { useCommerce } from '@/features/commerce'
 
 import { OrderCard } from '../components/OrderCard'
 import { selectOrdersForUser } from '../model/orderSelectors'
@@ -10,6 +12,11 @@ import { selectOrdersForUser } from '../model/orderSelectors'
 export function OrdersPage() {
   const { state } = useDemoStore()
   const { currentUser } = useAuth()
+  const { refreshOrders, ordersLoading, error } = useCommerce()
+
+  useEffect(() => {
+    if (currentUser) void refreshOrders()
+  }, [currentUser?.id, refreshOrders])
 
   if (!currentUser) return null
 
@@ -23,6 +30,9 @@ export function OrdersPage() {
           Theo dõi trạng thái, sản phẩm, địa chỉ nhận hàng và thanh toán của các đơn đã đặt.
         </p>
       </div>
+
+      {ordersLoading && <p role="status" className="rounded-lg bg-white p-4 text-sm text-[#6F6B67]">Đang tải đơn hàng từ Commerce…</p>}
+      {error && !ordersLoading && <p role="alert" className="rounded-lg bg-[#FCEAEA] p-4 text-sm font-semibold text-[#A94B4B]">{error}</p>}
 
       {orders.length > 0 ? (
         <div className="grid gap-4">

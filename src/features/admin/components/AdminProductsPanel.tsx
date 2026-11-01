@@ -1,10 +1,12 @@
 import { ChevronDown, Pencil, Plus } from 'lucide-react'
 import { Fragment, useMemo, useState, type FormEvent } from 'react'
 
+import { commerceApi } from '@/api/commerce'
 import type { DemoAction, DemoDatabase } from '@/app/store/types'
 import type { Product, ProductSize } from '@/entities/product/model/types'
 import { selectAdminProducts } from '@/features/admin/model/adminSelectors'
 import type { AdminProductFilters } from '@/features/admin/model/adminTypes'
+import { commerceProductToEntity } from '@/features/commerce/data/commerceEntityAdapters'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
 import { Button, Modal, SelectField, TextField, ToggleSwitch, useToast } from '@/shared/ui'
 
@@ -169,6 +171,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
   const [form, setForm] = useState<ProductFormState>(() => createInitialForm(firstCategoryId, database))
   const [formError, setFormError] = useState<string | null>(null)
   const [expandedProductId, setExpandedProductId] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
 
   const rows = useMemo(() => selectAdminProducts(database, filters), [database, filters])
   const editingProduct = editingProductId ? database.products.find(product => product.id === editingProductId) : undefined
@@ -194,7 +197,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
     setForm(current => ({ ...current, [field]: value }))
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const productId = editingProductId ?? form.id.trim()
     const duplicate = database.products.some(product => product.id === productId && product.id !== editingProductId)
@@ -232,9 +235,51 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
       return
     }
 
-    dispatch({ type: 'admin/productUpserted', payload: buildProduct(form, editingProduct) })
-    toast.success(editingProductId ? 'Đã cập nhật sản phẩm.' : 'Đã thêm sản phẩm demo.')
-    setModalOpen(false)
+    setSaving(true)
+    try {
+      const brands = await commerceApi.brands.listAdmin()
+      let brand = brands.items.find(item => item.name.trim().toLowerCase() === form.brand.trim().toLowerCase())
+      if (!brand) {
+        brand = await commerceApi.brands.create({
+          name: form.brand.trim(),
+          slug: toSlug(form.brand),
+          is_active: true,
+        })
+      }
+      const productInput = {
+        category_id: form.categoryId,
+        brand_id: brand.id,
+        name: form.name.trim(),
+        description: form.description.trim() || null,
+        demographic_segment: null,
+        product_status: form.productActive ? 'ACTIVE' : 'INACTIVE',
+      }
+      const savedProduct = editingProductId
+        ? await commerceApi.products.replace(editingProductId, productInput)
+        : await commerceApi.products.create(productInput)
+      const currentVariant = savedProduct.variants[0]
+      const variantInput = {
+        sku: currentVariant?.sku || `${toSlug(form.name)}-${toSlug(form.color)}-${form.size}`.toUpperCase(),
+        size: form.size,
+        color: form.color.trim(),
+        material: form.material.trim() || null,
+        unit_price_vnd: variantPriceOverride ?? basePrice,
+        variant_status: form.variantActive ? 'ACTIVE' : 'INACTIVE',
+      }
+      if (currentVariant) {
+        await commerceApi.products.replaceVariant(currentVariant.variant_id, variantInput)
+      } else {
+        await commerceApi.products.createVariant(savedProduct.product_id, variantInput)
+      }
+      const refreshed = await commerceApi.products.getAdmin(savedProduct.product_id)
+      dispatch({ type: 'admin/productUpserted', payload: commerceProductToEntity(refreshed) })
+      toast.success(editingProductId ? 'Đã cập nhật sản phẩm.' : 'Đã thêm sản phẩm.')
+      setModalOpen(false)
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Không thể lưu sản phẩm')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -339,8 +384,19 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                           checked={row.active}
                           label={`Sản phẩm ${row.name}`}
                           onCheckedChange={active => {
-                            dispatch({ type: 'admin/productStatusChanged', payload: { productId: row.id, active } })
-                            toast.info(active ? 'Đã bật sản phẩm.' : 'Đã tắt sản phẩm.')
+                            void commerceApi.products.getAdmin(row.id).then(product =>
+                              commerceApi.products.replace(row.id, {
+                                category_id: product.category_id,
+                                brand_id: product.brand_id,
+                                name: product.name,
+                                description: product.description,
+                                demographic_segment: product.demographic_segment,
+                                product_status: active ? 'ACTIVE' : 'INACTIVE',
+                              }),
+                            ).then(product => {
+                              dispatch({ type: 'admin/productUpserted', payload: commerceProductToEntity(product) })
+                              toast.info(active ? 'Đã bật sản phẩm.' : 'Đã tắt sản phẩm.')
+                            }).catch(error => toast.error(error instanceof Error ? error.message : 'Không thể cập nhật sản phẩm'))
                           }}
                         />
                       </td>
@@ -389,8 +445,22 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                                           checked={variant.active}
                                           label={`Biến thể màu ${variant.color}, cỡ ${variant.size} của ${row.name}`}
                                           onCheckedChange={active => {
-                                            dispatch({ type: 'admin/variantStatusChanged', payload: { productId: row.id, variantId: variant.id, active } })
-                                            toast.info(active ? 'Đã bật biến thể.' : 'Đã tắt biến thể.')
+                                            void commerceApi.products.getAdmin(row.id).then(async product => {
+                                              const source = product.variants.find(item => item.variant_id === variant.id)
+                                              if (!source) throw new Error('Không tìm thấy biến thể')
+                                              await commerceApi.products.replaceVariant(source.variant_id, {
+                                                sku: source.sku,
+                                                size: source.size,
+                                                color: source.color,
+                                                material: source.material,
+                                                unit_price_vnd: source.unit_price_vnd,
+                                                variant_status: active ? 'ACTIVE' : 'INACTIVE',
+                                              })
+                                              return commerceApi.products.getAdmin(row.id)
+                                            }).then(product => {
+                                              dispatch({ type: 'admin/productUpserted', payload: commerceProductToEntity(product) })
+                                              toast.info(active ? 'Đã bật biến thể.' : 'Đã tắt biến thể.')
+                                            }).catch(error => toast.error(error instanceof Error ? error.message : 'Không thể cập nhật biến thể'))
                                           }}
                                         />
                                       </span>
@@ -500,7 +570,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
             <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>
               Hủy
             </Button>
-            <Button type="submit">Lưu sản phẩm</Button>
+            <Button loading={saving} type="submit">Lưu sản phẩm</Button>
           </div>
         </form>
       </Modal>

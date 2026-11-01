@@ -3,6 +3,9 @@ import type { AppState } from '../types'
 import Money from '../components/ui/Money'
 import Button from '../components/ui/Button'
 import { formatVND } from '../data/mockData'
+import { commerceApi } from '../api/commerce'
+import type { OrderResponse, PaymentAttempt } from '../api/commerce.types'
+import { CommerceApiError } from '../api/http'
 
 type CheckoutStep = 'address' | 'payment' | 'transfer' | 'confirmed'
 
@@ -16,13 +19,19 @@ export default function Checkout({ onNavigate, app }: Props) {
   const [payMethod, setPayMethod] = useState<'qr' | 'cod'>('qr')
   const [qrStatus, setQrStatus] = useState<'waiting' | 'received' | 'expired'>('waiting')
   const [countdown, setCountdown] = useState(600) // 10 minutes
+  const [shippingAddressId, setShippingAddressId] = useState(
+    () => window.localStorage.getItem('stylemind_default_shipping_address_id') || '',
+  )
+  const [createdOrder, setCreatedOrder] = useState<OrderResponse | null>(null)
+  const [paymentAttempt, setPaymentAttempt] = useState<PaymentAttempt | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
 
   const items = app?.cartItems || []
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0) || 2540000
   const shipping = subtotal >= 2000000 ? 0 : 30000
   const total = subtotal + shipping
 
-  // Simulated live countdown timer for QR
   useEffect(() => {
     if (step !== 'transfer' || qrStatus !== 'waiting') return
 
@@ -37,20 +46,73 @@ export default function Checkout({ onNavigate, app }: Props) {
       })
     }, 1000)
 
-    // Simulate system-confirmed payment via SePay webhook after 7 seconds
-    const simulatedWebhook = setTimeout(() => {
-      setQrStatus('received')
-      setTimeout(() => {
-        setStep('confirmed')
-        if (app?.setCartCount) app.setCartCount(0)
-      }, 1500)
-    }, 7000)
+    const poll = createdOrder
+      ? setInterval(() => {
+          void commerceApi.orders.get(createdOrder.order_id).then(order => {
+            if (order.order_status === 'PAID') {
+              setCreatedOrder(order)
+              setQrStatus('received')
+              setStep('confirmed')
+              if (app?.setCartCount) app.setCartCount(0)
+            }
+          }).catch(() => undefined)
+        }, 3000)
+      : undefined
 
     return () => {
       clearInterval(timer)
-      clearTimeout(simulatedWebhook)
+      if (poll) clearInterval(poll)
     }
-  }, [step, qrStatus])
+  }, [step, qrStatus, createdOrder?.order_id])
+
+  const placeOrder = async () => {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(shippingAddressId)) {
+      setCheckoutError('Vui lòng chọn hoặc nhập mã UUID của địa chỉ giao hàng đã lưu.')
+      return
+    }
+    setSubmitting(true)
+    setCheckoutError(null)
+    try {
+      window.localStorage.setItem('stylemind_default_shipping_address_id', shippingAddressId)
+      const order = await commerceApi.orders.checkout({
+        checkout_key: `web-${window.crypto.randomUUID()}`,
+        shipping_address_id: shippingAddressId,
+        payment_method: payMethod === 'cod' ? 'COD' : 'SEPAY_VIETQR',
+      })
+      setCreatedOrder(order)
+      if (payMethod === 'cod') {
+        setStep('confirmed')
+        if (app?.setCartCount) app.setCartCount(0)
+      } else {
+        setStep('transfer')
+      }
+    } catch (requestError) {
+      setCheckoutError(
+        requestError instanceof CommerceApiError ? requestError.message : 'Không thể tạo đơn hàng.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const recoverPayment = async () => {
+    if (!createdOrder) return
+    setSubmitting(true)
+    setCheckoutError(null)
+    try {
+      setPaymentAttempt(await commerceApi.orders.recoverPayment(createdOrder.order_id))
+      setCountdown(600)
+      setQrStatus('waiting')
+    } catch (requestError) {
+      setCheckoutError(
+        requestError instanceof CommerceApiError
+          ? requestError.message
+          : 'Không thể tạo lại thông tin thanh toán.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   const mins = Math.floor(countdown / 60)
   const secs = countdown % 60
@@ -113,6 +175,9 @@ export default function Checkout({ onNavigate, app }: Props) {
       </div>
 
       <div className="px-6 md:px-16 py-8 pb-24 max-w-5xl">
+        {checkoutError && step !== 'payment' && (
+          <div className="mb-5 p-3 rounded-xl bg-error-bg text-error text-xs" role="alert">{checkoutError}</div>
+        )}
         {/* STEP 1: Shipping Address */}
         {step === 'address' && (
           <div className="grid md:grid-cols-[1fr_360px] gap-8 items-start">
@@ -133,12 +198,21 @@ export default function Checkout({ onNavigate, app }: Props) {
                   </p>
                   <p className="text-xs text-secondary mt-1">Điện thoại: 0901 234 567</p>
                 </div>
-                <button
-                  type="button"
-                  className="text-xs text-accent font-semibold hover:underline"
-                >
-                  + Thêm địa chỉ nhận hàng
-                </button>
+                <div>
+                  <label htmlFor="shipping-address-id" className="text-xs font-semibold text-secondary block mb-1.5">
+                    Mã địa chỉ đã lưu
+                  </label>
+                  <input
+                    id="shipping-address-id"
+                    value={shippingAddressId}
+                    onChange={event => setShippingAddressId(event.target.value.trim())}
+                    placeholder="UUID địa chỉ từ hồ sơ của bạn"
+                    className="w-full px-3 py-2.5 rounded-xl border border-sand-dark bg-surface text-xs text-charcoal outline-none focus:border-accent"
+                  />
+                  <p className="text-[11px] text-muted mt-1">
+                    Commerce sẽ xác minh địa chỉ này với Identity trước khi tạo đơn.
+                  </p>
+                </div>
               </div>
 
               <div className="flex gap-4">
@@ -153,7 +227,11 @@ export default function Checkout({ onNavigate, app }: Props) {
                   variant="primary"
                   size="md"
                   className="flex-1"
-                  onClick={() => setStep('payment')}
+                  onClick={() => {
+                    setCheckoutError(null)
+                    if (shippingAddressId) setStep('payment')
+                    else setCheckoutError('Vui lòng nhập mã địa chỉ giao hàng đã lưu.')
+                  }}
                 >
                   Chọn phương thức thanh toán →
                 </Button>
@@ -261,17 +339,12 @@ export default function Checkout({ onNavigate, app }: Props) {
                   variant="primary"
                   size="md"
                   className="flex-1"
-                  onClick={() => {
-                    if (payMethod === 'qr') {
-                      setStep('transfer')
-                    } else {
-                      setStep('confirmed')
-                      if (app?.setCartCount) app.setCartCount(0)
-                    }
-                  }}
+                  onClick={() => void placeOrder()}
+                  disabled={submitting}
                 >
-                  {payMethod === 'qr' ? "Tạo mã VietQR →" : "Xác nhận đặt hàng (COD) →"}
+                  {submitting ? 'Đang tạo đơn...' : payMethod === 'qr' ? "Tạo đơn VietQR →" : "Xác nhận đặt hàng (COD) →"}
                 </Button>
+                {checkoutError && <p className="text-xs text-error" role="alert">{checkoutError}</p>}
               </div>
             </div>
 
@@ -340,7 +413,7 @@ export default function Checkout({ onNavigate, app }: Props) {
 
               {/* Total Amount & Reference */}
               <div className="mb-6">
-                <Money amount={total} className="text-3xl font-bold text-accent" />
+                <Money amount={createdOrder?.accepted_total_vnd || total} className="text-3xl font-bold text-accent" />
                 <p className="text-xs text-muted mt-1">Số tiền cần chuyển</p>
               </div>
 
@@ -360,8 +433,16 @@ export default function Checkout({ onNavigate, app }: Props) {
                 </div>
                 <div className="flex justify-between items-center pt-2 border-t border-sand">
                   <span className="text-secondary">Nội dung chuyển khoản</span>
-                  <strong className="text-accent font-mono text-sm">SM24092001</strong>
+                  <strong className="text-accent font-mono text-sm">
+                    {paymentAttempt?.transferContent || paymentAttempt?.reference || createdOrder?.order_number}
+                  </strong>
                 </div>
+                {paymentAttempt?.qrPayload && (
+                  <div className="pt-2 border-t border-sand break-all">
+                    <span className="text-secondary block mb-1">Dữ liệu VietQR</span>
+                    <code className="text-[10px] text-charcoal">{paymentAttempt.qrPayload}</code>
+                  </div>
+                )}
               </div>
 
               {/* Live Status Signal (Principle 77: strictly system-reported) */}
@@ -385,6 +466,16 @@ export default function Checkout({ onNavigate, app }: Props) {
             </div>
 
             <div className="flex justify-center">
+              {!paymentAttempt && createdOrder && (
+                <button
+                  type="button"
+                  onClick={() => void recoverPayment()}
+                  disabled={submitting}
+                  className="text-xs text-accent hover:underline mr-5 disabled:opacity-50"
+                >
+                  {submitting ? 'Đang tạo...' : 'Tạo lại thông tin thanh toán'}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setStep('payment')}
@@ -410,7 +501,7 @@ export default function Checkout({ onNavigate, app }: Props) {
                 Cảm ơn Lan!
               </h2>
               <p className="text-xs sm:text-sm text-secondary leading-relaxed">
-                Đơn hàng <strong>#ORD-2026-0891</strong> đã được xác nhận. Thông tin đơn hàng đã được gửi đến email của bạn.
+                Đơn hàng <strong>#{createdOrder?.order_number}</strong> đã được tạo thành công. Bạn có thể theo dõi trạng thái trong mục đơn hàng.
               </p>
             </div>
 

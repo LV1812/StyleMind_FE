@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { AppState } from '../types'
 import { formatVND } from '../data/mockData'
+import { commerceApi } from '../api/commerce'
+import type { CommerceProduct } from '../api/commerce.types'
 
 type AdminSection = 'dashboard' | 'orders' | 'products' | 'returns' | 'users' | 'ai-knowledge' | 'notifications' | 'audit'
 
@@ -17,7 +19,7 @@ const navItems: { key: AdminSection; label: string; icon: string }[] = [
   { key: 'audit', label: "Nhật ký hoạt động", icon: '◷' },
 ]
 
-const orders = [
+const fallbackOrders = [
   { id: 'SM2409200001', customer: "Nguyễn Thị Lan", status: 'SHIPPED', payment: 'SePay', total: 2_780_000, date: "20/09", items: 2 },
   { id: 'SM2409190007', customer: "Trần Phương Anh", status: 'PENDING', payment: 'COD', total: 1_890_000, date: "19/09", items: 1 },
   { id: 'SM2409180003', customer: "Lê Thị Hoa", status: 'PAID', payment: 'SePay', total: 4_380_000, date: "18/09", items: 3 },
@@ -27,6 +29,8 @@ const orders = [
 
 function statusBadge(status: string) {
   const map: Record<string, { color: string; bg: string; label: string }> = {
+    PENDING_PAYMENT: { color: "var(--color-warning)", bg: "var(--color-warning-bg)", label: "Chờ thanh toán" },
+    PLACED: { color: "var(--color-accent)", bg: "var(--color-blush)", label: "Đã xác nhận" },
     PENDING: { color: "var(--color-warning)", bg: "var(--color-warning-bg)", label: "Chờ xử lý" },
     PAYMENT_PENDING: { color: "var(--color-warning)", bg: "var(--color-warning-bg)", label: "Chờ thanh toán" },
     PAID: { color: "var(--color-accent)", bg: "var(--color-blush)", label: "Đã thanh toán" },
@@ -66,6 +70,33 @@ interface Props {
 export default function Admin({ onNavigate }: Props) {
   const [section, setSection] = useState<AdminSection>('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [orders, setOrders] = useState(fallbackOrders)
+  const [products, setProducts] = useState<CommerceProduct[]>([])
+  const [commerceError, setCommerceError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const loadCommerceAdmin = async () => {
+      try {
+        const [orderPage, productPage] = await Promise.all([
+          commerceApi.orders.listAdmin({ page: 0, size: 100 }),
+          commerceApi.products.list({ page: 0, size: 100 }),
+        ])
+        setOrders(orderPage.items.map(order => ({
+          id: order.order_number,
+          customer: order.customer_id,
+          status: order.order_status,
+          payment: order.payment_method === 'COD' ? 'COD' : 'SePay',
+          total: order.accepted_total_vnd,
+          date: order.placed_at ? new Date(order.placed_at).toLocaleDateString('vi-VN') : '-',
+          items: order.items.length,
+        })))
+        setProducts(productPage.items)
+      } catch (error) {
+        setCommerceError(error instanceof Error ? error.message : 'Không thể tải dữ liệu Commerce.')
+      }
+    }
+    void loadCommerceAdmin()
+  }, [])
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "var(--color-canvas)", fontFamily: 'var(--font-sans)' }}>
@@ -127,6 +158,11 @@ export default function Admin({ onNavigate }: Props) {
         </div>
 
         <div className="p-8">
+          {commerceError && (
+            <div className="mb-5 p-3 rounded-xl text-xs" style={{ background: "var(--color-error-bg)", color: "var(--color-error)" }} role="alert">
+              {commerceError}
+            </div>
+          )}
           {/* Dashboard */}
           {section === 'dashboard' && (
             <div className="fade-in">
@@ -261,6 +297,33 @@ export default function Admin({ onNavigate }: Props) {
             </div>
           )}
 
+          {/* Products */}
+          {section === 'products' && (
+            <div className="fade-in rounded-2xl border overflow-hidden" style={{ borderColor: "var(--color-divider)" }}>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ background: "var(--color-canvas)" }}>
+                    {['Sản phẩm', 'Danh mục', 'Thương hiệu', 'Trạng thái', 'Biến thể'].map(header => (
+                      <th key={header} className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--color-muted)" }}>{header}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map(product => (
+                    <tr key={product.product_id} className="border-t" style={{ borderColor: "var(--color-divider)" }}>
+                      <td className="px-5 py-3.5 font-medium" style={{ color: "var(--color-charcoal)" }}>{product.name}</td>
+                      <td className="px-5 py-3.5 text-xs" style={{ color: "var(--color-secondary)" }}>{product.category_name}</td>
+                      <td className="px-5 py-3.5 text-xs" style={{ color: "var(--color-secondary)" }}>{product.brand_name}</td>
+                      <td className="px-5 py-3.5">{statusBadge(product.product_status)}</td>
+                      <td className="px-5 py-3.5 text-xs" style={{ color: "var(--color-secondary)" }}>{product.variants.length}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {products.length === 0 && <p className="p-8 text-center text-sm" style={{ color: "var(--color-muted)" }}>Chưa có sản phẩm.</p>}
+            </div>
+          )}
+
           {/* AI Knowledge */}
           {section === 'ai-knowledge' && (
             <div className="fade-in">
@@ -357,7 +420,7 @@ export default function Admin({ onNavigate }: Props) {
           )}
 
           {/* Generic placeholder for other sections */}
-          {!['dashboard', 'orders', 'ai-knowledge', 'returns'].includes(section) && (
+          {!['dashboard', 'orders', 'products', 'ai-knowledge', 'returns'].includes(section) && (
             <div className="py-16 text-center fade-in">
               <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: "var(--color-sand)" }}>
                 <span className="text-2xl" style={{ color: "var(--color-muted)" }}>

@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { AppState, Order } from '../types'
-import { mockOrders } from '../data/mockData'
 import PageHeader from '../components/ui/PageHeader'
 import Money from '../components/ui/Money'
 import Button from '../components/ui/Button'
+import EmptyState from '../components/ui/EmptyState'
+import { commerceApi } from '../api/commerce'
+import { orderResponseToUi } from '../api/commerce.adapters'
+import { CommerceApiError } from '../api/http'
 
 interface Props {
   onNavigate: (screen: string, opts?: any) => void
@@ -32,10 +35,55 @@ function getStatusBadge(status: Order['status']) {
 }
 
 export default function OrderTracking({ onNavigate }: Props) {
-  const [orders] = useState<Order[]>(mockOrders)
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(orders[0])
+  const [orders, setOrders] = useState<Order[]>([])
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [showReturnModal, setShowReturnModal] = useState(false)
   const [returnSuccess, setReturnSuccess] = useState(false)
+  const [cancellationReason, setCancellationReason] = useState('Tôi muốn thay đổi đơn hàng')
+  const [cancellationError, setCancellationError] = useState<string | null>(null)
+  const [submittingCancellation, setSubmittingCancellation] = useState(false)
+
+  const loadOrders = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await commerceApi.orders.list({ page: 0, size: 100 })
+      const mapped = response.items.map(orderResponseToUi)
+      setOrders(mapped)
+      setSelectedOrder(current => mapped.find(order => order.apiId === current?.apiId) || mapped[0] || null)
+    } catch (requestError) {
+      setError(
+        requestError instanceof CommerceApiError
+          ? requestError.message
+          : 'Không thể tải lịch sử đơn hàng.',
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void loadOrders()
+  }, [])
+
+  const submitCancellation = async () => {
+    if (!selectedOrder?.apiId) return
+    setSubmittingCancellation(true)
+    setCancellationError(null)
+    try {
+      await commerceApi.orders.requestCancellation(selectedOrder.apiId, cancellationReason)
+      setReturnSuccess(true)
+      await loadOrders()
+    } catch (requestError) {
+      setCancellationError(
+        requestError instanceof CommerceApiError ? requestError.message : 'Không thể gửi yêu cầu hủy đơn.',
+      )
+    } finally {
+      setSubmittingCancellation(false)
+    }
+  }
 
   return (
     <div style={{ background: "var(--color-ivory)", minHeight: '100vh' }}>
@@ -52,7 +100,21 @@ export default function OrderTracking({ onNavigate }: Props) {
             Lịch sử đơn hàng ({orders.length})
           </h2>
 
-          {orders.map(order => {
+          {loading ? (
+            <div className="py-16 text-center text-sm text-secondary" role="status">Đang tải đơn hàng...</div>
+          ) : error ? (
+            <EmptyState
+              title="Không thể tải đơn hàng"
+              description={error}
+              primaryAction={{ label: 'Thử lại', onClick: () => void loadOrders() }}
+            />
+          ) : orders.length === 0 ? (
+            <EmptyState
+              title="Bạn chưa có đơn hàng"
+              description="Các đơn hàng sau khi thanh toán sẽ xuất hiện tại đây."
+              primaryAction={{ label: 'Mua sắm ngay', onClick: () => onNavigate('shop') }}
+            />
+          ) : orders.map(order => {
             const isSelected = selectedOrder?.id === order.id
             return (
               <div
@@ -196,14 +258,16 @@ export default function OrderTracking({ onNavigate }: Props) {
 
             {/* Return / Support Action */}
             <div className="pt-2">
-              <Button
-                variant="outline"
-                fullWidth
-                size="sm"
-                onClick={() => setShowReturnModal(true)}
-              >
-                Yêu cầu đổi trả
-              </Button>
+              {['PENDING_PAYMENT', 'PLACED'].includes(selectedOrder.apiStatus || '') && (
+                <Button
+                  variant="outline"
+                  fullWidth
+                  size="sm"
+                  onClick={() => setShowReturnModal(true)}
+                >
+                  Yêu cầu hủy đơn
+                </Button>
+              )}
             </div>
           </aside>
         )}
@@ -215,7 +279,7 @@ export default function OrderTracking({ onNavigate }: Props) {
           <div className="w-full max-w-md bg-surface rounded-3xl p-6 sm:p-8 shadow-2xl border border-sand">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display text-2xl font-light text-charcoal">
-                Yêu cầu đổi trả
+                Yêu cầu hủy đơn
               </h3>
               <button
                 onClick={() => {
@@ -235,10 +299,10 @@ export default function OrderTracking({ onNavigate }: Props) {
                   ✓
                 </span>
                 <h4 className="font-display text-xl font-light text-charcoal">
-                  Đã ghi nhận yêu cầu đổi trả
+                  Đã ghi nhận yêu cầu hủy đơn
                 </h4>
                 <p className="text-xs text-secondary leading-relaxed">
-                  Vui lòng đóng gói sản phẩm và giữ nguyên nhãn. Đơn vị vận chuyển sẽ đến lấy hàng trong vòng 48 giờ.
+                  Quản trị viên sẽ xem xét yêu cầu. Trạng thái đơn chỉ thay đổi sau khi yêu cầu được chấp thuận.
                 </p>
                 <Button
                   variant="primary"
@@ -254,30 +318,25 @@ export default function OrderTracking({ onNavigate }: Props) {
             ) : (
               <div className="space-y-4">
                 <p className="text-xs text-secondary">
-                  StyleMind hỗ trợ đổi trả miễn phí trong 14 ngày cho sản phẩm chưa sử dụng, còn nguyên nhãn.
+                  Yêu cầu hủy chỉ áp dụng khi đơn đang chờ thanh toán hoặc đã được xác nhận.
                 </p>
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-secondary mb-1">
                     Chọn lý do
                   </label>
-                  <select className="w-full px-4 py-2.5 rounded-xl border border-sand-dark text-sm outline-none bg-surface">
-                    <option>Mặc rộng — muốn đổi cỡ nhỏ hơn</option>
-                    <option>Mặc chật — muốn đổi cỡ lớn hơn</option>
-                    <option>Màu sắc không như mong đợi</option>
-                    <option>Đổi ý</option>
+                  <select
+                    value={cancellationReason}
+                    onChange={event => setCancellationReason(event.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-sand-dark text-sm outline-none bg-surface"
+                  >
+                    <option>Tôi muốn thay đổi đơn hàng</option>
+                    <option>Tôi chọn nhầm địa chỉ giao hàng</option>
+                    <option>Tôi chọn nhầm phương thức thanh toán</option>
+                    <option>Tôi không còn nhu cầu mua hàng</option>
                   </select>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-secondary mb-1">
-                    Địa chỉ lấy hàng
-                  </label>
-                  <input
-                    defaultValue={selectedOrder?.address}
-                    className="w-full px-4 py-2.5 rounded-xl border border-sand-dark text-xs outline-none"
-                  />
-                </div>
+                {cancellationError && <p className="text-xs text-error" role="alert">{cancellationError}</p>}
 
                 <div className="flex gap-3 pt-4">
                   <Button
@@ -292,9 +351,10 @@ export default function OrderTracking({ onNavigate }: Props) {
                     type="button"
                     variant="primary"
                     fullWidth
-                    onClick={() => setReturnSuccess(true)}
+                    onClick={() => void submitCancellation()}
+                    disabled={submittingCancellation}
                   >
-                    Gửi yêu cầu
+                    {submittingCancellation ? 'Đang gửi...' : 'Gửi yêu cầu'}
                   </Button>
                 </div>
               </div>

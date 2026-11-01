@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { commerceApi } from '@/api/commerce'
 import type { DemoAction, DemoDatabase } from '@/app/store/types'
 import type { CancellationRequest, ReturnRequest } from '@/entities/order/model/types'
 import { cancellationStatusLabel, returnStatusLabel } from '@/features/admin/model/adminLabels'
@@ -44,17 +45,26 @@ export function AdminRequestsPanel({ database, dispatch, reviewerId }: AdminRequ
     [database.returnRequests],
   )
 
-  const reviewCancellation = (requestId: string, decision: 'approved' | 'rejected') => {
-    dispatch({
-      type: 'admin/cancellationReviewed',
-      payload: {
+  const reviewCancellation = async (requestId: string, decision: 'approved' | 'rejected') => {
+    try {
+      await commerceApi.orders.reviewCancellation(
         requestId,
-        decision,
-        reviewerId,
-        reviewedAt: new Date().toISOString(),
-      },
-    })
-    toast.success(decision === 'approved' ? 'Đã duyệt yêu cầu hủy.' : 'Đã từ chối yêu cầu hủy.')
+        decision === 'approved' ? 'APPROVED' : 'REJECTED',
+        null,
+      )
+      dispatch({
+        type: 'admin/cancellationReviewed',
+        payload: {
+          requestId,
+          decision,
+          reviewerId,
+          reviewedAt: new Date().toISOString(),
+        },
+      })
+      toast.success(decision === 'approved' ? 'Đã duyệt yêu cầu hủy.' : 'Đã từ chối yêu cầu hủy.')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Không thể xử lý yêu cầu hủy')
+    }
   }
 
   const reviewReturn = (requestId: string, decision: 'approved' | 'rejected' | 'refunded') => {
@@ -127,8 +137,8 @@ export function AdminRequestsPanel({ database, dispatch, reviewerId }: AdminRequ
                       <div className="flex items-center justify-end gap-2">
                         {request.status === 'submitted' ? (
                           <>
-                            <Button type="button" size="sm" onClick={() => reviewCancellation(request.id, 'approved')}>Duyệt yêu cầu</Button>
-                            <Button type="button" size="sm" variant="danger-soft" onClick={() => reviewCancellation(request.id, 'rejected')}>Từ chối</Button>
+                            <Button type="button" size="sm" onClick={() => void reviewCancellation(request.id, 'approved')}>Duyệt yêu cầu</Button>
+                            <Button type="button" size="sm" variant="danger-soft" onClick={() => void reviewCancellation(request.id, 'rejected')}>Từ chối</Button>
                           </>
                         ) : <span className="whitespace-nowrap text-xs font-medium text-[#6F6B67]">Đã xử lý</span>}
                       </div>

@@ -1,10 +1,12 @@
-import { useState } from 'react'
-import type { AppState } from '../types'
-import { mockProducts } from '../data/mockData'
+import { useEffect, useState } from 'react'
+import type { AppState, Product } from '../types'
 import PageHeader from '../components/ui/PageHeader'
 import Money from '../components/ui/Money'
 import { UnavailableBadge } from '../components/ui/Badges'
 import EmptyState from '../components/ui/EmptyState'
+import { commerceApi } from '../api/commerce'
+import { commerceProductToUi } from '../api/commerce.adapters'
+import { CommerceApiError } from '../api/http'
 
 const categories = ["Tất cả", "Áo", "Quần và chân váy", "Áo khoác", "Đầm", "Giày dép", "Túi xách", "Phụ kiện"]
 const sortOptions = ["Phù hợp với bạn", "Dễ phối với đồ đã có", "Giá: Thấp đến cao", "Giá: Cao đến thấp"]
@@ -19,6 +21,35 @@ export default function Shop({ onNavigate }: Props) {
   const [sort, setSort] = useState("Phù hợp với bạn")
   const [search, setSearch] = useState('')
   const [favorited, setFavorited] = useState<Set<string>>(new Set(['p1']))
+  const [products, setProducts] = useState<Product[]>([])
+  const [categoryOptions, setCategoryOptions] = useState<string[]>(categories)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadCatalog = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const [productPage, categoryList] = await Promise.all([
+        commerceApi.products.list({ page: 0, size: 100 }),
+        commerceApi.categories.list(),
+      ])
+      setProducts(productPage.items.map(commerceProductToUi))
+      setCategoryOptions([categories[0], ...categoryList.items.map(category => category.name)])
+    } catch (requestError) {
+      setError(
+        requestError instanceof CommerceApiError
+          ? requestError.message
+          : 'Không thể tải danh mục sản phẩm. Vui lòng thử lại.',
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void loadCatalog()
+  }, [])
 
   const toggleFav = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -29,7 +60,7 @@ export default function Shop({ onNavigate }: Props) {
     })
   }
 
-  const filtered = mockProducts
+  const filtered = products
     .filter(p => {
       const matchCat =
         activeCategory === "Tất cả" ||
@@ -76,7 +107,7 @@ export default function Shop({ onNavigate }: Props) {
       {/* Category Tabs */}
       <div className="px-6 md:px-16 border-b border-sand" role="tablist" aria-label="Danh mục sản phẩm">
         <div className="flex gap-2 overflow-x-auto pb-0" style={{ scrollbarWidth: 'none' }}>
-          {categories.map(cat => {
+          {categoryOptions.map(cat => {
             const isSelected = activeCategory === cat
             return (
               <button
@@ -99,7 +130,15 @@ export default function Shop({ onNavigate }: Props) {
 
       {/* Main Grid Content */}
       <div className="px-6 md:px-16 py-8 pb-24">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="py-20 text-center text-sm text-secondary" role="status">Đang tải sản phẩm...</div>
+        ) : error ? (
+          <EmptyState
+            title="Không thể tải cửa hàng"
+            description={error}
+            primaryAction={{ label: 'Thử lại', onClick: () => void loadCatalog() }}
+          />
+        ) : filtered.length === 0 ? (
           <EmptyState
             title="Không tìm thấy sản phẩm"
             description="Chưa có sản phẩm phù hợp. Bạn thử chọn danh mục khác hoặc đặt lại bộ lọc nhé."

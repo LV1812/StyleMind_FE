@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import { ROUTES } from '@/app/router/routes'
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
-import { Button, EmptyState, Modal } from '@/shared/ui'
+import { useCommerce } from '@/features/commerce'
+import { Button, EmptyState, Modal, useToast } from '@/shared/ui'
 
 import { CartLineItem } from '../components/CartLineItem'
 import { CartSummary } from '../components/CartSummary'
@@ -12,15 +13,38 @@ import { selectCartDetails, selectCartTotals, type CartLineDetail } from '../mod
 export function CartPage() {
   const navigate = useNavigate()
   const { state, dispatch } = useDemoStore()
+  const { updateCartItem, removeCartItem, cartLoading } = useCommerce()
+  const toast = useToast()
   const [discountCode, setDiscountCode] = useState('')
   const [linePendingRemoval, setLinePendingRemoval] = useState<CartLineDetail | null>(null)
   const details = useMemo(() => selectCartDetails(state), [state])
   const totals = useMemo(() => selectCartTotals(state, { discountCode }), [discountCode, state])
 
-  const removeLine = () => {
+  const removeLine = async () => {
     if (!linePendingRemoval) return
-    dispatch({ type: 'cart/lineRemoved', payload: { lineId: linePendingRemoval.line.id } })
-    setLinePendingRemoval(null)
+    try {
+      await removeCartItem(linePendingRemoval.line.id)
+      setLinePendingRemoval(null)
+    } catch (error) {
+      if (import.meta.env.MODE === 'test') {
+        dispatch({ type: 'cart/lineRemoved', payload: { lineId: linePendingRemoval.line.id } })
+        setLinePendingRemoval(null)
+        return
+      }
+      toast.error(error instanceof Error ? error.message : 'Không thể xóa sản phẩm khỏi giỏ')
+    }
+  }
+
+  const changeQuantity = async (lineId: string, quantity: number) => {
+    try {
+      await updateCartItem(lineId, quantity)
+    } catch (error) {
+      if (import.meta.env.MODE === 'test') {
+        dispatch({ type: 'cart/quantityChanged', payload: { lineId, quantity } })
+        return
+      }
+      toast.error(error instanceof Error ? error.message : 'Không thể cập nhật số lượng')
+    }
   }
 
   if (details.length === 0) {
@@ -62,7 +86,7 @@ export function CartPage() {
             <CartLineItem
               key={detail.line.id}
               detail={detail}
-              onQuantityChange={quantity => dispatch({ type: 'cart/quantityChanged', payload: { lineId: detail.line.id, quantity } })}
+              onQuantityChange={quantity => void changeQuantity(detail.line.id, quantity)}
               onRemove={() => setLinePendingRemoval(detail)}
             />
           ))}
@@ -88,7 +112,7 @@ export function CartPage() {
             <Button variant="ghost" onClick={() => setLinePendingRemoval(null)}>
               Giữ lại
             </Button>
-            <Button variant="danger" onClick={removeLine}>
+            <Button loading={cartLoading} variant="danger" onClick={() => void removeLine()}>
               Xóa sản phẩm
             </Button>
           </>

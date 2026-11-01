@@ -1,11 +1,15 @@
-import { useState } from 'react'
-import type { AppState } from '../types'
-import { mockProducts, mockWardrobeItems } from '../data/mockData'
+import { useEffect, useState } from 'react'
+import type { AppState, Product } from '../types'
+import { mockWardrobeItems } from '../data/mockData'
 import Money from '../components/ui/Money'
 import { OwnedBadge, UnavailableBadge } from '../components/ui/Badges'
 import Button from '../components/ui/Button'
 import ColorSwatch from '../components/fashion/ColorSwatch'
 import SizeSelector from '../components/fashion/SizeSelector'
+import EmptyState from '../components/ui/EmptyState'
+import { commerceApi } from '../api/commerce'
+import { commerceProductToUi } from '../api/commerce.adapters'
+import { CommerceApiError } from '../api/http'
 
 interface Props {
   onNavigate: (screen: string, opts?: any) => void
@@ -13,23 +17,81 @@ interface Props {
 }
 
 export default function ProductDetail({ onNavigate, app }: Props) {
-  const productId = app?.opts?.productId || 'p1'
-  const product = mockProducts.find(p => p.id === productId) || mockProducts[0]
+  const productId = app?.opts?.productId
+  const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const [selectedColorIdx, setSelectedColorIdx] = useState(0)
-  const [selectedSize, setSelectedSize] = useState<string | null>(
-    product.availableSizes.includes(product.recommendedSize)
-      ? product.recommendedSize
-      : product.availableSizes[0] || null
-  )
+  const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [activeImg, setActiveImg] = useState(0)
   const [addedFeedback, setAddedFeedback] = useState(false)
   const [favorited, setFavorited] = useState(false)
   const [activeTab, setActiveTab] = useState<'details' | 'materials' | 'fit'>('details')
 
+  useEffect(() => {
+    let active = true
+    const loadProduct = async () => {
+      if (!productId) {
+        setError('Không tìm thấy mã sản phẩm.')
+        setLoading(false)
+        return
+      }
+      setLoading(true)
+      setError(null)
+      try {
+        const result = commerceProductToUi(await commerceApi.products.get(productId))
+        if (!active) return
+        setProduct(result)
+        setSelectedSize(
+          result.availableSizes.includes(result.recommendedSize)
+            ? result.recommendedSize
+            : result.availableSizes[0] || null,
+        )
+      } catch (requestError) {
+        if (active) {
+          setError(
+            requestError instanceof CommerceApiError
+              ? requestError.message
+              : 'Không thể tải chi tiết sản phẩm.',
+          )
+        }
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+    void loadProduct()
+    return () => {
+      active = false
+    }
+  }, [productId])
+
+  if (loading) {
+    return <div className="py-24 text-center text-sm text-secondary" role="status">Đang tải sản phẩm...</div>
+  }
+
+  if (!product || error) {
+    return (
+      <EmptyState
+        title="Không thể tải sản phẩm"
+        description={error || 'Sản phẩm không tồn tại hoặc đã ngừng bán.'}
+        primaryAction={{ label: 'Về cửa hàng', onClick: () => onNavigate('shop') }}
+      />
+    )
+  }
+
   const selectedColor = product.colors[selectedColorIdx] || product.colors[0]
-  const isOutOfStock = product.inStock === false || product.availableSizes.length === 0
-  const isSizeAvailable = selectedSize ? product.availableSizes.includes(selectedSize) : false
+  const selectedVariant = product.variants?.find(
+    variant =>
+      variant.active &&
+      variant.availableQuantity > 0 &&
+      variant.size === selectedSize &&
+      variant.color === selectedColor.name,
+  ) || product.variants?.find(
+    variant => variant.active && variant.availableQuantity > 0 && variant.size === selectedSize,
+  )
+  const isOutOfStock = product.inStock === false || !selectedVariant
+  const isSizeAvailable = Boolean(selectedVariant)
 
   // Wardrobe pieces that match this item
   const matchingWardrobeItems = mockWardrobeItems.slice(0, 3)
@@ -39,14 +101,15 @@ export default function ProductDetail({ onNavigate, app }: Props) {
 
     if (app?.addToCart) {
       app.addToCart({
+        variantId: selectedVariant?.id,
         productId: product.id,
         name: product.name,
         brand: product.brand,
         size: selectedSize,
         color: selectedColor.name,
         colorHex: selectedColor.hex,
-        price: product.price,
-        image: product.image,
+        price: selectedVariant?.price || product.price,
+        image: selectedVariant?.image || product.image,
         available: true,
         aiRec: `Phối được với ${product.wardrobeMatches} món trong tủ đồ của bạn`,
       })

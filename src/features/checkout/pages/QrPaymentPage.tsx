@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom'
 
 import { ROUTES } from '@/app/router/routes'
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
+import { commerceApi } from '@/api/commerce'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
-import { wait } from '@/shared/lib/wait'
 import { Button, EmptyState } from '@/shared/ui'
 
-import { CHECKOUT_LATEST_ORDER_KEY, CHECKOUT_QR_SESSION_KEY, confirmQrPayment, type QrSession } from '../data/checkoutRepository'
+import { CHECKOUT_LATEST_ORDER_KEY, CHECKOUT_QR_SESSION_KEY, type QrSession } from '../data/checkoutRepository'
+import { commerceOrderToEntity } from '../data/commerceOrderAdapter'
 import { checkoutReducer, type CheckoutState } from '../model/checkoutMachine'
 
 function readQrSession(): QrSession | null {
@@ -33,7 +34,7 @@ function secondsLeft(expiresAt: string, now: Date) {
 
 export function QrPaymentPage() {
   const navigate = useNavigate()
-  const { state, dispatch } = useDemoStore()
+  const { dispatch } = useDemoStore()
   const [session] = useState(() => readQrSession())
   const [machine, send] = useReducer(checkoutReducer, session, initialState)
   const [now, setNow] = useState(() => new Date())
@@ -69,14 +70,23 @@ export function QrPaymentPage() {
     const activeSession = machine.qrSession
     if (!activeSession || expired || verifying) return
     send({ type: 'payment/verifying' })
-    await wait(900)
-    const order = await confirmQrPayment(activeSession, state)
-    dispatch({ type: 'order/placed', payload: order })
-    window.sessionStorage.setItem(CHECKOUT_LATEST_ORDER_KEY, JSON.stringify(order))
-    const nextSession = { ...activeSession, orderId: order.id }
-    window.sessionStorage.setItem(CHECKOUT_QR_SESSION_KEY, JSON.stringify(nextSession))
-    send({ type: 'payment/confirmed', payload: { orderId: order.id } })
-    navigate(ROUTES.orderSuccess.replace(':orderId', order.id))
+    try {
+      if (!activeSession.commerceOrderId) throw new Error('Thiếu mã đơn hàng Commerce')
+      const response = await commerceApi.orders.get(activeSession.commerceOrderId)
+      if (response.order_status !== 'PAID') {
+        send({ type: 'payment/failed', payload: { error: 'Hệ thống chưa ghi nhận thanh toán. Vui lòng thử lại sau.' } })
+        return
+      }
+      const order = commerceOrderToEntity(response)
+      dispatch({ type: 'order/placed', payload: order })
+      window.sessionStorage.setItem(CHECKOUT_LATEST_ORDER_KEY, JSON.stringify(order))
+      const nextSession = { ...activeSession, orderId: order.id }
+      window.sessionStorage.setItem(CHECKOUT_QR_SESSION_KEY, JSON.stringify(nextSession))
+      send({ type: 'payment/confirmed', payload: { orderId: order.id } })
+      navigate(ROUTES.orderSuccess.replace(':orderId', order.id))
+    } catch (error) {
+      send({ type: 'payment/failed', payload: { error: error instanceof Error ? error.message : 'Không thể kiểm tra thanh toán' } })
+    }
   }
 
   return (
@@ -99,9 +109,10 @@ export function QrPaymentPage() {
           </Button>
         ) : (
           <Button loading={verifying} onClick={handleConfirm}>
-            {verifying ? 'Đang xác minh thanh toán' : 'Tôi đã thanh toán'}
+            {verifying ? 'Đang kiểm tra thanh toán' : 'Kiểm tra trạng thái thanh toán'}
           </Button>
         )}
+        {machine.error && !expired && <p className="rounded-lg bg-[#FCEAEA] p-3 text-sm font-semibold text-[#A94B4B]" role="alert">{machine.error}</p>}
       </section>
 
       <aside className="grid content-start gap-4 rounded-lg bg-[#FDFCFA] p-5 shadow-[0_18px_36px_rgba(58,54,50,0.08)]">

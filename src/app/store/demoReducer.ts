@@ -136,6 +136,31 @@ export function demoReducer(state: DemoDatabase, action: DemoAction): DemoDataba
   switch (action.type) {
     case 'database/replaced':
       return normalizeDemoDatabase(action.payload)
+    case 'commerce/catalogSynced':
+      return {
+        ...state,
+        products: action.payload.products,
+        categories: action.payload.categories,
+        cartLines: state.cartLines.filter(line =>
+          action.payload.products.some(product => product.variants.some(variant => variant.id === line.variantId)),
+        ),
+      }
+    case 'commerce/cartSynced':
+      return { ...state, cartLines: action.payload }
+    case 'commerce/ordersSynced':
+      return {
+        ...state,
+        orders: [
+          ...state.orders.filter(order => order.userId !== action.payload.userId),
+          ...action.payload.orders,
+        ],
+        cancellationRequests: [
+          ...state.cancellationRequests.filter(request => request.userId !== action.payload.userId),
+          ...action.payload.cancellationRequests,
+        ],
+      }
+    case 'commerce/adminOrdersSynced':
+      return { ...state, orders: action.payload.orders, cancellationRequests: action.payload.cancellationRequests }
     case 'session/loggedIn': {
       const user = state.users.find(item => item.id === action.payload.userId && item.status === 'active')
       if (!user) return state

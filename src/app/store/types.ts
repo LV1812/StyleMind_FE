@@ -50,6 +50,10 @@ export interface DemoDatabase {
 
 export type DemoAction =
   | { type: 'database/replaced'; payload: DemoDatabase }
+  | { type: 'commerce/catalogSynced'; payload: { products: Product[]; categories: ProductCategory[] } }
+  | { type: 'commerce/cartSynced'; payload: CartLine[] }
+  | { type: 'commerce/ordersSynced'; payload: { userId: string; orders: Order[]; cancellationRequests: CancellationRequest[] } }
+  | { type: 'commerce/adminOrdersSynced'; payload: { orders: Order[]; cancellationRequests: CancellationRequest[] } }
   | { type: 'session/loggedIn'; payload: { userId: string; persistent: boolean } }
   | { type: 'session/loggedOut' }
   | { type: 'identity/sessionSynced'; payload: { user: User; persistent: boolean } }
