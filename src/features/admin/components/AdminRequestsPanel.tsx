@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import type { DemoAction, DemoDatabase } from '@/app/store/types'
 import type { CancellationRequest, ReturnRequest } from '@/entities/order/model/types'
@@ -24,6 +25,10 @@ function statusTone(status: CancellationRequest['status'] | ReturnRequest['statu
   if (status === 'approved' || status === 'refunded') return 'success'
   if (status === 'rejected') return 'danger'
   return 'warning'
+}
+
+function orderAdminHref(orderId: string) {
+  return `/admin?section=orders&orderId=${encodeURIComponent(orderId)}`
 }
 
 export function AdminRequestsPanel({ database, dispatch, reviewerId }: AdminRequestsPanelProps) {
@@ -87,87 +92,105 @@ export function AdminRequestsPanel({ database, dispatch, reviewerId }: AdminRequ
       </div>
 
       {activeTab === 'cancellations' ? (
-        <div className="grid gap-3">
-          {cancellations.length === 0 ? (
-            <p className="rounded-lg bg-white p-4 text-sm text-[#6F6B67] shadow-[0_10px_28px_rgba(58,54,50,0.07)]">
-              Chưa có yêu cầu hủy đơn.
-            </p>
-          ) : (
-            cancellations.map(request => (
-              <article key={request.id} className="grid gap-4 rounded-lg bg-white p-4 shadow-[0_10px_28px_rgba(58,54,50,0.07)] xl:grid-cols-[minmax(0,1fr)_auto]">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="break-all font-display text-2xl font-semibold text-[#222222]">{request.id}</h2>
-                    <StatusBadge tone={statusTone(request.status)}>{cancellationStatusLabel[request.status]}</StatusBadge>
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-[#6F6B67]">
-                    Đơn {request.orderId} · {customerName(database, request.userId)} · {formatDate(request.createdAt)}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-[#3A3632]">{request.reason}</p>
-                </div>
-                <div className="flex flex-wrap gap-2 xl:justify-end">
-                  {request.status === 'submitted' ? (
-                    <>
-                      <Button type="button" onClick={() => reviewCancellation(request.id, 'approved')}>
-                        Duyệt hủy {request.id}
-                      </Button>
-                      <Button type="button" variant="danger" onClick={() => reviewCancellation(request.id, 'rejected')}>
-                        Từ chối hủy {request.id}
-                      </Button>
-                    </>
-                  ) : (
-                    <span className="inline-flex min-h-11 items-center rounded-lg bg-[#FAF8F5] px-3 text-sm font-semibold text-[#8A8179]">
-                      Đã xử lý
-                    </span>
-                  )}
-                </div>
-              </article>
-            ))
-          )}
+        <div className="overflow-hidden rounded-xl border border-[#E5E0D8] bg-white shadow-[0_8px_24px_rgba(58,54,50,0.06)]">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
+              <thead className="bg-[#FAF8F5] text-xs font-semibold uppercase tracking-wide text-[#6F6B67]">
+                <tr>
+                  <th scope="col" className="px-4 py-3">Yêu cầu</th>
+                  <th scope="col" className="px-4 py-3">Đơn hàng</th>
+                  <th scope="col" className="px-4 py-3">Khách hàng</th>
+                  <th scope="col" className="px-4 py-3">Ngày gửi</th>
+                  <th scope="col" className="px-4 py-3">Lý do</th>
+                  <th scope="col" className="px-4 py-3">Trạng thái</th>
+                  <th scope="col" className="px-4 py-3 text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E5E0D8]">
+                {cancellations.length === 0 ? (
+                  <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-[#6F6B67]">Chưa có yêu cầu hủy đơn.</td></tr>
+                ) : cancellations.map(request => (
+                  <tr key={request.id} className="align-middle hover:bg-[#FAF8F5]/70">
+                    <td className="whitespace-nowrap px-4 py-3 font-semibold text-[#222222]">{request.id}</td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <Link to={orderAdminHref(request.orderId)} className="font-semibold text-accent underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                        {request.orderId}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-[#3A3632]">{customerName(database, request.userId)}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-[#6F6B67]">{formatDate(request.createdAt)}</td>
+                    <td className="max-w-[18rem] px-4 py-3">
+                      <blockquote className="rounded-r-md border-l-2 border-[#D8D0C6] bg-[#F5F2EE] px-3 py-2 leading-5 text-[#3A3632]">{request.reason}</blockquote>
+                    </td>
+                    <td className="px-4 py-3"><StatusBadge tone={statusTone(request.status)}>{cancellationStatusLabel[request.status]}</StatusBadge></td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        {request.status === 'submitted' ? (
+                          <>
+                            <Button type="button" size="sm" onClick={() => reviewCancellation(request.id, 'approved')}>Duyệt yêu cầu</Button>
+                            <Button type="button" size="sm" variant="danger-soft" onClick={() => reviewCancellation(request.id, 'rejected')}>Từ chối</Button>
+                          </>
+                        ) : <span className="whitespace-nowrap text-xs font-medium text-[#6F6B67]">Đã xử lý</span>}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
-        <div className="grid gap-3">
-          {returns.length === 0 ? (
-            <p className="rounded-lg bg-white p-4 text-sm text-[#6F6B67] shadow-[0_10px_28px_rgba(58,54,50,0.07)]">
-              Chưa có yêu cầu đổi/trả.
-            </p>
-          ) : (
-            returns.map(request => (
-              <article key={request.id} className="grid gap-4 rounded-lg bg-white p-4 shadow-[0_10px_28px_rgba(58,54,50,0.07)] xl:grid-cols-[minmax(0,1fr)_auto]">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="break-all font-display text-2xl font-semibold text-[#222222]">{request.id}</h2>
-                    <StatusBadge tone={statusTone(request.status)}>{returnStatusLabel[request.status]}</StatusBadge>
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-[#6F6B67]">
-                    Đơn {request.orderId} · {customerName(database, request.userId)} · {formatDate(request.createdAt)}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-[#3A3632]">{request.reason}</p>
-                  <p className="mt-2 text-xs font-semibold text-[#8A8179]">{request.items.length} sản phẩm trong yêu cầu</p>
-                </div>
-                <div className="flex flex-wrap gap-2 xl:justify-end">
-                  {request.status === 'submitted' || request.status === 'reviewing' ? (
-                    <>
-                      <Button type="button" onClick={() => reviewReturn(request.id, 'approved')}>
-                        Duyệt đổi/trả {request.id}
-                      </Button>
-                      <Button type="button" variant="danger" onClick={() => reviewReturn(request.id, 'rejected')}>
-                        Từ chối đổi/trả {request.id}
-                      </Button>
-                    </>
-                  ) : request.status === 'approved' ? (
-                    <Button type="button" onClick={() => reviewReturn(request.id, 'refunded')}>
-                      Hoàn tiền {request.id}
-                    </Button>
-                  ) : (
-                    <span className="inline-flex min-h-11 items-center rounded-lg bg-[#FAF8F5] px-3 text-sm font-semibold text-[#8A8179]">
-                      Đã xử lý
-                    </span>
-                  )}
-                </div>
-              </article>
-            ))
-          )}
+        <div className="overflow-hidden rounded-xl border border-[#E5E0D8] bg-white shadow-[0_8px_24px_rgba(58,54,50,0.06)]">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
+              <thead className="bg-[#FAF8F5] text-xs font-semibold uppercase tracking-wide text-[#6F6B67]">
+                <tr>
+                  <th scope="col" className="px-4 py-3">Yêu cầu</th>
+                  <th scope="col" className="px-4 py-3">Đơn hàng</th>
+                  <th scope="col" className="px-4 py-3">Khách hàng</th>
+                  <th scope="col" className="px-4 py-3">Ngày gửi</th>
+                  <th scope="col" className="px-4 py-3">Lý do</th>
+                  <th scope="col" className="px-4 py-3">Trạng thái</th>
+                  <th scope="col" className="px-4 py-3 text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E5E0D8]">
+                {returns.length === 0 ? (
+                  <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-[#6F6B67]">Chưa có yêu cầu đổi/trả.</td></tr>
+                ) : returns.map(request => (
+                  <tr key={request.id} className="align-middle hover:bg-[#FAF8F5]/70">
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <p className="font-semibold text-[#222222]">{request.id}</p>
+                      <p className="mt-0.5 text-xs text-[#6F6B67]">{request.items.length} sản phẩm</p>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <Link to={orderAdminHref(request.orderId)} className="font-semibold text-accent underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                        {request.orderId}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-[#3A3632]">{customerName(database, request.userId)}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-[#6F6B67]">{formatDate(request.createdAt)}</td>
+                    <td className="max-w-[18rem] px-4 py-3">
+                      <blockquote className="rounded-r-md border-l-2 border-[#D8D0C6] bg-[#F5F2EE] px-3 py-2 leading-5 text-[#3A3632]">{request.reason}</blockquote>
+                    </td>
+                    <td className="px-4 py-3"><StatusBadge tone={statusTone(request.status)}>{returnStatusLabel[request.status]}</StatusBadge></td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        {request.status === 'submitted' || request.status === 'reviewing' ? (
+                          <>
+                            <Button type="button" size="sm" onClick={() => reviewReturn(request.id, 'approved')}>Duyệt đổi/trả</Button>
+                            <Button type="button" size="sm" variant="danger-soft" onClick={() => reviewReturn(request.id, 'rejected')}>Từ chối</Button>
+                          </>
+                        ) : request.status === 'approved' ? (
+                          <Button type="button" size="sm" onClick={() => reviewReturn(request.id, 'refunded')}>Hoàn tiền</Button>
+                        ) : <span className="whitespace-nowrap text-xs font-medium text-[#6F6B67]">Đã xử lý</span>}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </section>

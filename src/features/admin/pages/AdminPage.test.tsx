@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
@@ -66,8 +66,46 @@ describe('AdminPage', () => {
     renderAt('/admin', adminDatabase())
 
     expect(await screen.findByRole('heading', { name: 'Tổng quan quản trị' })).toBeInTheDocument()
-    expect(screen.getByText('Doanh thu')).toBeInTheDocument()
-    expect(screen.getByText('Yêu cầu cần duyệt')).toBeInTheDocument()
+    expect(screen.getByText('Doanh thu trong kỳ')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /yêu cầu chưa hoàn tất/ })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Trạng thái đơn hàng' })).toBeInTheDocument()
+  })
+
+  it('opens the request queue from the pending-work summary', async () => {
+    const user = setupUser()
+    renderAt('/admin', adminDatabase())
+
+    await user.click(await screen.findByRole('link', { name: /yêu cầu chưa hoàn tất/ }))
+
+    await waitFor(() => expect(currentSearch()).toBe('?section=requests'))
+  })
+
+  it('filters order totals, revenue, recent orders, and status by reporting period', async () => {
+    const database = adminDatabase()
+    const [baseOrder, secondOrder] = database.orders
+    if (!baseOrder || !secondOrder) throw new Error('Expected demo seed to include at least two orders')
+    const now = Date.now()
+    const days = 24 * 60 * 60 * 1000
+    database.orders = [
+      { ...baseOrder, id: 'ord-recent-paid', status: 'paid', createdAt: new Date(now - 2 * days).toISOString(), total: 100000 },
+      { ...secondOrder, id: 'ord-recent-cancelled', status: 'cancelled', createdAt: new Date(now - 3 * days).toISOString(), total: 200000 },
+      { ...secondOrder, id: 'ord-older', status: 'completed', createdAt: new Date(now - 10 * days).toISOString(), total: 300000 },
+    ]
+    const user = setupUser()
+    renderAt('/admin', database)
+
+    await user.selectOptions(await screen.findByRole('combobox', { name: 'Kỳ thống kê đơn hàng và doanh thu' }), '7d')
+
+    const metrics = screen.getByRole('region', { name: 'Chỉ số cửa hàng' })
+    const status = screen.getByRole('region', { name: 'Trạng thái đơn hàng' })
+    expect(within(metrics).getByText('2')).toBeInTheDocument()
+    expect(within(metrics).getByText(/100\.000\s*₫/)).toBeInTheDocument()
+    expect(screen.getByText('ord-recent-paid')).toBeInTheDocument()
+    expect(screen.getByText('ord-recent-cancelled')).toBeInTheDocument()
+    expect(screen.queryByText('ord-older')).not.toBeInTheDocument()
+    expect(within(status).getByText('Đã thanh toán')).toBeInTheDocument()
+    expect(within(status).getByText('Đã hủy')).toBeInTheDocument()
+    expect(within(status).queryByText('Hoàn tất')).not.toBeInTheDocument()
   })
 
   it('redirects a customer away from the admin route', async () => {
@@ -328,18 +366,20 @@ describe('AdminPage', () => {
     const user = setupUser()
     renderAt('/admin?section=customers', adminDatabase())
 
-    await user.click(await screen.findByRole('button', { name: 'Khóa khách hàng usr-customer-01' }))
+    const customerCard = (await screen.findByText('usr-customer-01')).closest('article') as HTMLElement
+    await user.click(within(customerCard).getByRole('button', { name: 'Tạm khóa' }))
 
     await waitFor(() => {
       expect(getDatabase().users.find(item => item.id === 'usr-customer-01')?.status).toBe('locked')
     })
 
-    await user.click(screen.getByRole('button', { name: 'Mở khóa khách hàng usr-customer-01' }))
+    await user.click(within(customerCard).getByRole('button', { name: 'Kích hoạt lại' }))
 
     await waitFor(() => {
       expect(getDatabase().users.find(item => item.id === 'usr-customer-01')?.status).toBe('active')
     })
-    expect(screen.getByRole('button', { name: 'Không thể tự khóa' })).toBeDisabled()
+    const adminCard = (await screen.findByText('usr-admin-01')).closest('article') as HTMLElement
+    expect(within(adminCard).getByRole('button', { name: 'Tạm khóa' })).toBeDisabled()
   })
 
   it('adds and deactivates an AI metadata option', async () => {

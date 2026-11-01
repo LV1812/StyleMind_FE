@@ -1,27 +1,33 @@
 import { FormEvent, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { ROUTES } from '@/app/router/routes'
+import { identityErrorMessage } from '@/shared/api/identityApi'
 import { Button, TextField } from '@/shared/ui'
 
 import { AuthLayout } from '../components/AuthLayout'
 import { useAuth } from '../model/useAuth'
 
 export function ForgotPasswordPage() {
+  const navigate = useNavigate()
   const auth = useAuth()
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError('')
     setMessage('')
+    setSubmitting(true)
     try {
       await auth.requestPasswordReset(email)
-      setMessage('Liên kết đặt lại mật khẩu đã được tạo.')
+      setMessage('Nếu email đã đăng ký và đủ điều kiện, hướng dẫn đặt lại mật khẩu sẽ được gửi.')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể gửi yêu cầu')
+      setError(identityErrorMessage(err, 'Không thể gửi yêu cầu'))
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -32,8 +38,18 @@ export function ForgotPasswordPage() {
         <TextField label="Email" type="email" value={email} onChange={event => setEmail(event.target.value)} />
         {message && <p className="rounded-lg bg-[#EAF2EC] px-3 py-2 text-sm font-semibold text-[#48755A]">{message}</p>}
         {error && <p className="rounded-lg bg-[#FCEAEA] px-3 py-2 text-sm font-semibold text-[#A94B4B]">{error}</p>}
-        <Button type="submit">Gửi hướng dẫn</Button>
+        <Button type="submit" loading={submitting}>Gửi hướng dẫn</Button>
       </form>
+      {message && (
+        <Button
+          type="button"
+          className="mt-3 w-full"
+          variant="secondary"
+          onClick={() => navigate(ROUTES.verifyOtp, { state: { flow: 'password-reset', email } })}
+        >
+          Nhập mã xác thực
+        </Button>
+      )}
       <Link to={ROUTES.login} className="mt-5 inline-block text-sm font-semibold text-[#684B5A] hover:underline">Quay lại đăng nhập</Link>
     </AuthLayout>
   )

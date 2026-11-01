@@ -3,9 +3,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 
 import type { DemoAction, DemoDatabase } from '@/app/store/types'
 import type { ProductCategory } from '@/entities/product/model/types'
-import { Button, Modal, TextField, useToast } from '@/shared/ui'
-
-import { StatusBadge } from './AdminCommon'
+import { Button, Modal, TextField, ToggleSwitch, useToast } from '@/shared/ui'
 
 interface AdminCategoriesPanelProps {
   database: DemoDatabase
@@ -119,46 +117,56 @@ export function AdminCategoriesPanel({ database, dispatch }: AdminCategoriesPane
         </Button>
       </div>
 
-      <div className="grid gap-3">
-        {categories.map(category => (
-          <article
-            key={category.id}
-            className="grid gap-3 rounded-lg bg-white p-4 shadow-[0_10px_28px_rgba(58,54,50,0.07)] md:grid-cols-[88px_minmax(0,1fr)_auto] md:items-center"
-          >
-            <div className="text-sm font-semibold tabular-nums text-[#8A8179]">#{category.order}</div>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="font-display text-2xl font-semibold text-[#222222]">{category.label}</h2>
-                <StatusBadge tone={category.active ? 'success' : 'neutral'}>{category.active ? 'Đang bật' : 'Đã tắt'}</StatusBadge>
-              </div>
-              <p className="mt-1 break-all text-sm font-semibold text-[#684B5A]">{category.id}</p>
-              <p className="mt-2 text-sm leading-6 text-[#6F6B67]">{category.description}</p>
-            </div>
-            <div className="flex flex-wrap gap-2 md:justify-end">
-              <Button
-                type="button"
-                variant="secondary"
-                icon={<Pencil size={16} aria-hidden="true" />}
-                onClick={() => openEditModal(category.id)}
-              >
-                Sửa danh mục {category.id}
-              </Button>
-              <Button
-                type="button"
-                variant={category.active ? 'danger' : 'secondary'}
-                onClick={() => {
-                  dispatch({
-                    type: 'admin/categoryStatusChanged',
-                    payload: { categoryId: category.id, active: !category.active },
-                  })
-                  toast.info(category.active ? 'Đã tắt danh mục.' : 'Đã bật danh mục.')
-                }}
-              >
-                {category.active ? `Tắt danh mục ${category.id}` : `Bật danh mục ${category.id}`}
-              </Button>
-            </div>
-          </article>
-        ))}
+      <div className="overflow-hidden rounded-xl border border-[#E5E0D8] bg-white shadow-[0_8px_24px_rgba(58,54,50,0.06)]">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[780px] border-collapse text-left text-sm">
+            <thead className="bg-[#FAF8F5] text-xs font-semibold uppercase tracking-wide text-[#6F6B67]">
+              <tr>
+                <th scope="col" className="w-16 px-4 py-3">#</th>
+                <th scope="col" className="px-4 py-3">Danh mục</th>
+                <th scope="col" className="px-4 py-3">Mô tả</th>
+                <th scope="col" className="w-28 px-4 py-3 text-center">Trạng thái</th>
+                <th scope="col" className="w-20 px-4 py-3 text-right">Sửa</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E5E0D8]">
+              {categories.length === 0 ? (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-[#6F6B67]">Chưa có danh mục.</td></tr>
+              ) : categories.map(category => (
+                <tr key={category.id} className="align-middle hover:bg-[#FAF8F5]/70">
+                  <td className="px-4 py-3 font-semibold tabular-nums text-[#6F6B67]">#{category.order}</td>
+                  <td className="px-4 py-3">
+                    <p className="font-semibold text-[#222222]">{category.label}</p>
+                    <span className="mt-1 inline-flex rounded-md bg-[#F5F2EE] px-2 py-0.5 text-xs italic text-[#6F6B67]">{category.id}</span>
+                  </td>
+                  <td className="max-w-[28rem] px-4 py-3 leading-5 text-[#6F6B67]">{category.description}</td>
+                  <td className="px-4 py-3 text-center">
+                    <ToggleSwitch
+                      checked={category.active}
+                      label={`Danh mục ${category.label}`}
+                      onCheckedChange={active => {
+                        dispatch({ type: 'admin/categoryStatusChanged', payload: { categoryId: category.id, active } })
+                        toast.info(active ? 'Đã bật danh mục.' : 'Đã tắt danh mục.')
+                      }}
+                    />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-9 w-9 px-0"
+                      aria-label={`Sửa danh mục ${category.label}`}
+                      title="Sửa danh mục"
+                      icon={<Pencil size={16} aria-hidden="true" />}
+                      onClick={() => openEditModal(category.id)}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <Modal

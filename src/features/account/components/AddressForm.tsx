@@ -1,110 +1,138 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 
-import type { Address } from '@/entities/address/model/types'
-import { TextField } from '@/shared/ui'
+import type { AddressPayload, IdentityAddress, Province, Ward } from '@/shared/api/identityApi'
+import { Button, TextField } from '@/shared/ui'
 
-import { hasErrors, validateAddressInput, type AddressInput, type FieldErrors } from '../model/validators'
+export interface AddressFormValue extends Omit<AddressPayload, 'label' | 'recipient_name' | 'recipient_phone' | 'address_line' | 'ward_code'> {
+  label: string
+  recipientName: string
+  recipientPhone: string
+  addressLine: string
+  wardCode?: string | null
+}
 
 interface AddressFormProps {
-  initialAddress?: Address
-  userId: string
-  makeDefault: boolean
+  initialAddress?: IdentityAddress
+  provinces: Province[]
+  wards: Ward[]
+  wardLoading: boolean
+  saving: boolean
+  onProvinceChange: (provinceCode: string) => void
   onCancel: () => void
-  onSubmit: (address: Address) => void
+  onSubmit: (value: AddressFormValue) => Promise<void>
 }
 
-function addressToInput(address?: Address): AddressInput {
-  return {
-    recipientName: address?.recipientName ?? '',
-    phone: address?.phone ?? '',
-    line1: address?.line1 ?? '',
-    ward: address?.ward ?? '',
-    district: address?.district ?? '',
-    province: address?.province ?? '',
-  }
-}
+export function AddressForm({
+  initialAddress,
+  provinces,
+  wards,
+  wardLoading,
+  saving,
+  onProvinceChange,
+  onCancel,
+  onSubmit,
+}: AddressFormProps) {
+  const [label, setLabel] = useState(initialAddress?.label ?? '')
+  const [recipientName, setRecipientName] = useState(initialAddress?.recipient_name ?? '')
+  const [recipientPhone, setRecipientPhone] = useState(initialAddress?.recipient_phone ?? '')
+  const [addressLine, setAddressLine] = useState(initialAddress?.address_line ?? '')
+  const [provinceCode, setProvinceCode] = useState('')
+  const [wardCode, setWardCode] = useState('')
+  const [clearSavedWard, setClearSavedWard] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
-export function AddressForm({ initialAddress, userId, makeDefault, onCancel, onSubmit }: AddressFormProps) {
-  const [value, setValue] = useState<AddressInput>(() => addressToInput(initialAddress))
-  const [errors, setErrors] = useState<FieldErrors<AddressInput>>({})
-
-  const handleSubmit = () => {
-    const nextErrors = validateAddressInput(value)
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const nextErrors: Record<string, string> = {}
+    if (!recipientName.trim()) nextErrors.recipientName = 'Vui lòng nhập tên người nhận.'
+    else if ([...recipientName.trim()].length > 100) nextErrors.recipientName = 'Tên người nhận tối đa 100 ký tự.'
+    if (!recipientPhone.trim()) nextErrors.recipientPhone = 'Vui lòng nhập số điện thoại.'
+    else if ([...recipientPhone.trim()].length > 64) nextErrors.recipientPhone = 'Số điện thoại không hợp lệ.'
+    if (!addressLine.trim()) nextErrors.addressLine = 'Vui lòng nhập địa chỉ giao hàng.'
+    else if ([...addressLine.trim()].length > 500) nextErrors.addressLine = 'Địa chỉ tối đa 500 ký tự.'
+    if ([...label.trim()].length > 50) nextErrors.label = 'Tên gợi nhớ tối đa 50 ký tự.'
+    if (wardCode && !wards.some(ward => ward.code === wardCode)) nextErrors.wardCode = 'Hãy chọn phường/xã từ danh sách.'
     setErrors(nextErrors)
-    if (hasErrors(nextErrors)) return
+    if (Object.keys(nextErrors).length > 0) return
 
-    onSubmit({
-      id: initialAddress?.id ?? `adr-${userId}-${Date.now()}`,
-      userId,
-      recipientName: value.recipientName.trim(),
-      phone: value.phone.trim(),
-      line1: value.line1.trim(),
-      ward: value.ward.trim(),
-      district: value.district.trim(),
-      province: value.province.trim(),
-      isDefault: initialAddress?.isDefault ?? makeDefault,
-    })
+    let resolvedWardCode: string | null | undefined
+    if (clearSavedWard) resolvedWardCode = null
+    else if (wardCode) resolvedWardCode = wardCode
+    else if (initialAddress) resolvedWardCode = undefined
+    else resolvedWardCode = null
+
+    await onSubmit({ label, recipientName, recipientPhone, addressLine, wardCode: resolvedWardCode })
   }
 
   return (
-    <section className="rounded-lg border border-[#E3DAD0] bg-white p-5 shadow-sm">
-      <h2 className="font-display text-2xl font-semibold text-[#222222]">
-        {initialAddress ? 'Sửa địa chỉ' : 'Thêm địa chỉ'}
-      </h2>
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <TextField
-          label="Tên người nhận"
-          value={value.recipientName}
-          error={errors.recipientName}
-          onChange={event => setValue({ ...value, recipientName: event.target.value })}
-        />
-        <TextField
-          label="Số điện thoại"
-          value={value.phone}
-          error={errors.phone}
-          onChange={event => setValue({ ...value, phone: event.target.value })}
-        />
-        <TextField
-          label="Địa chỉ"
-          value={value.line1}
-          error={errors.line1}
-          onChange={event => setValue({ ...value, line1: event.target.value })}
-        />
-        <TextField
-          label="Phường/Xã"
-          value={value.ward}
-          error={errors.ward}
-          onChange={event => setValue({ ...value, ward: event.target.value })}
-        />
-        <TextField
-          label="Quận/Huyện"
-          value={value.district}
-          error={errors.district}
-          onChange={event => setValue({ ...value, district: event.target.value })}
-        />
-        <TextField
-          label="Tỉnh/Thành"
-          value={value.province}
-          error={errors.province}
-          onChange={event => setValue({ ...value, province: event.target.value })}
-        />
+    <form className="grid gap-4 rounded-lg border border-[#E3DAD0] bg-white p-5 shadow-sm" onSubmit={handleSubmit}>
+      <div>
+        <h2 className="font-display text-2xl font-semibold text-[#222222]">
+          {initialAddress ? 'Sửa địa chỉ' : 'Thêm địa chỉ'}
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-[#6F6B67]">
+          Nhập địa chỉ đầy đủ trong một dòng. Mã phường là lựa chọn bổ sung từ danh mục của Identity.
+        </p>
       </div>
-      <div className="mt-5 flex flex-wrap gap-3">
-        <button
-          type="button"
-          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#684B5A] px-4 text-sm font-semibold text-white"
-          onClick={handleSubmit}
-        >
-          Lưu địa chỉ
-        </button>
-        <button
-          type="button"
-          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#EEE8E1] px-4 text-sm font-semibold text-[#222222]"
-          onClick={onCancel}
-        >
-          Hủy
-        </button>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <TextField label="Tên gợi nhớ (không bắt buộc)" value={label} error={errors.label} onChange={event => setLabel(event.target.value)} />
+        <TextField label="Tên người nhận" autoComplete="name" value={recipientName} error={errors.recipientName} onChange={event => setRecipientName(event.target.value)} />
+        <TextField label="Số điện thoại Việt Nam" type="tel" autoComplete="tel" value={recipientPhone} error={errors.recipientPhone} onChange={event => setRecipientPhone(event.target.value)} />
+        <TextField label="Địa chỉ (số nhà, đường, quận/huyện, tỉnh/thành)" autoComplete="street-address" value={addressLine} error={errors.addressLine} onChange={event => setAddressLine(event.target.value)} />
+        <label className="grid gap-1.5 text-sm font-semibold text-[#3A3632]">
+          Tỉnh/thành để tra cứu phường/xã (không bắt buộc)
+          <select
+            value={provinceCode}
+            onChange={event => {
+              const code = event.target.value
+              setProvinceCode(code)
+              setWardCode('')
+              setClearSavedWard(false)
+              onProvinceChange(code)
+            }}
+            className="h-11 rounded-lg border border-[#D8D0C6] bg-white px-3 text-sm font-medium outline-none focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20"
+          >
+            <option value="">Chọn tỉnh/thành</option>
+            {provinces.map(province => <option key={province.code} value={province.code}>{province.name}</option>)}
+          </select>
+        </label>
+        <label className="grid gap-1.5 text-sm font-semibold text-[#3A3632]">
+          Phường/xã (không bắt buộc)
+          <select
+            value={wardCode}
+            disabled={!provinceCode || wardLoading}
+            onChange={event => { setWardCode(event.target.value); setClearSavedWard(false) }}
+            className="h-11 rounded-lg border border-[#D8D0C6] bg-white px-3 text-sm font-medium outline-none focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20 disabled:cursor-not-allowed disabled:bg-[#F5F2EE]"
+          >
+            <option value="">Không gắn mã phường/xã</option>
+            {wards.map(ward => <option key={ward.code} value={ward.code}>{ward.name} ({ward.code})</option>)}
+          </select>
+          {wardLoading && <span className="text-xs font-normal text-[#6F6B67]">Đang tải danh sách phường/xã…</span>}
+          {errors.wardCode && <span className="text-xs font-semibold text-[#A94B4B]">{errors.wardCode}</span>}
+        </label>
       </div>
-    </section>
+
+      {initialAddress?.ward_code && (
+        <div className="grid gap-2 rounded-lg bg-[#FAF8F5] p-3 text-sm text-[#3A3632]">
+          <p>Mã phường/xã đang lưu: <span className="font-semibold">{initialAddress.ward_code}</span></p>
+          <label className="inline-flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={clearSavedWard}
+              onChange={event => { setClearSavedWard(event.target.checked); if (event.target.checked) setWardCode('') }}
+              className="h-4 w-4 accent-[#684B5A]"
+            />
+            Xóa mã phường/xã đang lưu
+          </label>
+          <p className="text-xs leading-5 text-[#6F6B67]">Nếu không chọn mã mới hoặc xóa, mã hiện tại sẽ được giữ nguyên.</p>
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-3">
+        <Button type="submit" loading={saving}>Lưu địa chỉ</Button>
+        <Button type="button" variant="secondary" disabled={saving} onClick={onCancel}>Hủy</Button>
+      </div>
+    </form>
   )
 }

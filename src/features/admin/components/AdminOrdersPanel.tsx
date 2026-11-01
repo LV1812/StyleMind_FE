@@ -1,5 +1,6 @@
 import { Eye } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import type { DemoAction, DemoDatabase } from '@/app/store/types'
 import type { Order, OrderStatus } from '@/entities/order/model/types'
@@ -39,19 +40,19 @@ const nextStatusMap: Partial<Record<OrderStatus, OrderStatus[]>> = {
 }
 
 const actionLabel: Record<OrderStatus, string> = {
-  pending: 'Đưa về chờ xác nhận',
-  payment_pending: 'Chờ thanh toán',
-  paid: 'Ghi nhận thanh toán',
-  confirmed: 'Xác nhận đơn',
-  processing: 'Chuyển xử lý',
-  shipped: 'Chuyển sang giao hàng',
+  pending: 'Xác nhận',
+  payment_pending: 'Xác nhận thanh toán',
+  paid: 'Xác nhận đơn',
+  confirmed: 'Bắt đầu xử lý',
+  processing: 'Giao vận chuyển',
+  shipped: 'Hoàn tất',
   completed: 'Hoàn tất đơn',
-  cancelled: 'Hủy đơn',
+  cancelled: 'Hủy',
 }
 
 function statusTone(status: OrderStatus) {
   if (status === 'completed') return 'success'
-  if (status === 'cancelled') return 'danger'
+  if (status === 'cancelled') return 'neutral'
   if (status === 'pending' || status === 'payment_pending') return 'warning'
   return 'accent'
 }
@@ -68,9 +69,27 @@ function fullAddress(order: Order) {
 export function AdminOrdersPanel({ database, dispatch }: AdminOrdersPanelProps) {
   const toast = useToast()
   const [filters, setFilters] = useState<AdminOrderFilters>({ query: '', status: 'all', paymentMethod: 'all' })
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const selectedOrderId = searchParams.get('orderId')
   const rows = useMemo(() => selectAdminOrders(database, filters), [database, filters])
   const selectedOrder = selectedOrderId ? database.orders.find(order => order.id === selectedOrderId) ?? null : null
+
+  const openOrderDetail = (orderId: string) => {
+    setSearchParams(current => {
+      const next = new URLSearchParams(current)
+      next.set('section', 'orders')
+      next.set('orderId', orderId)
+      return next
+    })
+  }
+
+  const closeOrderDetail = () => {
+    setSearchParams(current => {
+      const next = new URLSearchParams(current)
+      next.delete('orderId')
+      return next
+    })
+  }
 
   const changeStatus = (orderId: string, status: OrderStatus) => {
     dispatch({
@@ -121,68 +140,79 @@ export function AdminOrdersPanel({ database, dispatch }: AdminOrdersPanelProps) 
         </SelectField>
       </div>
 
-      <div className="grid gap-3">
-        {rows.length === 0 ? (
-          <p className="rounded-lg bg-white p-4 text-sm text-[#6F6B67] shadow-[0_10px_28px_rgba(58,54,50,0.07)]">
-            Không có đơn hàng phù hợp.
-          </p>
-        ) : (
-          rows.map(row => {
-            const next = nextStatuses(row.status)
+      <div className="overflow-hidden rounded-xl border border-[#E5E0D8] bg-white shadow-[0_8px_24px_rgba(58,54,50,0.06)]">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
+            <thead className="bg-[#FAF8F5] text-xs font-semibold uppercase tracking-wide text-[#6F6B67]">
+              <tr>
+                <th scope="col" className="px-4 py-3">Đơn hàng</th>
+                <th scope="col" className="px-4 py-3">Khách hàng</th>
+                <th scope="col" className="px-4 py-3">Ngày đặt</th>
+                <th scope="col" className="px-4 py-3">Thanh toán</th>
+                <th scope="col" className="px-4 py-3">Trạng thái</th>
+                <th scope="col" className="px-4 py-3 text-right">Tổng tiền</th>
+                <th scope="col" className="px-4 py-3 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E5E0D8]">
+              {rows.length === 0 ? (
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-[#6F6B67]">Không có đơn hàng phù hợp.</td></tr>
+              ) : rows.map(row => {
+                const next = nextStatuses(row.status)
 
-            return (
-              <article key={row.id} className="grid gap-4 rounded-lg bg-white p-4 shadow-[0_10px_28px_rgba(58,54,50,0.07)]">
-                <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="break-all font-display text-2xl font-semibold text-[#222222]">{row.id}</h2>
-                      <StatusBadge tone={statusTone(row.status)}>{orderStatusLabel[row.status]}</StatusBadge>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-[#6F6B67]">
-                      {row.customerName} · {formatDate(row.createdAt)} · {row.itemCount} sản phẩm
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-[#6F6B67]">
-                      {paymentMethodLabel[row.paymentMethod]} · {paymentStatusLabel[row.paymentStatus]}
-                    </p>
-                    <p className="mt-2 text-base font-semibold tabular-nums text-[#222222]">{formatCurrency(row.total)}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2 xl:justify-end">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      icon={<Eye size={17} aria-hidden="true" />}
-                      onClick={() => setSelectedOrderId(row.id)}
-                    >
-                      Xem chi tiết {row.id}
-                    </Button>
-                    {next.length === 0 ? (
-                      <span className="inline-flex min-h-11 items-center rounded-lg bg-[#FAF8F5] px-3 text-sm font-semibold text-[#8A8179]">
-                        Trạng thái cuối
-                      </span>
-                    ) : (
-                      next.map(status => (
+                return (
+                  <tr key={row.id} className="align-middle hover:bg-[#FAF8F5]/70">
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <p className="font-semibold text-[#222222]">{row.id}</p>
+                      <p className="mt-0.5 text-xs text-[#6F6B67]">{row.itemCount} sản phẩm</p>
+                    </td>
+                    <td className="px-4 py-3 text-[#3A3632]">{row.customerName}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-[#6F6B67]">{formatDate(row.createdAt)}</td>
+                    <td className="px-4 py-3">
+                      <p className="text-[#3A3632]">{paymentMethodLabel[row.paymentMethod]}</p>
+                      <p className="mt-0.5 text-xs text-[#6F6B67]">{paymentStatusLabel[row.paymentStatus]}</p>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3"><StatusBadge tone={statusTone(row.status)}>{orderStatusLabel[row.status]}</StatusBadge></td>
+                    <td className="whitespace-nowrap px-4 py-3 text-right font-semibold tabular-nums text-[#222222]">{formatCurrency(row.total)}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
                         <Button
-                          key={`${row.id}-${status}`}
                           type="button"
-                          variant={status === 'cancelled' ? 'danger' : 'primary'}
-                          onClick={() => changeStatus(row.id, status)}
+                          size="sm"
+                          variant="ghost"
+                          className="border border-[#E5E0D8]"
+                          icon={<Eye size={14} aria-hidden="true" />}
+                          onClick={() => openOrderDetail(row.id)}
                         >
-                          {actionLabel[status]} {row.id}
+                          Chi tiết
                         </Button>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </article>
-            )
-          })
-        )}
+                        {next.length === 0 ? (
+                          <span className="whitespace-nowrap text-xs font-medium text-[#6F6B67]">Trạng thái cuối</span>
+                        ) : next.map(status => (
+                          <Button
+                            key={`${row.id}-${status}`}
+                            type="button"
+                            size="sm"
+                            variant={status === 'cancelled' ? 'secondary' : 'primary'}
+                            onClick={() => changeStatus(row.id, status)}
+                          >
+                            {actionLabel[status]}
+                          </Button>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <Modal
         open={Boolean(selectedOrder)}
         title={selectedOrder ? `Chi tiết đơn ${selectedOrder.id}` : 'Chi tiết đơn'}
-        onClose={() => setSelectedOrderId(null)}
+        onClose={closeOrderDetail}
       >
         {selectedOrder && (
           <div className="grid gap-5">

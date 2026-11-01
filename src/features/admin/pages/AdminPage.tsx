@@ -56,7 +56,7 @@ export function AdminPage() {
     if (activeSection === 'categories') return <AdminCategoriesPanel database={state} dispatch={dispatch} />
     if (activeSection === 'orders') return <AdminOrdersPanel database={state} dispatch={dispatch} />
     if (activeSection === 'requests') return <AdminRequestsPanel database={state} dispatch={dispatch} reviewerId={currentUser?.id ?? ''} />
-    if (activeSection === 'customers') return <AdminCustomersPanel database={state} dispatch={dispatch} actorId={currentUser?.id ?? ''} />
+    if (activeSection === 'customers') return <AdminCustomersPanel />
     if (activeSection === 'ai') return <AdminAiPanel database={state} dispatch={dispatch} />
     return sectionPlaceholder(activeSection)
   }, [activeSection, currentUser?.id, dispatch, state])
