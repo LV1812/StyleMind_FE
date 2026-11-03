@@ -96,7 +96,7 @@ describe('Auth flow', () => {
   })
 
   it('clears a session for a locked user and returns to login', async () => {
-    renderProtectedRouteWithLockedSession('/checkout')
+    renderProtectedRouteWithLockedSession('/account')
 
     expect(await screen.findByRole('heading', { name: 'Đăng nhập' })).toBeInTheDocument()
   })

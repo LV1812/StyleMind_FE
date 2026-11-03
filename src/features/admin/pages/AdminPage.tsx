@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
 import { useAuth } from '@/features/auth'
@@ -73,6 +73,7 @@ export function AdminPage() {
         navigate('/login', { replace: true })
       }}
     >
+      <Link to="/admin/payments" className="mb-4 inline-block rounded-lg bg-[#EEE8E1] px-4 py-3 font-semibold text-[#684B5A]">Thanh toán: thu COD và xem lỗi</Link>
       {content}
     </AdminShell>
   )

@@ -215,6 +215,8 @@ export function demoReducer(state: DemoDatabase, action: DemoAction): DemoDataba
       })
     case 'cart/lineRemoved':
       return { ...state, cartLines: state.cartLines.filter(line => line.id !== action.payload.lineId) }
+    case 'cart/guestOrderAccepted':
+      return { ...state, cartLines: [] }
     case 'address/upserted':
       return { ...state, addresses: upsertAddress(state.addresses, action.payload) }
     case 'address/deleted': {

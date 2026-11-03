@@ -1,183 +1,62 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
-
+import { beforeEach, describe, expect, it } from 'vitest'
 import { createDemoSeed } from '@/app/data/demoSeed'
 import { AppProviders } from '@/app/providers/AppProviders'
 import { appRoutes } from '@/app/router/AppRouter'
-import { demoReducer } from '@/app/store/demoReducer'
-import type { DemoDatabase } from '@/app/store/types'
-import type { AddressSnapshot } from '@/entities/address/model/types'
-import type { Order, OrderStatus } from '@/entities/order/model/types'
 import { DEMO_STORAGE_KEY } from '@/shared/storage/demoStorage'
+import { paymentApi } from '@/features/payments/api/paymentClient'
+import { rememberOrder } from '@/features/payments/model/orderReferences'
+import { getIdentityMockCalls } from '@/test/identityMockBackend'
 
-function addressSnapshot(database: DemoDatabase): AddressSnapshot {
-  const address = database.addresses.find(item => item.id === 'adr-customer-home')
-  if (!address) throw new Error('Expected address fixture')
-  const { userId: _userId, isDefault: _isDefault, ...snapshot } = address
-  return snapshot
+beforeEach(() => { localStorage.clear(); sessionStorage.clear() })
+function seed() {
+  localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify({ ...createDemoSeed(), session: { userId: 'usr-customer-01', persistent: true }, cartLines: [{ id: 'cart', variantId: 'var-blouse-white-m', quantity: 1 }] }))
 }
-
-function orderFixture(database: DemoDatabase, overrides: Partial<Order> = {}): Order {
-  const product = database.products.find(item => item.id === 'prd-blouse-01')
-  const variant = product?.variants.find(item => item.id === 'var-blouse-white-m')
-  const image = variant?.images[0]
-  if (!product || !variant || !image) throw new Error('Expected product fixture')
-
-  return {
-    id: 'ORD-TEST-001',
-    userId: 'usr-customer-01',
-    status: 'pending',
-    paymentMethod: 'cod',
-    paymentStatus: 'pending',
-    paymentReference: null,
-    items: [
-      {
-        productId: product.id,
-        variantId: variant.id,
-        name: product.name,
-        brand: product.brand,
-        color: variant.color,
-        size: variant.size,
-        quantity: 1,
-        unitPrice: product.basePrice,
-        imageUrl: image.url,
-      },
-    ],
-    shippingAddress: addressSnapshot(database),
-    subtotal: product.basePrice,
-    discount: 0,
-    shipping: 30_000,
-    total: product.basePrice + 30_000,
-    createdAt: '2026-09-26T09:00:00.000Z',
-    timeline: [
-      { id: 'timeline-created', label: 'Đã tạo đơn COD', at: '2026-09-26T09:00:00.000Z' },
-      { id: 'timeline-confirmed', label: 'Đã xác nhận thông tin', at: '2026-09-26T09:20:00.000Z' },
-    ],
-    ...overrides,
-  }
-}
-
-function databaseWithOrders(status: OrderStatus = 'pending') {
-  const database = createDemoSeed()
-  return {
-    ...database,
-    session: { userId: 'usr-customer-01', persistent: true },
-    orders: [orderFixture(database, { status })],
-    cancellationRequests: [],
-    returnRequests: [],
-  }
-}
-
-function persistDatabase(database: DemoDatabase) {
-  window.localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(database))
-}
-
-function getDatabase() {
-  const raw = window.localStorage.getItem(DEMO_STORAGE_KEY)
-  if (!raw) throw new Error('Expected database in localStorage')
-  return JSON.parse(raw) as DemoDatabase
-}
-
-function renderAt(initialEntry: string, database: DemoDatabase) {
-  window.localStorage.clear()
-  persistDatabase(database)
-  const router = createMemoryRouter(appRoutes, { initialEntries: [initialEntry] })
-
-  render(
-    <AppProviders>
-      <RouterProvider router={router} />
-    </AppProviders>,
-  )
-
+function mount(path: string) {
+  const router = createMemoryRouter(appRoutes, { initialEntries: [path] })
+  render(<AppProviders><RouterProvider router={router} /></AppProviders>)
   return router
 }
-
-describe('Orders flow', () => {
-  it('lists current customer orders and opens an order detail', async () => {
-    const user = userEvent.setup()
-    renderAt('/orders', databaseWithOrders())
-
-    expect(await screen.findByRole('heading', { name: 'Đơn hàng' })).toBeInTheDocument()
-    await user.click(screen.getByRole('link', { name: /ORD-TEST-001/ }))
-
-    expect(await screen.findByRole('heading', { name: 'Đơn ORD-TEST-001' })).toBeInTheDocument()
-    expect(screen.getByText('Đã tạo đơn COD')).toBeInTheDocument()
-    expect(screen.getByText(/72 Nguyễn Thị Minh Khai/)).toBeInTheDocument()
+describe('Real Order lookup and owner references', () => {
+  it('lists only known IDs belonging to the current account and reads detail from API', async () => {
+    seed()
+    const order = await paymentApi.checkout({ checkout_key: crypto.randomUUID(), shipping_address_id: 'adr-customer-home', payment_method: 'COD' })
+    rememberOrder({ orderId: order.order_id, owner: 'account', accountId: 'usr-customer-01' })
+    rememberOrder({ orderId: 'other-account-order', owner: 'account', accountId: 'someone-else' })
+    rememberOrder({ orderId: 'guest-order', owner: 'guest' })
+    mount('/orders')
+    const link = await screen.findByRole('link', { name: 'Xem đơn ' + order.order_id })
+    expect(screen.queryByText(/other-account-order|guest-order/)).not.toBeInTheDocument()
+    fireEvent.click(link)
+    await screen.findByText(/Đặt hàng thành công/)
+    expect(getIdentityMockCalls().some(call => call.path === '/commerce/api/v1/orders/' + order.order_id && call.method === 'GET')).toBe(true)
+    expect(screen.queryByRole('button', { name: /Gửi yêu cầu hủy|Gửi yêu cầu trả/ })).not.toBeInTheDocument()
   })
 
-  it('submits a cancellation request with a reason for an eligible order', async () => {
-    const user = userEvent.setup()
-    renderAt('/orders/ORD-TEST-001', databaseWithOrders('pending'))
-
-    await screen.findByRole('heading', { name: 'Đơn ORD-TEST-001' })
-    await user.type(await screen.findByLabelText('Lý do hủy đơn'), 'Tôi đặt nhầm size')
-    await user.click(screen.getByRole('button', { name: 'Gửi yêu cầu hủy' }))
-
-    expect(await screen.findByText('Đã gửi yêu cầu hủy')).toBeInTheDocument()
-    await waitFor(() => expect(getDatabase().cancellationRequests).toHaveLength(1))
-    expect(getDatabase().cancellationRequests[0]).toMatchObject({
-      orderId: 'ORD-TEST-001',
-      userId: 'usr-customer-01',
-      reason: 'Tôi đặt nhầm size',
-      status: 'submitted',
-    })
+  it('does not render demo orders or mark them paid from local state', async () => {
+    seed(); mount('/orders')
+    expect(await screen.findByText('Chưa lưu mã đơn nào trên trình duyệt này.')).toBeInTheDocument()
+    expect(screen.queryByText(/ORD-TEST/)).not.toBeInTheDocument()
   })
 
-  it('allows cancellation for paid orders', async () => {
-    renderAt('/orders/ORD-TEST-001', databaseWithOrders('paid'))
-
-    expect(await screen.findByLabelText('Lý do hủy đơn')).toBeInTheDocument()
+  it('routes a known guest order to the guest API even after login', async () => {
+    seed()
+    const id = crypto.randomUUID()
+    rememberOrder({ orderId: id, owner: 'guest' })
+    const router = mount('/payments/' + id)
+    await waitFor(() => expect(router.state.location.pathname).toBe('/guest/orders/' + id))
+    expect(await screen.findByRole('alert')).toHaveTextContent('phiên khách')
+    expect(getIdentityMockCalls().some(call => call.path.includes('/orders/'))).toBe(false)
   })
 
-  it('does not allow cancellation for processing orders', async () => {
-    renderAt('/orders/ORD-TEST-001', databaseWithOrders('processing'))
-
-    expect(await screen.findByRole('heading', { name: 'Đơn ORD-TEST-001' })).toBeInTheDocument()
-    expect(screen.queryByLabelText('Lý do hủy đơn')).not.toBeInTheDocument()
-  })
-
-  it('submits a return request for selected order items', async () => {
-    const user = userEvent.setup()
-    renderAt('/orders/ORD-TEST-001', databaseWithOrders('shipped'))
-
-    await screen.findByRole('heading', { name: 'Đơn ORD-TEST-001' })
-    await user.click(await screen.findByLabelText(/Áo blouse cổ vuông/))
-    await user.type(screen.getByLabelText('Lý do trả hàng'), 'Sản phẩm không vừa')
-    await user.click(screen.getByRole('button', { name: 'Gửi yêu cầu trả hàng' }))
-
-    expect(await screen.findByText('Đã gửi yêu cầu trả hàng')).toBeInTheDocument()
-    await waitFor(() => expect(getDatabase().returnRequests).toHaveLength(1))
-    expect(getDatabase().returnRequests[0]).toMatchObject({
-      orderId: 'ORD-TEST-001',
-      userId: 'usr-customer-01',
-      reason: 'Sản phẩm không vừa',
-      status: 'submitted',
-      items: [
-        {
-          productId: 'prd-blouse-01',
-          variantId: 'var-blouse-white-m',
-          quantity: 1,
-        },
-      ],
-    })
-  })
-
-  it('keeps address snapshot unchanged after the address book changes', () => {
-    const database = databaseWithOrders()
-    const order = database.orders[0]
-    const changedAddress = { ...database.addresses[0], line1: 'Địa chỉ mới sau khi đặt hàng' }
-    const nextDatabase = demoReducer(database, { type: 'address/upserted', payload: changedAddress })
-
-    expect(order.shippingAddress.line1).toBe('72 Nguyễn Thị Minh Khai')
-    expect(nextDatabase.orders[0].shippingAddress.line1).toBe('72 Nguyễn Thị Minh Khai')
-  })
-
-  it('links order success to the placed order detail', async () => {
-    renderAt('/order-success/ORD-TEST-001', databaseWithOrders())
-
-    expect(await screen.findByRole('heading', { name: 'Đặt hàng thành công' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Xem chi tiết đơn hàng' })).toHaveAttribute('href', '/orders/ORD-TEST-001')
+  it('preserves known order ID when opening legacy success route', async () => {
+    seed()
+    const order = await paymentApi.checkout({ checkout_key: crypto.randomUUID(), shipping_address_id: 'adr-customer-home', payment_method: 'COD' })
+    const router = mount('/order-success/' + order.order_id)
+    await screen.findByText(/Đặt hàng thành công/)
+    expect(router.state.location.pathname).toBe('/payments/' + order.order_id)
+    await act(async () => { await router.navigate('/orders') })
+    expect(await screen.findByRole('link', { name: 'Xem đơn ' + order.order_id })).toBeInTheDocument()
   })
 })

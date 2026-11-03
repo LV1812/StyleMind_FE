@@ -137,6 +137,7 @@ describe('Notifications flow', () => {
     await user.click(await screen.findByRole('link', { name: 'Mở Đơn hàng đã xác nhận' }))
 
     expect(router.state.location.pathname).toBe('/orders/ORD-NOTI-001')
-    expect(await screen.findByRole('heading', { name: 'Đơn ORD-NOTI-001' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Thanh toán đơn hàng' })).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent('UUID')
   })
 })

@@ -41,7 +41,7 @@ async function navigateToCartAndCheckout() {
   const user = userEvent.setup()
 
   await user.click(await screen.findByLabelText('Giỏ hàng (1 sản phẩm)'))
-  await user.click(screen.getByRole('button', { name: 'Tiến hành thanh toán' }))
+  await user.click(screen.getByRole('link', { name: 'Tiến hành thanh toán' }))
   await waitFor(() => expect(router.state.location.pathname).toBe('/checkout'))
 }
 
@@ -62,6 +62,6 @@ describe('customer commerce smoke flow', () => {
     await user.click(screen.getByLabelText('Thanh toán khi nhận hàng'))
     await user.click(screen.getByRole('button', { name: 'Đặt hàng' }))
 
-    expect(await screen.findByText('Đặt hàng thành công')).toBeInTheDocument()
+    expect(await screen.findByText(/Đặt hàng thành công/)).toBeInTheDocument()
   }, 10_000)
 })

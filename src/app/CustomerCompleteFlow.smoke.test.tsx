@@ -73,14 +73,14 @@ describe('complete customer flow smoke', () => {
     expect(await screen.findByRole('heading', { name: 'Outfit smoke đi làm' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Thêm toàn bộ outfit vào giỏ' }))
     await user.click(await screen.findByLabelText(/Giỏ hàng/))
-    await user.click(screen.getByRole('button', { name: 'Tiến hành thanh toán' }))
+    await user.click(screen.getByRole('link', { name: 'Tiến hành thanh toán' }))
 
     await user.click(await screen.findByLabelText('Thanh toán khi nhận hàng'))
     await user.click(screen.getByRole('button', { name: 'Đặt hàng' }))
 
-    await user.click(await screen.findByRole('link', { name: 'Xem chi tiết đơn hàng' }))
-    expect(await screen.findByRole('heading', { name: /^Đơn ORD-/ })).toBeInTheDocument()
-    expect(getDatabase().orders).toHaveLength(1)
+    expect(await screen.findByText(/Đặt hàng thành công/)).toBeInTheDocument()
+    expect(router.state.location.pathname).toMatch(/^\/payments\/[\da-f-]{36}$/)
+    expect(getDatabase().orders).toHaveLength(0)
   }, 10_000)
 
   it('creates an AI outfit and shares the entire wardrobe by email', async () => {

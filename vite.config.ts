@@ -38,6 +38,8 @@ export default defineConfig(({ mode }) => {
       port: parseInt(process.env.PORT || '8443'),
       strictPort: true,
       proxy: {
+        '/commerce': { target: env.VITE_API_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
+        '/payment': { target: env.VITE_API_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
         '/api': {
           target: env.VITE_API_PROXY_TARGET || 'http://localhost:8080',
           changeOrigin: true,

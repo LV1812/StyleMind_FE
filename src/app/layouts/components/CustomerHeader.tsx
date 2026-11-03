@@ -6,8 +6,10 @@ import { ROUTES } from '@/app/router/routes'
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
 import { useAuth } from '@/features/auth'
 import { selectUnreadNotificationCount } from '@/features/notifications/model/notificationSelectors'
+import { useActiveCommerce } from '@/features/cart/model/AccountCommerceProvider'
 
 const navItems = [
+  { to: ROUTES.payments, label: 'Thanh toán' },
   { to: ROUTES.home, label: 'Trang chủ' },
   { to: ROUTES.shop, label: 'Cửa hàng' },
   { to: ROUTES.wardrobes, label: 'Tủ đồ' },
@@ -18,8 +20,9 @@ export function CustomerHeader() {
   const navigate = useNavigate()
   const { state } = useDemoStore()
   const { currentUser, logout } = useAuth()
+  const guest = useActiveCommerce()
   const [query, setQuery] = useState('')
-  const cartCount = state.cartLines.reduce((total, line) => total + line.quantity, 0)
+  const cartCount = guest.cart.items.reduce((total, line) => total + line.quantity, 0)
   const currentUserId = state.session?.userId ?? currentUser?.id ?? 'usr-customer-01'
   const unreadCount = selectUnreadNotificationCount(state, currentUserId)
   const visibleNavItems = currentUser?.role === 'admin' ? [...navItems, { to: ROUTES.admin, label: 'Quản trị' }] : navItems

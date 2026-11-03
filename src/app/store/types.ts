@@ -59,6 +59,7 @@ export type DemoAction =
   | { type: 'cart/lineAdded'; payload: AddCartLineInput }
   | { type: 'cart/quantityChanged'; payload: { lineId: string; quantity: number } }
   | { type: 'cart/lineRemoved'; payload: { lineId: string } }
+  | { type: 'cart/guestOrderAccepted' }
   | { type: 'address/upserted'; payload: Address }
   | { type: 'address/deleted'; payload: { addressId: string } }
   | { type: 'address/defaultChanged'; payload: { addressId: string } }

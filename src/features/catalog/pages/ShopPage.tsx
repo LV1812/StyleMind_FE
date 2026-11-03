@@ -3,6 +3,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
+import { useCommerceDisplay } from '@/features/cart/model/GuestCommerceProvider'
 import type { ProductSize } from '@/entities/product/model/types'
 import { Button, EmptyState } from '@/shared/ui'
 
@@ -76,7 +77,7 @@ function searchParamsFromFilters(filters: CatalogFilters) {
 }
 
 export function ShopPage() {
-  const { state } = useDemoStore()
+  const { state, loading, error, retry } = useCommerceDisplay()
   const [searchParams, setSearchParams] = useSearchParams()
   const [filters, setFilters] = useState(() => filtersFromSearchParams(searchParams))
 
@@ -123,6 +124,9 @@ export function ShopPage() {
     event.preventDefault()
     updateFilters({ ...filters, query: filters.query.trim() })
   }
+
+  if (loading) return <p role="status" className="p-8">Đang tải sản phẩm…</p>
+  if (error) return <div className="grid gap-4 p-8"><p role="alert">{error}</p><Button onClick={retry}>Tải lại sản phẩm</Button></div>
 
   return (
     <div className="bg-[#FAF8F5]">

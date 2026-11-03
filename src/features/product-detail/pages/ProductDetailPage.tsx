@@ -7,6 +7,10 @@ import { useDemoStore } from '@/app/store/DemoStoreProvider'
 import type { FashionMetadataOption, ProductSize } from '@/entities/product/model/types'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
 import { Button, EmptyState, useToast } from '@/shared/ui'
+import { useCommerceDisplay, useGuestCommerce } from '@/features/cart/model/GuestCommerceProvider'
+import { useAuth } from '@/features/auth'
+import { useActiveCommerce } from '@/features/cart/model/AccountCommerceProvider'
+import { guestCartErrorMessage } from '@/features/cart/data/guestCartApi'
 
 import { ColorSelector } from '../components/ColorSelector'
 import { ProductGallery } from '../components/ProductGallery'
@@ -25,7 +29,10 @@ export function ProductDetailPage() {
   const { productId } = useParams()
   const navigate = useNavigate()
   const toast = useToast()
-  const { state, dispatch } = useDemoStore()
+  const { dispatch } = useDemoStore()
+  const { state, loading, error, retry } = useCommerceDisplay()
+  const { currentUser } = useAuth()
+  const guest = useActiveCommerce()
   const product = state.products.find(item => item.id === productId && item.active) ?? null
   const [selectedColor, setSelectedColor] = useState<string | null>(null)
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null)
@@ -42,6 +49,8 @@ export function ProductDetailPage() {
     setSelectedColor(current => current ?? selection.selectedColor)
   }, [selection])
 
+  if (loading) return <p role="status" className="p-8">Đang tải sản phẩm…</p>
+  if (error) return <div className="grid gap-4 p-8"><p role="alert">{error}</p><Button onClick={retry}>Tải lại sản phẩm</Button></div>
   if (!product || !selection) {
     return (
       <div className="mx-auto max-w-[var(--container-wide)] px-5 py-12 md:px-8">
@@ -78,7 +87,7 @@ export function ProductDetailPage() {
     setValidationError(nextSelection.error ?? null)
   }
 
-  const addToCart = (buyNow = false) => {
+  const addToCart = async (buyNow = false) => {
     if (!selectedSize) {
       setValidationError('Vui lòng chọn kích thước')
       return
@@ -89,15 +98,11 @@ export function ProductDetailPage() {
       return
     }
 
-    dispatch({
-      type: 'cart/lineAdded',
-      payload: {
-        productId: product.id,
-        variantId: selection.variant.id,
-        quantity,
-        source: 'shop',
-      },
-    })
+    {
+      if (guest.busy) return
+      try { await guest.addItem(selection.variant.id, quantity) }
+      catch (failure) { setValidationError(guestCartErrorMessage(failure)); return }
+    }
 
     if (buyNow) {
       navigate(ROUTES.checkout)
@@ -159,10 +164,10 @@ export function ProductDetailPage() {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Button icon={<ShoppingBag size={18} aria-hidden="true" />} onClick={() => addToCart(false)}>
+          <Button loading={guest.busy} icon={<ShoppingBag size={18} aria-hidden="true" />} onClick={() => void addToCart(false)}>
             Thêm vào giỏ
           </Button>
-          <Button variant="secondary" icon={<Zap size={18} aria-hidden="true" />} onClick={() => addToCart(true)}>
+          <Button disabled={guest.busy} variant="secondary" icon={<Zap size={18} aria-hidden="true" />} onClick={() => void addToCart(true)}>
             Mua ngay
           </Button>
         </div>
