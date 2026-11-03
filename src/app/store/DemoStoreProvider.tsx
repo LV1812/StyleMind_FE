@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useReducer, useState, ty
 
 import { demoReducer } from './demoReducer'
 import type { DemoAction, DemoDatabase } from './types'
-import { loadDemoDatabase, resetDemoDatabase, saveDemoDatabase } from '@/shared/storage/demoStorage'
+import { DEMO_STORAGE_KEY, loadDemoDatabase, readDemoSnapshot, resetDemoDatabase, saveDemoDatabase } from '@/shared/storage/demoStorage'
 
 interface DemoStoreValue {
   state: DemoDatabase
@@ -44,6 +44,17 @@ export function DemoStoreProvider({ children }: PropsWithChildren) {
   const initial = useMemo(() => loadInitialDatabase(), [])
   const [state, dispatch] = useReducer(demoReducer, initial.database)
   const [storageRecovered, setStorageRecovered] = useState(initial.recovered)
+
+  useEffect(() => {
+    const storage = getBrowserStorage()
+    const receive = (event: StorageEvent) => {
+      if (!storage || event.storageArea !== storage || event.key !== DEMO_STORAGE_KEY) return
+      const next = readDemoSnapshot(storage.getItem(DEMO_STORAGE_KEY))
+      if (next) dispatch({ type: 'database/replaced', payload: next })
+    }
+    window.addEventListener('storage', receive)
+    return () => window.removeEventListener('storage', receive)
+  }, [])
 
   useEffect(() => {
     const storage = getBrowserStorage()

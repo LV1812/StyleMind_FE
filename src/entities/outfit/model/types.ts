@@ -1,5 +1,5 @@
 export type OutfitSource = 'manual' | 'ai'
-export type OutfitVisibility = 'private' | 'public'
+export type OutfitVisibility = 'private' | 'friends' | 'public'
 
 export interface OutfitItem {
   id: string

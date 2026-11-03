@@ -1,5 +1,5 @@
 import { FormEvent, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { ROUTES } from '@/app/router/routes'
 import { identityErrorMessage, storePasswordResetToken } from '@/shared/api/identityApi'
@@ -15,7 +15,7 @@ export function VerifyOtpPage() {
   const routeState = location.state as { flow?: 'registration' | 'password-reset'; email?: string; notice?: string } | null
   const flow = routeState?.flow ?? 'registration'
   const isPasswordReset = flow === 'password-reset'
-  const [email, setEmail] = useState(routeState?.email ?? '')
+  const email = routeState?.email ?? ''
   const [digits, setDigits] = useState(['', '', '', '', '', ''])
   const digitInputs = useRef<Array<HTMLInputElement | null>>([])
   const [emailError, setEmailError] = useState('')
@@ -103,13 +103,10 @@ export function VerifyOtpPage() {
           type="email"
           autoComplete="email"
           value={email}
+          readOnly
           error={emailError}
-          onChange={event => {
-            setEmail(event.target.value)
-            if (emailError) setEmailError('')
-            if (error) setError('')
-          }}
         />
+        {!email && <p className="text-sm text-[#A94B4B]">Không tìm thấy email. Vui lòng quay lại <Link className="underline" to={isPasswordReset ? ROUTES.forgotPassword : ROUTES.register}>{isPasswordReset ? 'quên mật khẩu' : 'đăng ký'}</Link> để nhận mã.</p>}
         <div className="grid grid-cols-6 gap-2">
           {digits.map((digit, index) => (
             <input
@@ -154,7 +151,7 @@ export function VerifyOtpPage() {
           </p>
         )}
         {error && <p id="verification-code-error" className="rounded-lg bg-[#FCEAEA] px-3 py-2 text-sm font-semibold text-[#A94B4B]" role="alert">{error}</p>}
-        <Button type="submit" loading={submitting}>{isPasswordReset ? 'Xác nhận mã' : 'Xác thực email'}</Button>
+        <Button type="submit" loading={submitting} disabled={!email.trim()}>{isPasswordReset ? 'Xác nhận mã' : 'Xác thực email'}</Button>
         <Button type="button" variant="secondary" loading={resending} disabled={!email.trim()} onClick={handleResend}>
           Gửi mã mới
         </Button>

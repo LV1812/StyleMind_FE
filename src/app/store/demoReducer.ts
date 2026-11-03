@@ -7,6 +7,8 @@ import type { Outfit } from '@/entities/outfit/model/types'
 import type { OutfitShare, WardrobePublicLink, WardrobeSettings, WardrobeShare } from '@/entities/share/model/types'
 
 import type { DemoAction, DemoDatabase } from './types'
+import { reduceFriends } from '@/features/friends/model/friendshipModel'
+import { changeOutfitVisibility, isOutfitVisibility } from '@/features/sharing/model/outfitSharing'
 
 function findVariant(database: DemoDatabase, variantId: string) {
   for (const product of database.products) {
@@ -117,9 +119,11 @@ export function normalizeDemoDatabase(database: DemoDatabase): DemoDatabase {
 
   return {
     ...database,
+    friendships: database.friendships ?? [],
+    friendInvitations: database.friendInvitations ?? [],
     session,
     cartLines,
-    outfits: database.outfits ?? [],
+    outfits: (database.outfits ?? []).map(outfit => isOutfitVisibility(outfit.visibility) ? outfit : { ...outfit, visibility: 'private' }),
     outfitShares: database.outfitShares ?? [],
     wardrobeShares: database.wardrobeShares ?? [],
     wardrobeSettings: database.wardrobeSettings ?? [],
@@ -134,6 +138,11 @@ export function normalizeDemoDatabase(database: DemoDatabase): DemoDatabase {
 
 export function demoReducer(state: DemoDatabase, action: DemoAction): DemoDatabase {
   switch (action.type) {
+    case 'friends/invite':
+    case 'friends/accept':
+    case 'friends/retry':
+    case 'friends/remove':
+      return reduceFriends(state, action)
     case 'database/replaced':
       return normalizeDemoDatabase(action.payload)
     case 'commerce/catalogSynced':
@@ -308,16 +317,10 @@ export function demoReducer(state: DemoDatabase, action: DemoAction): DemoDataba
           updatedAt: new Date().toISOString(),
         })),
       }
+    case 'outfit/visibilityChanged':
+      return changeOutfitVisibility(state, action.payload.outfitId, action.payload.visibility, action.payload.publicToken)
     case 'outfit/publicToggled':
-      return {
-        ...state,
-        outfits: updateOutfit(state.outfits, action.payload.outfitId, outfit => ({
-          ...outfit,
-          visibility: action.payload.enabled ? 'public' : 'private',
-          publicToken: action.payload.enabled ? action.payload.publicToken ?? outfit.publicToken ?? `public-${outfit.id}` : undefined,
-          updatedAt: new Date().toISOString(),
-        })),
-      }
+      return changeOutfitVisibility(state, action.payload.outfitId, action.payload.enabled ? 'public' : 'private', action.payload.publicToken)
     case 'share/granted':
       return { ...state, outfitShares: upsertShare(state.outfitShares, action.payload) }
     case 'share/revoked':

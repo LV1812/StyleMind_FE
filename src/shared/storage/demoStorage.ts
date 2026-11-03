@@ -40,6 +40,14 @@ function isDemoDatabase(value: unknown): value is DemoDatabase {
   return REQUIRED_ARRAY_KEYS.every(key => Array.isArray(value[key]))
 }
 
+export function readDemoSnapshot(raw: string | null): DemoDatabase | null {
+  if (!raw) return null
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    return isDemoDatabase(parsed) ? normalizeDemoDatabase(parsed) : null
+  } catch { return null }
+}
+
 function persist(storage: Storage, database: DemoDatabase) {
   storage.setItem(DEMO_STORAGE_KEY, JSON.stringify(database))
 }

@@ -30,7 +30,7 @@ async function loginWith(email: string, password: string) {
 
 async function searchFor(query: string) {
   const user = userEvent.setup()
-  const searchInput = await screen.findByLabelText('Tìm kiếm sản phẩm')
+  const searchInput = await screen.findByLabelText('Tìm trong cửa hàng')
 
   await user.type(searchInput, query)
   await user.keyboard('{Enter}')

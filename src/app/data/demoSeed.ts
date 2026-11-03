@@ -533,6 +533,8 @@ const seededOrders: Order[] = [
 export function createDemoSeed(): DemoDatabase {
   return {
     schemaVersion: 1,
+    friendships: [],
+    friendInvitations: [{ id: 'demo-invitation-mai', senderId: 'usr-friend-01', recipientEmail: DEMO_CUSTOMER.email, status: 'PENDING', delivery: 'SENT', createdAt: Date.UTC(2026, 9, 30), lastAttemptAt: Date.UTC(2026, 9, 30), expiresAt: Date.UTC(2026, 10, 6) }],
     users: [
       {
         id: 'usr-customer-01',

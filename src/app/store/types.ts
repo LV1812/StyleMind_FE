@@ -4,7 +4,8 @@ import type { AddCartLineInput, CartLine } from '@/entities/cart/model/types'
 import type { ChatMessage, ChatSession } from '@/entities/chat/model/types'
 import type { Notification } from '@/entities/notification/model/types'
 import type { CancellationRequest, Order, OrderStatus, ReturnRequest } from '@/entities/order/model/types'
-import type { Outfit, OutfitItem } from '@/entities/outfit/model/types'
+import type { Outfit, OutfitItem, OutfitVisibility } from '@/entities/outfit/model/types'
+import type { FriendInvitation, FriendsAction, Friendship } from '@/entities/friendship/model/types'
 import type {
   CompatibilityRule,
   FashionMetadata,
@@ -26,6 +27,8 @@ export interface AiMetrics {
 export interface DemoDatabase {
   schemaVersion: 1
   users: User[]
+  friendships: Friendship[]
+  friendInvitations: FriendInvitation[]
   session: DemoSession | null
   products: Product[]
   categories: ProductCategory[]
@@ -49,6 +52,7 @@ export interface DemoDatabase {
 }
 
 export type DemoAction =
+  | FriendsAction
   | { type: 'database/replaced'; payload: DemoDatabase }
   | { type: 'commerce/catalogSynced'; payload: { products: Product[]; categories: ProductCategory[] } }
   | { type: 'commerce/cartSynced'; payload: CartLine[] }
@@ -74,6 +78,7 @@ export type DemoAction =
   | { type: 'outfit/itemUpdated'; payload: { outfitId: string; itemId: string; item: Partial<OutfitItem> } }
   | { type: 'outfit/itemRemoved'; payload: { outfitId: string; itemId: string } }
   | { type: 'outfit/publicToggled'; payload: { outfitId: string; enabled: boolean; publicToken?: string } }
+  | { type: 'outfit/visibilityChanged'; payload: { outfitId: string; visibility: OutfitVisibility; publicToken?: string } }
   | { type: 'share/granted'; payload: OutfitShare }
   | { type: 'share/revoked'; payload: { shareId: string } }
   | { type: 'wardrobeShare/granted'; payload: WardrobeShare }

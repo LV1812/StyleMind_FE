@@ -1,5 +1,5 @@
-import { Bell, LayoutDashboard, LogOut, MessageCircle, Search, ShoppingBag, UserRound } from 'lucide-react'
-import { FormEvent, useState, type ReactNode } from 'react'
+import { Bell, LayoutDashboard, LogOut, MessageCircle, ShoppingBag, UserRound } from 'lucide-react'
+import { type ReactNode } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 
 import { ROUTES } from '@/app/router/routes'
@@ -11,6 +11,7 @@ const navItems = [
   { to: ROUTES.home, label: 'Trang chủ' },
   { to: ROUTES.shop, label: 'Cửa hàng' },
   { to: ROUTES.wardrobes, label: 'Tủ đồ' },
+  { to: '/friends', label: 'Bạn bè' },
   { to: ROUTES.orders, label: 'Đơn hàng' },
 ]
 
@@ -18,18 +19,10 @@ export function CustomerHeader() {
   const navigate = useNavigate()
   const { state } = useDemoStore()
   const { currentUser, logout } = useAuth()
-  const [query, setQuery] = useState('')
   const cartCount = state.cartLines.reduce((total, line) => total + line.quantity, 0)
   const currentUserId = state.session?.userId ?? currentUser?.id ?? 'usr-customer-01'
   const unreadCount = selectUnreadNotificationCount(state, currentUserId)
   const visibleNavItems = currentUser?.role === 'admin' ? [...navItems, { to: ROUTES.admin, label: 'Quản trị' }] : navItems
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const trimmed = query.trim()
-    navigate(trimmed ? `${ROUTES.shop}?q=${encodeURIComponent(trimmed)}` : ROUTES.shop)
-    setQuery('')
-  }
 
   const handleLogout = () => {
     logout()
@@ -60,19 +53,6 @@ export function CustomerHeader() {
           ))}
         </nav>
         <div className="ml-auto hidden items-center gap-2 lg:flex">
-          <form onSubmit={handleSubmit} className="relative">
-            <label htmlFor="site-search" className="sr-only">
-              Tìm kiếm sản phẩm
-            </label>
-            <Search aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9D9894]" />
-            <input
-              id="site-search"
-              value={query}
-              onChange={event => setQuery(event.target.value)}
-              placeholder="Tìm áo, đầm, blazer"
-              className="h-10 w-64 rounded-lg border border-[#D8D0C6] bg-white pl-9 pr-3 text-sm font-medium text-[#222222] outline-none transition focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20"
-            />
-          </form>
           <HeaderIconLink to={ROUTES.notifications} label={`Thông báo (${unreadCount} chưa đọc)`} count={unreadCount}>
             <Bell size={18} aria-hidden="true" />
           </HeaderIconLink>
