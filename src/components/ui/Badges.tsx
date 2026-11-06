@@ -11,13 +11,13 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'neutral', className = '', size = 'sm', icon }: BadgeProps) {
   const styles: Record<string, { bg: string; color: string; border: string }> = {
-    neutral: { bg: '#EEE8E1', color: '#6F6B67', border: '#D8D0C6' },
-    success: { bg: '#EAF2EC', color: '#48755A', border: 'rgba(72, 117, 90, 0.25)' },
-    warning: { bg: '#FBF1E0', color: '#B67A32', border: 'rgba(182, 122, 50, 0.25)' },
-    error: { bg: '#FCEAEA', color: '#A94B4B', border: 'rgba(169, 75, 75, 0.25)' },
-    ai: { bg: '#F4E7E8', color: '#684B5A', border: 'rgba(104, 75, 90, 0.2)' },
-    owned: { bg: '#EAF2EC', color: '#48755A', border: '#B4D3BD' },
-    shop: { bg: '#F4E7E8', color: '#684B5A', border: '#E8D0D2' },
+    neutral: { bg: "var(--color-sand)", color: "var(--color-secondary)", border: "var(--color-sand-dark)" },
+    success: { bg: "var(--color-success-bg)", color: "var(--color-success)", border: "color-mix(in srgb, var(--color-success) 25%, transparent)" },
+    warning: { bg: "var(--color-warning-bg)", color: "var(--color-warning)", border: "color-mix(in srgb, var(--color-warning) 25%, transparent)" },
+    error: { bg: "var(--color-error-bg)", color: "var(--color-error)", border: "color-mix(in srgb, var(--color-error) 25%, transparent)" },
+    ai: { bg: "var(--color-blush)", color: "var(--color-accent)", border: "color-mix(in srgb, var(--color-accent) 20%, transparent)" },
+    owned: { bg: "var(--color-success-bg)", color: "var(--color-success)", border: "var(--color-success-border)" },
+    shop: { bg: "var(--color-blush)", color: "var(--color-accent)", border: "var(--color-blush-dark)" },
   }
 
   const current = styles[variant] || styles.neutral
@@ -34,7 +34,7 @@ export function Badge({ children, variant = 'neutral', className = '', size = 's
   )
 }
 
-export function OwnedBadge({ label = 'Owned', className = '', size = 'sm' }: { label?: string; className?: string; size?: 'sm' | 'md' }) {
+export function OwnedBadge({ label = "Đã có", className = '', size = 'sm' }: { label?: string; className?: string; size?: 'sm' | 'md' }) {
   return (
     <Badge
       variant="owned"
@@ -42,14 +42,14 @@ export function OwnedBadge({ label = 'Owned', className = '', size = 'sm' }: { l
       className={`shadow-xs font-semibold ${className}`}
       icon={<span aria-hidden="true" className="font-bold">✓</span>}
     >
-      <span className="sr-only">Status: </span>{label}
+      <span className="sr-only">Trạng thái: </span>{label}
     </Badge>
   )
 }
 
 export function ShopBadge({
   price,
-  label = 'Buy',
+  label = "Gợi ý mua thêm",
   className = '',
   size = 'sm'
 }: {
@@ -65,14 +65,14 @@ export function ShopBadge({
       className={`shadow-xs font-semibold ${className}`}
       icon={<span aria-hidden="true" className="font-bold">+</span>}
     >
-      <span className="sr-only">Recommended to </span>
+      <span className="sr-only">Trạng thái: </span>
       {label} {price !== undefined ? `· ${formatVND(price)}` : ''}
     </Badge>
   )
 }
 
 export function UnavailableBadge({
-  reason = 'Unavailable',
+  reason = "Tạm hết hàng",
   className = '',
   size = 'sm'
 }: {
@@ -84,16 +84,16 @@ export function UnavailableBadge({
     <Badge
       variant="neutral"
       size={size}
-      className={`bg-[#E8E2D9] text-[#78736E] border-[#D8D0C6] line-through-none opacity-90 ${className}`}
+      className={`bg-unavailable-bg text-unavailable-text border-sand-dark line-through-none opacity-90 ${className}`}
       icon={<span aria-hidden="true" className="font-bold">○</span>}
     >
-      <span className="sr-only">Status: </span>{reason}
+      <span className="sr-only">Trạng thái: </span>{reason}
     </Badge>
   )
 }
 
 export function AIBadge({
-  label = 'AI Curated',
+  label = "AI gợi ý",
   className = '',
   size = 'sm'
 }: {

@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ROUTES } from '@/app/router/routes'
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
 import type { FashionMetadataOption, ProductSize } from '@/entities/product/model/types'
+import { useCommerce } from '@/features/commerce'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
 import { Button, EmptyState, useToast } from '@/shared/ui'
 import { useCommerceDisplay, useGuestCommerce } from '@/features/cart/model/GuestCommerceProvider'
@@ -38,6 +39,7 @@ export function ProductDetailPage() {
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [addingToCart, setAddingToCart] = useState(false)
 
   const selection = useMemo(
     () => (product ? getProductSelection(product, { color: selectedColor, size: selectedSize }) : null),
@@ -108,8 +110,6 @@ export function ProductDetailPage() {
       navigate(ROUTES.checkout)
       return
     }
-
-    toast.success('Đã thêm sản phẩm vào giỏ')
   }
 
   return (

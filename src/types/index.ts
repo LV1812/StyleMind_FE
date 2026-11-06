@@ -46,6 +46,16 @@ export interface Product {
   recommendedSizeReason: string
   tags: string[]
   inStock?: boolean
+  variants?: Array<{
+    id: string
+    size: string
+    color: string
+    material: string
+    price: number
+    availableQuantity: number
+    active: boolean
+    image: string
+  }>
 }
 
 export interface WardrobeItem {
@@ -127,6 +137,8 @@ export interface OrderTimelineStep {
 
 export interface Order {
   id: string
+  apiId?: string
+  apiStatus?: string
   date: string
   status: 'PENDING' | 'PAYMENT_PENDING' | 'PAID' | 'CONFIRMED' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED' | 'REFUNDED'
   statusLabel: string
@@ -142,6 +154,7 @@ export interface Order {
 
 export interface CartItem {
   id: string
+  variantId?: string
   productId: string
   name: string
   brand: string

@@ -207,12 +207,14 @@ export function storeIdentityTokens(tokens: IdentityTokenResponse, persistent: b
   window.localStorage.removeItem(TOKEN_STORAGE_KEY)
   window.sessionStorage.removeItem(TOKEN_STORAGE_KEY)
   storageFor(persistent)?.setItem(TOKEN_STORAGE_KEY, JSON.stringify(session))
+  window.dispatchEvent(new Event('identity:tokens-changed'))
 }
 
 export function clearIdentitySession(): void {
   if (typeof window === 'undefined') return
   window.localStorage.removeItem(TOKEN_STORAGE_KEY)
   window.sessionStorage.removeItem(TOKEN_STORAGE_KEY)
+  window.dispatchEvent(new Event('identity:tokens-changed'))
 }
 
 export function storePasswordResetToken(token: string, expiresInSeconds: number): void {
@@ -348,6 +350,18 @@ async function rotateStoredRefreshToken(): Promise<IdentityTokenResponse> {
     })
   }
   return refreshInFlight
+}
+
+// Community and Identity requests share the same refresh operation.
+export async function refreshIdentitySession(expectedToken: string): Promise<boolean> {
+  const session = readIdentitySession()
+  if (!session) return false
+  if (session.accessToken !== expectedToken) return true
+  const tokens = await rotateStoredRefreshToken()
+  const current = readIdentitySession()
+  if (!current || current.accessToken !== expectedToken || current.refreshToken !== session.refreshToken) return false
+  storeIdentityTokens(tokens, session.persistent)
+  return true
 }
 
 function jsonRequest(method: string, body?: unknown): RequestInit {

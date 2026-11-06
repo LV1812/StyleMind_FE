@@ -1,11 +1,15 @@
-import { useState } from 'react'
-import type { AppState } from '../types'
-import { mockProducts, mockWardrobeItems } from '../data/mockData'
+import { useEffect, useState } from 'react'
+import type { AppState, Product } from '../types'
+import { mockWardrobeItems } from '../data/mockData'
 import Money from '../components/ui/Money'
 import { OwnedBadge, UnavailableBadge } from '../components/ui/Badges'
 import Button from '../components/ui/Button'
 import ColorSwatch from '../components/fashion/ColorSwatch'
 import SizeSelector from '../components/fashion/SizeSelector'
+import EmptyState from '../components/ui/EmptyState'
+import { commerceApi } from '../api/commerce'
+import { commerceProductToUi } from '../api/commerce.adapters'
+import { CommerceApiError } from '../api/http'
 
 interface Props {
   onNavigate: (screen: string, opts?: any) => void
@@ -13,23 +17,81 @@ interface Props {
 }
 
 export default function ProductDetail({ onNavigate, app }: Props) {
-  const productId = app?.opts?.productId || 'p1'
-  const product = mockProducts.find(p => p.id === productId) || mockProducts[0]
+  const productId = app?.opts?.productId
+  const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const [selectedColorIdx, setSelectedColorIdx] = useState(0)
-  const [selectedSize, setSelectedSize] = useState<string | null>(
-    product.availableSizes.includes(product.recommendedSize)
-      ? product.recommendedSize
-      : product.availableSizes[0] || null
-  )
+  const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [activeImg, setActiveImg] = useState(0)
   const [addedFeedback, setAddedFeedback] = useState(false)
   const [favorited, setFavorited] = useState(false)
   const [activeTab, setActiveTab] = useState<'details' | 'materials' | 'fit'>('details')
 
+  useEffect(() => {
+    let active = true
+    const loadProduct = async () => {
+      if (!productId) {
+        setError('Không tìm thấy mã sản phẩm.')
+        setLoading(false)
+        return
+      }
+      setLoading(true)
+      setError(null)
+      try {
+        const result = commerceProductToUi(await commerceApi.products.get(productId))
+        if (!active) return
+        setProduct(result)
+        setSelectedSize(
+          result.availableSizes.includes(result.recommendedSize)
+            ? result.recommendedSize
+            : result.availableSizes[0] || null,
+        )
+      } catch (requestError) {
+        if (active) {
+          setError(
+            requestError instanceof CommerceApiError
+              ? requestError.message
+              : 'Không thể tải chi tiết sản phẩm.',
+          )
+        }
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+    void loadProduct()
+    return () => {
+      active = false
+    }
+  }, [productId])
+
+  if (loading) {
+    return <div className="py-24 text-center text-sm text-secondary" role="status">Đang tải sản phẩm...</div>
+  }
+
+  if (!product || error) {
+    return (
+      <EmptyState
+        title="Không thể tải sản phẩm"
+        description={error || 'Sản phẩm không tồn tại hoặc đã ngừng bán.'}
+        primaryAction={{ label: 'Về cửa hàng', onClick: () => onNavigate('shop') }}
+      />
+    )
+  }
+
   const selectedColor = product.colors[selectedColorIdx] || product.colors[0]
-  const isOutOfStock = product.inStock === false || product.availableSizes.length === 0
-  const isSizeAvailable = selectedSize ? product.availableSizes.includes(selectedSize) : false
+  const selectedVariant = product.variants?.find(
+    variant =>
+      variant.active &&
+      variant.availableQuantity > 0 &&
+      variant.size === selectedSize &&
+      variant.color === selectedColor.name,
+  ) || product.variants?.find(
+    variant => variant.active && variant.availableQuantity > 0 && variant.size === selectedSize,
+  )
+  const isOutOfStock = product.inStock === false || !selectedVariant
+  const isSizeAvailable = Boolean(selectedVariant)
 
   // Wardrobe pieces that match this item
   const matchingWardrobeItems = mockWardrobeItems.slice(0, 3)
@@ -39,16 +101,17 @@ export default function ProductDetail({ onNavigate, app }: Props) {
 
     if (app?.addToCart) {
       app.addToCart({
+        variantId: selectedVariant?.id,
         productId: product.id,
         name: product.name,
         brand: product.brand,
         size: selectedSize,
         color: selectedColor.name,
         colorHex: selectedColor.hex,
-        price: product.price,
-        image: product.image,
+        price: selectedVariant?.price || product.price,
+        image: selectedVariant?.image || product.image,
         available: true,
-        aiRec: `Matches ${product.wardrobeMatches} items in your wardrobe`,
+        aiRec: `Phối được với ${product.wardrobeMatches} món trong tủ đồ của bạn`,
       })
     }
 
@@ -57,25 +120,25 @@ export default function ProductDetail({ onNavigate, app }: Props) {
   }
 
   return (
-    <div style={{ background: '#FAF8F5', minHeight: '100vh' }}>
+    <div style={{ background: "var(--color-ivory)", minHeight: '100vh' }}>
       <div className="px-6 md:px-16 py-6">
         {/* Breadcrumbs */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs mb-8 text-[#9D9894]">
+        <nav aria-label="Đường dẫn điều hướng" className="flex items-center gap-2 text-xs mb-8 text-muted">
           <button
             onClick={() => onNavigate('shop')}
-            className="hover:text-[#222222] transition-colors"
+            className="hover:text-charcoal transition-colors"
           >
-            Shop
+            Cửa hàng
           </button>
           <span aria-hidden="true">/</span>
           <button
             onClick={() => onNavigate('shop')}
-            className="hover:text-[#222222] transition-colors"
+            className="hover:text-charcoal transition-colors"
           >
             {product.category}
           </button>
           <span aria-hidden="true">/</span>
-          <span className="text-[#3A3632] font-medium" aria-current="page">
+          <span className="text-ink font-medium" aria-current="page">
             {product.name}
           </span>
         </nav>
@@ -85,16 +148,16 @@ export default function ProductDetail({ onNavigate, app }: Props) {
           {/* Gallery Gallery Panel */}
           <div className="flex flex-col-reverse md:flex-row gap-4">
             {/* Thumbnails */}
-            <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-visible flex-none" role="group" aria-label="Product image thumbnails">
+            <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-visible flex-none" role="group" aria-label="Ảnh thu nhỏ sản phẩm">
               {product.images.map((img, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => setActiveImg(i)}
-                  aria-label={`View image ${i + 1} of ${product.name}`}
+                  aria-label={`Xem ảnh ${i + 1} của ${product.name}`}
                   aria-current={activeImg === i ? 'true' : undefined}
-                  className={`w-16 h-20 rounded-xl overflow-hidden border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] ${
-                    activeImg === i ? 'border-[#684B5A] ring-2 ring-[#684B5A]/20' : 'border-[#EEE8E1] hover:border-[#D8D0C6]'
+                  className={`w-16 h-20 rounded-xl overflow-hidden border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                    activeImg === i ? 'border-accent ring-2 ring-accent/20' : 'border-sand hover:border-sand-dark'
                   }`}
                 >
                   <img src={img} alt="" className="w-full h-full object-cover" />
@@ -103,25 +166,25 @@ export default function ProductDetail({ onNavigate, app }: Props) {
             </div>
 
             {/* Main Featured Image */}
-            <div className="relative flex-1 aspect-[3/4] rounded-2xl overflow-hidden bg-[#EEE8E1] border border-[#EEE8E1]">
+            <div className="relative flex-1 aspect-[3/4] rounded-2xl overflow-hidden bg-sand border border-sand">
               <img
                 src={product.images[activeImg] || product.image}
-                alt={`${product.name} in ${selectedColor.name}`}
+                alt={`${product.name} màu ${selectedColor.name}`}
                 className="w-full h-full object-cover"
               />
               <button
                 type="button"
                 onClick={() => setFavorited(!favorited)}
-                aria-label={favorited ? 'Remove from favorites' : 'Save to favorites'}
-                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow-sm text-base transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+                aria-label={favorited ? "Bỏ yêu thích" : "Lưu yêu thích"}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-surface/90 backdrop-blur-xs flex items-center justify-center shadow-sm text-base transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
-                <span style={{ color: favorited ? '#A94B4B' : '#9D9894' }}>
+                <span style={{ color: favorited ? "var(--color-error)" : "var(--color-muted)" }}>
                   {favorited ? '♥' : '♡'}
                 </span>
               </button>
               {isOutOfStock && (
                 <div className="absolute top-4 left-4">
-                  <UnavailableBadge reason="Out of Stock" size="md" />
+                  <UnavailableBadge reason="Hết hàng" size="md" />
                 </div>
               )}
             </div>
@@ -130,29 +193,29 @@ export default function ProductDetail({ onNavigate, app }: Props) {
           {/* Product Details Panel */}
           <div className="space-y-6">
             <div>
-              <p className="text-xs uppercase tracking-[0.22em] font-semibold text-[#B98791] mb-1">
+              <p className="text-xs uppercase tracking-[0.22em] font-semibold text-rose mb-1">
                 {product.brand}
               </p>
-              <h1 className="font-display text-3xl sm:text-4xl font-light text-[#222222] mb-3">
+              <h1 className="font-display text-3xl sm:text-4xl font-light text-charcoal mb-3">
                 {product.name}
               </h1>
               <div className="flex items-center gap-3 mb-4">
-                <Money amount={product.price} className="text-2xl font-semibold text-[#222222]" />
-                <span className="text-xs px-2.5 py-1 rounded-full bg-[#EEE8E1] text-[#6F6B67] font-medium">
-                  {product.fit} Fit
+                <Money amount={product.price} className="text-2xl font-semibold text-charcoal" />
+                <span className="text-xs px-2.5 py-1 rounded-full bg-sand text-secondary font-medium">
+                  {product.fit === 'Cỡ duy nhất' ? product.fit : `Dáng ${product.fit.toLocaleLowerCase('vi-VN')}`}
                 </span>
               </div>
             </div>
 
             {/* Wardrobe AI Context Alert */}
-            <div className="p-4 rounded-2xl bg-[#F4E7E8] border border-[#684B5A]/20 flex items-start gap-3">
-              <span className="text-[#684B5A] text-lg leading-none mt-0.5" aria-hidden="true">✦</span>
+            <div className="p-4 rounded-2xl bg-blush border border-accent/20 flex items-start gap-3">
+              <span className="text-accent text-lg leading-none mt-0.5" aria-hidden="true">✦</span>
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-[#684B5A] mb-1">
-                  StyleMind Synergy
+                <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">
+                  Gợi ý kết hợp từ StyleMind
                 </p>
-                <p className="text-xs sm:text-sm text-[#3A3632] leading-relaxed">
-                  Matches <strong>{product.wardrobeMatches} items</strong> in your existing wardrobe. Pairing this with your Cream Silk Blouse and Loafers creates a complete work-to-dinner look.
+                <p className="text-xs sm:text-sm text-ink leading-relaxed">
+                  Phối được với <strong>{product.wardrobeMatches} món</strong> trong tủ đồ của bạn. Xem các món phù hợp bên dưới để tìm thêm cảm hứng phối đồ.
                 </p>
               </div>
             </div>
@@ -160,8 +223,8 @@ export default function ProductDetail({ onNavigate, app }: Props) {
             {/* Color Swatch Selection */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#6F6B67]">
-                  Color: <strong className="text-[#222222] font-medium">{selectedColor.name}</strong>
+                <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
+                  Màu: <strong className="text-charcoal font-medium">{selectedColor.name}</strong>
                 </span>
               </div>
               <ColorSwatch
@@ -175,11 +238,11 @@ export default function ProductDetail({ onNavigate, app }: Props) {
             {/* Size Selector */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#6F6B67]">
-                  Select Size
+                <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
+                  Chọn kích cỡ
                 </span>
-                <span className="text-xs text-[#6F6B67]">
-                  Usual size: <strong>S / M</strong>
+                <span className="text-xs text-secondary">
+                  Cỡ thường mặc: <strong>S / M</strong>
                 </span>
               </div>
               <SizeSelector
@@ -190,12 +253,12 @@ export default function ProductDetail({ onNavigate, app }: Props) {
                 onSelectSize={setSelectedSize}
               />
               {/* Product Principle 74: Respectful fit advisory */}
-              <div className="mt-3 p-3 rounded-xl bg-[#EEE8E1]/50 border border-[#D8D0C6] text-xs text-[#6F6B67] leading-relaxed">
+              <div className="mt-3 p-3 rounded-xl bg-sand/50 border border-sand-dark text-xs text-secondary leading-relaxed">
                 <p>
-                  <strong>Fit note:</strong> {product.recommendedSizeReason}
+                  <strong>Gợi ý chọn cỡ:</strong> {product.recommendedSizeReason}
                 </p>
-                <p className="text-[11px] text-[#9D9894] mt-1">
-                  Fit suggestions are based on your optional profile preferences and can be updated anytime in Settings.
+                <p className="text-[11px] text-muted mt-1">
+                  Gợi ý kích cỡ dựa trên thông tin bạn tự chọn trong hồ sơ và có thể cập nhật bất cứ lúc nào trong phần cài đặt.
                 </p>
               </div>
             </div>
@@ -211,12 +274,12 @@ export default function ProductDetail({ onNavigate, app }: Props) {
                 icon={addedFeedback ? <span>✓</span> : <span>+</span>}
               >
                 {addedFeedback
-                  ? 'Added to Bag!'
+                  ? "Đã thêm vào giỏ!"
                   : isOutOfStock
-                  ? 'Product Out of Stock'
+                  ? "Sản phẩm đã hết hàng"
                   : !isSizeAvailable
-                  ? 'Selected Size Unavailable'
-                  : `Add to Bag · ${selectedSize ? `Size ${selectedSize}` : ''}`}
+                  ? "Cỡ bạn chọn đã hết hàng"
+                  : `Thêm vào giỏ · ${selectedSize ? `Cỡ ${selectedSize}` : ''}`}
               </Button>
               <div className="flex gap-3">
                 <Button
@@ -226,7 +289,7 @@ export default function ProductDetail({ onNavigate, app }: Props) {
                   onClick={() => onNavigate('ai-stylist')}
                   icon={<span>✦</span>}
                 >
-                  Style With My Wardrobe
+                  Phối với tủ đồ của tôi
                 </Button>
                 <Button
                   variant="outline"
@@ -234,18 +297,18 @@ export default function ProductDetail({ onNavigate, app }: Props) {
                   size="md"
                   onClick={() => onNavigate('studio')}
                 >
-                  View in Studio
+                  Xem trong phòng thử đồ
                 </Button>
               </div>
             </div>
 
             {/* Editorial Information Tabs */}
-            <div className="pt-6 border-t border-[#EEE8E1]">
-              <div className="flex gap-4 border-b border-[#EEE8E1] pb-2 mb-4" role="tablist">
+            <div className="pt-6 border-t border-sand">
+              <div className="flex gap-4 border-b border-sand pb-2 mb-4" role="tablist">
                 {[
-                  { key: 'details', label: 'Description' },
-                  { key: 'materials', label: 'Material & Care' },
-                  { key: 'fit', label: 'Sizing Guide' },
+                  { key: 'details', label: "Mô tả" },
+                  { key: 'materials', label: "Chất liệu và cách bảo quản" },
+                  { key: 'fit', label: "Hướng dẫn chọn cỡ" },
                 ].map(tab => (
                   <button
                     key={tab.key}
@@ -254,8 +317,8 @@ export default function ProductDetail({ onNavigate, app }: Props) {
                     onClick={() => setActiveTab(tab.key as any)}
                     className={`text-xs font-semibold uppercase tracking-wider pb-1 transition-colors ${
                       activeTab === tab.key
-                        ? 'border-b-2 border-[#684B5A] text-[#684B5A]'
-                        : 'text-[#9D9894] hover:text-[#222222]'
+                        ? 'border-b-2 border-accent text-accent'
+                        : 'text-muted hover:text-charcoal'
                     }`}
                   >
                     {tab.label}
@@ -264,20 +327,20 @@ export default function ProductDetail({ onNavigate, app }: Props) {
               </div>
 
               {activeTab === 'details' && (
-                <p className="text-sm text-[#6F6B67] leading-relaxed">
+                <p className="text-sm text-secondary leading-relaxed">
                   {product.description}
                 </p>
               )}
               {activeTab === 'materials' && (
-                <div className="text-xs text-[#6F6B67] space-y-2">
-                  <p><strong>Composition:</strong> {product.material}</p>
-                  <p><strong>Care:</strong> Dry clean only or gentle hand wash cold. Do not tumble dry.</p>
+                <div className="text-xs text-secondary space-y-2">
+                  <p><strong>Thành phần:</strong> {product.material}</p>
+                  <p><strong>Bảo quản:</strong> {['Túi xách', 'Giày dép'].includes(product.category) ? 'Lau nhẹ bằng khăn mềm, tránh ngâm nước và phơi nắng trực tiếp. Bảo quản theo hướng dẫn của thương hiệu.' : 'Giặt và bảo quản theo hướng dẫn trên nhãn sản phẩm. Với chất liệu mỏng hoặc dễ biến dạng, ưu tiên giặt nhẹ và để khô tự nhiên.'}</p>
                 </div>
               )}
               {activeTab === 'fit' && (
-                <div className="text-xs text-[#6F6B67] space-y-2">
-                  <p><strong>Cut:</strong> {product.fit}</p>
-                  <p>Designed for relaxed movement through the chest and waist while holding clean shoulder geometry.</p>
+                <div className="text-xs text-secondary space-y-2">
+                  <p><strong>Phom dáng:</strong> {product.fit}</p>
+                  <p>Xem phom dáng của sản phẩm và đối chiếu với số đo, kích cỡ thường mặc của bạn để chọn cỡ phù hợp.</p>
                 </div>
               )}
             </div>
@@ -285,21 +348,21 @@ export default function ProductDetail({ onNavigate, app }: Props) {
         </div>
 
         {/* "Works With Your Wardrobe" — Explicitly Owned Items */}
-        <section className="mt-20 pt-12 border-t border-[#EEE8E1]" aria-labelledby="wardrobe-pairing-heading">
+        <section className="mt-20 pt-12 border-t border-sand" aria-labelledby="wardrobe-pairing-heading">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] font-semibold text-[#B98791] mb-1">
-                Your Wardrobe Synergy
+              <p className="text-xs uppercase tracking-[0.2em] font-semibold text-rose mb-1">
+                Phối cùng đồ bạn đã có
               </p>
-              <h2 id="wardrobe-pairing-heading" className="font-display text-2xl md:text-3xl font-light text-[#222222]">
-                Pieces You Already Own That Pair With This
+              <h2 id="wardrobe-pairing-heading" className="font-display text-2xl md:text-3xl font-light text-charcoal">
+                Gợi ý từ tủ đồ của bạn
               </h2>
             </div>
             <button
               onClick={() => onNavigate('wardrobe')}
-              className="text-xs font-semibold text-[#684B5A] hover:underline flex items-center gap-1 self-start"
+              className="text-xs font-semibold text-accent hover:underline flex items-center gap-1 self-start"
             >
-              <span>View all wardrobe ({mockWardrobeItems.length})</span>
+              <span>Xem toàn bộ tủ đồ ({mockWardrobeItems.length})</span>
               <span aria-hidden="true">→</span>
             </button>
           </div>
@@ -309,25 +372,25 @@ export default function ProductDetail({ onNavigate, app }: Props) {
               <div
                 key={item.id}
                 onClick={() => onNavigate('wardrobe')}
-                className="rounded-2xl border border-[#D8D0C6] bg-white p-3.5 flex flex-col justify-between hover:border-[#48755A] hover:shadow-xs transition-all cursor-pointer"
+                className="rounded-2xl border border-sand-dark bg-surface p-3.5 flex flex-col justify-between hover:border-success hover:shadow-xs transition-all cursor-pointer"
               >
                 <div>
-                  <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#EEE8E1] mb-3">
+                  <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-sand mb-3">
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     <div className="absolute top-2.5 left-2.5">
-                      <OwnedBadge label="Owned" />
+                      <OwnedBadge label="Đã có" />
                     </div>
                   </div>
-                  <p className="text-[11px] uppercase tracking-wider font-semibold text-[#B98791]">
+                  <p className="text-[11px] uppercase tracking-wider font-semibold text-rose">
                     {item.brand}
                   </p>
-                  <h3 className="font-sans text-sm font-medium text-[#222222] truncate">
+                  <h3 className="font-sans text-sm font-medium text-charcoal truncate">
                     {item.name}
                   </h3>
                 </div>
-                <div className="pt-3 border-t border-[#EEE8E1] mt-2 flex items-center justify-between text-xs text-[#48755A] font-medium">
-                  <span>✓ In your wardrobe</span>
-                  <span className="text-[#6F6B67]">{item.outfitCount} looks</span>
+                <div className="pt-3 border-t border-sand mt-2 flex items-center justify-between text-xs text-success font-medium">
+                  <span>✓ Đã có trong tủ đồ</span>
+                  <span className="text-secondary">{item.outfitCount} cách phối</span>
                 </div>
               </div>
             ))}

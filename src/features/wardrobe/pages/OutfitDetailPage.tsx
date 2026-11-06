@@ -9,6 +9,7 @@ import type { Outfit } from '@/entities/outfit/model/types'
 import { AiEditPanel } from '@/features/ai-stylist/components/AiEditPanel'
 import { useAuth } from '@/features/auth'
 import { canViewSharedOutfit } from '@/features/sharing/model/shareSelectors'
+import OutfitSharingDialog from '@/features/sharing/components/OutfitSharingDialog'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
 import { formatDate } from '@/shared/lib/formatDate'
 
@@ -194,7 +195,7 @@ export function OutfitDetailPage() {
           <p className="mt-3 text-sm text-[#8A8179]">Cập nhật {formatDate(detail.outfit.updatedAt)}</p>
         </div>
         <div className="rounded-lg border border-[#E3DAD0] bg-white px-4 py-3 text-sm font-semibold text-[#3A3632] shadow-sm">
-          {detail.outfit.visibility === 'public' ? 'Đang công khai' : 'Riêng tư'}
+          <OutfitSharingDialog outfit={detail.outfit} />
         </div>
       </div>
 

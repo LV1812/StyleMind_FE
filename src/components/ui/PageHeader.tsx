@@ -20,15 +20,15 @@ export default function PageHeader({
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           {category && (
-            <p className="text-xs uppercase tracking-[0.22em] font-medium mb-1.5 text-[#B98791]">
+            <p className="text-xs uppercase tracking-[0.22em] font-medium mb-1.5 text-rose">
               {category}
             </p>
           )}
-          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-light text-[#222222] tracking-tight">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-light text-charcoal tracking-tight">
             {title}
           </h1>
           {subtitle && (
-            <div className="mt-2 text-sm md:text-base text-[#6F6B67] leading-relaxed max-w-2xl">
+            <div className="mt-2 text-sm md:text-base text-secondary leading-relaxed max-w-2xl">
               {subtitle}
             </div>
           )}

@@ -35,12 +35,21 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       host: process.env.FIGMA_DEV_SERVER_HOST || '0.0.0.0',
-      port: parseInt(process.env.PORT || '8443'),
+      port: 3000,
       strictPort: true,
       proxy: {
         '/commerce': { target: env.VITE_API_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
         '/payment': { target: env.VITE_API_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
+        '/wardrobe-community': {
+          target: env.VITE_API_PROXY_TARGET || 'http://localhost:8080',
+          changeOrigin: true,
+          ws: true,
+        },
         '/api': {
+          target: env.VITE_API_PROXY_TARGET || 'http://localhost:8080',
+          changeOrigin: true,
+        },
+        '/commerce': {
           target: env.VITE_API_PROXY_TARGET || 'http://localhost:8080',
           changeOrigin: true,
         },
@@ -53,7 +62,8 @@ export default defineConfig(({ mode }) => {
     },
     preview: {
       host: process.env.FIGMA_DEV_SERVER_HOST || '0.0.0.0',
-      port: parseInt(process.env.PORT || '8443'),
+      port: 3000,
+      strictPort: true,
     },
   }
 })

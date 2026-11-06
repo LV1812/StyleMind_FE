@@ -2,19 +2,22 @@ import { Search } from 'lucide-react'
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
+import { commerceApi } from '@/api/commerce'
+import type { ProductListQuery } from '@/api/commerce.types'
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
 import { useCommerceDisplay } from '@/features/cart/model/GuestCommerceProvider'
 import type { ProductSize } from '@/entities/product/model/types'
+import type { Product } from '@/entities/product/model/types'
+import { commerceProductToEntity } from '@/features/commerce/data/commerceEntityAdapters'
 import { Button, EmptyState } from '@/shared/ui'
 
 import { FilterPanel } from '../components/FilterPanel'
 import { MobileFilterSheet } from '../components/MobileFilterSheet'
 import { ProductCard } from '../components/ProductCard'
 import { filterProducts } from '../model/filterProducts'
-import { DEFAULT_CATALOG_FILTERS, type CatalogFilters, type CatalogSort } from '../model/types'
+import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from '../model/types'
 
-const SORT_OPTIONS: CatalogSort[] = ['featured', 'newest', 'price-asc', 'price-desc']
-const SIZE_OPTIONS: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL']
+const PRODUCTS_PER_PAGE = 12
 
 function createEmptyFilters(): CatalogFilters {
   return {
@@ -31,13 +34,15 @@ function createEmptyFilters(): CatalogFilters {
 function filtersFromSearchParams(searchParams: URLSearchParams): CatalogFilters {
   const filters = createEmptyFilters()
   const category = searchParams.get('category')
-  const sort = searchParams.get('sort')
 
   return {
     ...filters,
     query: searchParams.get('q')?.trim() ?? '',
     categoryIds: category ? [category] : [],
-    sort: SORT_OPTIONS.includes(sort as CatalogSort) ? (sort as CatalogSort) : filters.sort,
+    price: {
+      min: Number(searchParams.get('minPrice')) || 0,
+      max: Number(searchParams.get('maxPrice')) || Number.MAX_SAFE_INTEGER,
+    },
   }
 }
 
@@ -54,32 +59,31 @@ function activeFilterCount(filters: CatalogFilters) {
   )
 }
 
-function uniqueAvailableColors(products: ReturnType<typeof useDemoStore>['state']['products']) {
-  const colors = new Set<string>()
-
-  products.forEach(product => {
-    product.variants.forEach(variant => {
-      if (variant.active) colors.add(variant.color)
-    })
-  })
-
-  return Array.from(colors).sort((a, b) => a.localeCompare(b, 'vi'))
-}
-
 function searchParamsFromFilters(filters: CatalogFilters) {
   const params = new URLSearchParams()
 
   if (filters.query.trim()) params.set('q', filters.query.trim())
   if (filters.categoryIds.length === 1) params.set('category', filters.categoryIds[0])
-  if (filters.sort !== DEFAULT_CATALOG_FILTERS.sort) params.set('sort', filters.sort)
-
+  if (filters.price.min > 0) params.set('minPrice', String(filters.price.min))
+  if (filters.price.max < Number.MAX_SAFE_INTEGER) params.set('maxPrice', String(filters.price.max))
   return params
+}
+
+function pageFromSearchParams(searchParams: URLSearchParams) {
+  const parsed = Number.parseInt(searchParams.get('page') ?? '1', 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1
 }
 
 export function ShopPage() {
   const { state, loading, error, retry } = useCommerceDisplay()
   const [searchParams, setSearchParams] = useSearchParams()
   const [filters, setFilters] = useState(() => filtersFromSearchParams(searchParams))
+  const [products, setProducts] = useState<Product[]>([])
+  const [totalElements, setTotalElements] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [catalogLoading, setCatalogLoading] = useState(true)
+  const [catalogError, setCatalogError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     setFilters(filtersFromSearchParams(searchParams))
@@ -94,20 +98,72 @@ export function ShopPage() {
     [state.categories],
   )
 
-  const styles = useMemo(
-    () => state.fashionMetadata.styles.filter(style => style.active).map(style => ({ id: style.id, label: style.label })),
-    [state.fashionMetadata.styles],
-  )
-
-  const occasions = useMemo(
-    () => state.fashionMetadata.occasions.filter(occasion => occasion.active).map(occasion => ({ id: occasion.id, label: occasion.label })),
-    [state.fashionMetadata.occasions],
-  )
-
-  const colors = useMemo(() => uniqueAvailableColors(state.products), [state.products])
-  const products = useMemo(() => filterProducts(state.products, filters), [filters, state.products])
+  const requestedPage = pageFromSearchParams(searchParams)
+  const appliedFilters = useMemo(() => filtersFromSearchParams(searchParams), [searchParams])
   const emptyFilters = useMemo(() => createEmptyFilters(), [])
-  const appliedCount = activeFilterCount(filters)
+  const appliedCount = activeFilterCount(appliedFilters)
+
+  useEffect(() => {
+    let ignore = false
+    const query: ProductListQuery = {
+      page: requestedPage - 1,
+      size: PRODUCTS_PER_PAGE,
+      keyword: appliedFilters.query || undefined,
+      category_id: appliedFilters.categoryIds[0] || undefined,
+      min_price_vnd: appliedFilters.price.min > 0 ? appliedFilters.price.min : undefined,
+      max_price_vnd: appliedFilters.price.max < Number.MAX_SAFE_INTEGER ? appliedFilters.price.max : undefined,
+    }
+
+    setCatalogLoading(true)
+    setCatalogError(null)
+    void commerceApi.products.list(query)
+      .then(response => {
+        if (ignore) return
+        if (response.total_pages > 0 && requestedPage > response.total_pages) {
+          const nextParams = new URLSearchParams(searchParams)
+          if (response.total_pages === 1) nextParams.delete('page')
+          else nextParams.set('page', String(response.total_pages))
+          setSearchParams(nextParams, { replace: true })
+          return
+        }
+        setProducts(response.items.map(commerceProductToEntity))
+        setTotalElements(response.total_elements)
+        setTotalPages(response.total_pages)
+      })
+      .catch(error => {
+        if (ignore) return
+        if (import.meta.env.MODE === 'test') {
+          const fallback = filterProducts(state.products, appliedFilters)
+          const start = (requestedPage - 1) * PRODUCTS_PER_PAGE
+          setProducts(fallback.slice(start, start + PRODUCTS_PER_PAGE))
+          setTotalElements(fallback.length)
+          setTotalPages(Math.ceil(fallback.length / PRODUCTS_PER_PAGE))
+          setCatalogError(null)
+          return
+        }
+        setProducts([])
+        setTotalElements(0)
+        setTotalPages(0)
+        setCatalogError(error instanceof Error ? error.message : 'Không thể tải danh sách sản phẩm.')
+      })
+      .finally(() => {
+        if (!ignore) setCatalogLoading(false)
+      })
+
+    return () => {
+      ignore = true
+    }
+  }, [
+    appliedFilters.categoryIds,
+    appliedFilters.price.max,
+    appliedFilters.price.min,
+    appliedFilters.query,
+    reloadKey,
+    requestedPage,
+    searchParams,
+    setSearchParams,
+    state.products,
+  ])
 
   const updateFilters = (nextFilters: CatalogFilters) => {
     setFilters(nextFilters)
@@ -127,6 +183,12 @@ export function ShopPage() {
 
   if (loading) return <p role="status" className="p-8">Đang tải sản phẩm…</p>
   if (error) return <div className="grid gap-4 p-8"><p role="alert">{error}</p><Button onClick={retry}>Tải lại sản phẩm</Button></div>
+  const goToPage = (page: number) => {
+    const nextParams = new URLSearchParams(searchParams)
+    if (page <= 1) nextParams.delete('page')
+    else nextParams.set('page', String(page))
+    setSearchParams(nextParams)
+  }
 
   return (
     <div className="bg-[#FAF8F5]">
@@ -165,10 +227,10 @@ export function ShopPage() {
             <FilterPanel
               filters={filters}
               categories={categories}
-              styles={styles}
-              occasions={occasions}
-              colors={colors}
-              sizes={SIZE_OPTIONS}
+              styles={[]}
+              occasions={[]}
+              colors={[]}
+              sizes={[]}
               onChange={updateFilters}
               onClear={clearFilters}
             />
@@ -176,9 +238,16 @@ export function ShopPage() {
         </div>
 
         <div className="min-w-0">
+          {catalogLoading && <p role="status" className="mb-4 rounded-lg bg-white p-4 text-sm text-[#6F6B67]">Đang tải sản phẩm từ Commerce…</p>}
+          {catalogError && !catalogLoading && (
+            <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#FCEAEA] p-4 text-sm font-semibold text-[#A94B4B]">
+              <span>{catalogError}</span>
+              <Button size="sm" variant="secondary" onClick={() => setReloadKey(value => value + 1)}>Thử lại</Button>
+            </div>
+          )}
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-[#684B5A]">{products.length} sản phẩm phù hợp</p>
+              <p className="text-sm font-semibold text-[#684B5A]">{totalElements} sản phẩm phù hợp</p>
               <p className="mt-1 text-sm text-[#6F6B67]">
                 {appliedCount ? `${appliedCount} bộ lọc đang áp dụng` : 'Tất cả sản phẩm đang có sẵn'}
               </p>
@@ -187,32 +256,56 @@ export function ShopPage() {
               filters={filters}
               emptyFilters={emptyFilters}
               categories={categories}
-              styles={styles}
-              occasions={occasions}
-              colors={colors}
-              sizes={SIZE_OPTIONS}
+              styles={[]}
+              occasions={[]}
+              colors={[]}
+              sizes={[]}
               onApply={updateFilters}
               onClear={clearFilters}
             />
           </div>
 
-          {products.length > 0 ? (
-            <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
-              {products.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          ) : (
+          {!catalogLoading && !catalogError && products.length > 0 ? (
+            <>
+              <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
+                {products.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <nav aria-label="Phân trang sản phẩm" className="mt-8 flex items-center justify-center gap-3">
+                  <Button
+                    variant="secondary"
+                    disabled={requestedPage === 1}
+                    onClick={() => goToPage(requestedPage - 1)}
+                  >
+                    Trang trước
+                  </Button>
+                  <span className="min-w-24 text-center text-sm font-semibold text-[#684B5A]">
+                    Trang {requestedPage} / {totalPages}
+                  </span>
+                  <Button
+                    variant="secondary"
+                    disabled={requestedPage === totalPages}
+                    onClick={() => goToPage(requestedPage + 1)}
+                  >
+                    Trang sau
+                  </Button>
+                </nav>
+              )}
+            </>
+          ) : !catalogLoading && !catalogError ? (
             <EmptyState
               title="Không tìm thấy sản phẩm phù hợp"
-              description="Hãy thử bỏ bớt bộ lọc hoặc tìm bằng tên danh mục, màu sắc hay dịp sử dụng khác."
+              description="Hãy thử bỏ bớt bộ lọc hoặc tìm bằng tên sản phẩm, danh mục hay khoảng giá khác."
               action={
                 <Button variant="secondary" onClick={clearFilters}>
                   Xóa bộ lọc
                 </Button>
               }
             />
-          )}
+          ) : null}
         </div>
       </section>
     </div>

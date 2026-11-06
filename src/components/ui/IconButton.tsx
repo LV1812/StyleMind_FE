@@ -28,21 +28,21 @@ export default function IconButton({
   const variantStyles: Record<string, React.CSSProperties> = {
     ghost: {
       backgroundColor: 'transparent',
-      color: '#6F6B67',
+      color: "var(--color-secondary)",
     },
     secondary: {
-      backgroundColor: '#FAF8F5',
-      color: '#3A3632',
-      border: '1px solid #D8D0C6',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+      backgroundColor: "var(--color-ivory)",
+      color: "var(--color-ink)",
+      border: "1px solid var(--color-sand-dark)",
+      boxShadow: "var(--shadow-icon)",
     },
     primary: {
-      backgroundColor: '#684B5A',
-      color: '#FAF8F5',
+      backgroundColor: "var(--color-accent)",
+      color: "var(--color-on-accent)",
     },
     ai: {
-      backgroundColor: '#F4E7E8',
-      color: '#684B5A',
+      backgroundColor: "var(--color-blush)",
+      color: "var(--color-accent)",
     },
   }
 
@@ -51,7 +51,7 @@ export default function IconButton({
       type="button"
       aria-label={ariaLabel}
       disabled={disabled}
-      className={`relative inline-flex items-center justify-center rounded-full transition-all duration-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] focus-visible:ring-offset-2 ${sizeMap} ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-full transition-all duration-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${sizeMap} ${className}`}
       style={{ ...variantStyles[variant], ...style }}
       {...props}
     >
@@ -60,8 +60,8 @@ export default function IconButton({
       </span>
       {typeof badgeCount === 'number' && badgeCount > 0 && (
         <span
-          className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center text-white border-2 border-[#FAF8F5] pointer-events-none"
-          style={{ background: '#684B5A' }}
+          className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center text-on-accent border-2 border-ivory pointer-events-none"
+          style={{ background: "var(--color-accent)" }}
           aria-hidden="true"
         >
           {badgeCount > 99 ? '99+' : badgeCount}

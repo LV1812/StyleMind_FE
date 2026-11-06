@@ -142,7 +142,7 @@ describe('Sharing flow', () => {
     }))
 
     expect(await screen.findByRole('heading', { name: /Tủ đồ của Nguyễn Thiên An/ })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Di lam toi gian' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Di lam toi gian' })).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Cafe cuoi tuan' })).toBeInTheDocument()
     expect(screen.queryByText(/160/)).not.toBeInTheDocument()
     expect(screen.queryByText(/52/)).not.toBeInTheDocument()

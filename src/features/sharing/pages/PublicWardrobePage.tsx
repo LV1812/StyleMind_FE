@@ -39,7 +39,7 @@ export function PublicWardrobePage() {
             Tủ đồ của {wardrobe.ownerName}
           </h1>
           <p className="mt-3 text-sm leading-6 text-[#6F6B67]">
-            Người sở hữu đã chia sẻ toàn bộ outfit trong tủ đồ qua liên kết public này.
+            Chỉ các outfit công khai của chủ sở hữu được hiển thị tại đây.
           </p>
         </div>
 

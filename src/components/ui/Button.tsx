@@ -21,7 +21,7 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseClasses =
-    'relative inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] focus-visible:ring-offset-2 select-none active:scale-[0.98]'
+    'relative inline-flex items-center justify-center font-medium rounded-full transition-all duration-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 select-none active:scale-[0.98]'
 
   const sizeClasses = {
     sm: 'text-xs px-4 py-2 min-h-[38px] gap-1.5',
@@ -31,34 +31,34 @@ export default function Button({
 
   const variantStyles: Record<string, React.CSSProperties> = {
     primary: {
-      backgroundColor: '#684B5A',
-      color: '#FAF8F5',
-      boxShadow: '0 2px 8px rgba(104, 75, 90, 0.18)',
+      backgroundColor: "var(--color-accent)",
+      color: "var(--color-on-accent)",
+      boxShadow: "var(--shadow-button)",
     },
     secondary: {
-      backgroundColor: '#EEE8E1',
-      color: '#222222',
-      border: '1px solid #D8D0C6',
+      backgroundColor: "var(--color-sand)",
+      color: "var(--color-charcoal)",
+      border: "1px solid var(--color-sand-dark)",
     },
     outline: {
       backgroundColor: 'transparent',
-      color: '#3A3632',
-      border: '1px solid #D8D0C6',
+      color: "var(--color-ink)",
+      border: "1px solid var(--color-sand-dark)",
     },
     ghost: {
       backgroundColor: 'transparent',
-      color: '#6F6B67',
+      color: "var(--color-secondary)",
     },
     ai: {
-      backgroundColor: '#F4E7E8',
-      color: '#684B5A',
-      border: '1px solid rgba(104, 75, 90, 0.2)',
-      boxShadow: '0 2px 10px rgba(244, 231, 232, 0.6)',
+      backgroundColor: "var(--color-blush)",
+      color: "var(--color-accent)",
+      border: "1px solid color-mix(in srgb, var(--color-accent) 20%, transparent)",
+      boxShadow: "var(--shadow-button-ai)",
     },
     destructive: {
-      backgroundColor: '#FCEAEA',
-      color: '#A94B4B',
-      border: '1px solid rgba(169, 75, 75, 0.25)',
+      backgroundColor: "var(--color-error-bg)",
+      color: "var(--color-error)",
+      border: "1px solid color-mix(in srgb, var(--color-error) 25%, transparent)",
     },
   }
 

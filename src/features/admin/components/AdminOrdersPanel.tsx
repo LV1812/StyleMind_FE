@@ -2,6 +2,7 @@ import { Eye } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
+import { commerceApi } from '@/api/commerce'
 import type { DemoAction, DemoDatabase } from '@/app/store/types'
 import type { Order, OrderStatus } from '@/entities/order/model/types'
 import { orderStatusLabel, paymentMethodLabel, paymentStatusLabel } from '@/features/admin/model/adminLabels'
@@ -50,6 +51,17 @@ const actionLabel: Record<OrderStatus, string> = {
   cancelled: 'Hủy',
 }
 
+const commerceStatus: Record<OrderStatus, string> = {
+  pending: 'PENDING_PAYMENT',
+  payment_pending: 'PENDING_PAYMENT',
+  paid: 'PAID',
+  confirmed: 'PLACED',
+  processing: 'PROCESSING',
+  shipped: 'SHIPPED',
+  completed: 'COMPLETED',
+  cancelled: 'CANCELLED',
+}
+
 function statusTone(status: OrderStatus) {
   if (status === 'completed') return 'success'
   if (status === 'cancelled') return 'neutral'
@@ -91,12 +103,17 @@ export function AdminOrdersPanel({ database, dispatch }: AdminOrdersPanelProps) 
     })
   }
 
-  const changeStatus = (orderId: string, status: OrderStatus) => {
-    dispatch({
-      type: 'admin/orderStatusChanged',
-      payload: { orderId, status, at: new Date().toISOString() },
-    })
-    toast.success('Đã cập nhật trạng thái đơn hàng.')
+  const changeStatus = async (orderId: string, status: OrderStatus) => {
+    try {
+      await commerceApi.orders.updateStatus(orderId, commerceStatus[status])
+      dispatch({
+        type: 'admin/orderStatusChanged',
+        payload: { orderId, status, at: new Date().toISOString() },
+      })
+      toast.success('Đã cập nhật trạng thái đơn hàng.')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Không thể cập nhật trạng thái đơn hàng')
+    }
   }
 
   return (
@@ -194,7 +211,7 @@ export function AdminOrdersPanel({ database, dispatch }: AdminOrdersPanelProps) 
                             type="button"
                             size="sm"
                             variant={status === 'cancelled' ? 'secondary' : 'primary'}
-                            onClick={() => changeStatus(row.id, status)}
+                            onClick={() => void changeStatus(row.id, status)}
                           >
                             {actionLabel[status]}
                           </Button>
