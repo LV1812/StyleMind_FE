@@ -1,3 +1,4 @@
+import { paymentApi } from '@/features/payments/api/paymentClient'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
@@ -143,12 +144,12 @@ describe('Wardrobe flow', () => {
     renderAt('/outfits/outfit-ai-cafe')
 
     await user.click(await screen.findByRole('button', { name: 'Thêm Áo dệt kim cổ lọ vào giỏ' }))
-    expect(await screen.findByText('Đã thêm món vào giỏ hàng')).toBeInTheDocument()
-    await waitFor(() => expect(getDatabase().cartLines).toHaveLength(1))
+    expect(await screen.findByText('Đã thêm các món vào giỏ hàng')).toBeInTheDocument()
+    await waitFor(async () => expect((await paymentApi.getCart()).items).toHaveLength(1))
 
     await user.click(screen.getByRole('button', { name: 'Thêm toàn bộ outfit vào giỏ' }))
-    expect(await screen.findByText('Đã thêm toàn bộ outfit vào giỏ hàng')).toBeInTheDocument()
-    await waitFor(() => expect(getDatabase().cartLines.reduce((total, line) => total + line.quantity, 0)).toBe(3))
+    expect(await screen.findByText('Đã thêm các món vào giỏ hàng')).toBeInTheDocument()
+    await waitFor(async () => expect((await paymentApi.getCart()).items.reduce((total, line) => total + line.quantity, 0)).toBe(3))
   })
 
   it('shows unavailable outfit items and skips them when adding the entire outfit to cart', async () => {
@@ -169,10 +170,10 @@ describe('Wardrobe flow', () => {
 
     expect(await screen.findByText(/Đã thêm các món còn khả dụng vào giỏ/)).toBeInTheDocument()
     expect(screen.getByText(/Bỏ qua Quần tây ống suông/)).toBeInTheDocument()
-    await waitFor(() => {
-      const cartLines = getDatabase().cartLines
+    await waitFor(async () => {
+      const cartLines = (await paymentApi.getCart()).items
       expect(cartLines).toHaveLength(2)
-      expect(cartLines.some(line => line.productId === 'prd-trousers-01')).toBe(false)
+      expect(cartLines.some(line => line.variant_id.startsWith('var-trousers'))).toBe(false)
     })
   })
 

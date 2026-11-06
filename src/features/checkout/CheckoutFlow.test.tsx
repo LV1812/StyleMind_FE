@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -8,255 +7,102 @@ import type { CheckoutInput, OrderResponse } from '@/api/commerce.types'
 import { createDemoSeed } from '@/app/data/demoSeed'
 import { AppProviders } from '@/app/providers/AppProviders'
 import { appRoutes } from '@/app/router/AppRouter'
-import { demoReducer } from '@/app/store/demoReducer'
-import type { DemoAction, DemoDatabase } from '@/app/store/types'
 import { DEMO_STORAGE_KEY } from '@/shared/storage/demoStorage'
+import { getIdentityMockCalls, installIdentityMockBackend, expireNextIdentityRequest } from '@/test/identityMockBackend'
+import { accountDraftKey } from './model/accountCheckout'
+import { readOrderReferences } from '@/features/payments/model/orderReferences'
 
-import { CHECKOUT_QR_SESSION_KEY, createQrSession, confirmQrPayment, type QrSession } from './data/checkoutRepository'
-
-let router: ReturnType<typeof createMemoryRouter>
-
-function checkoutResponse(input: CheckoutInput): OrderResponse {
-  const isOffice = input.shipping_address_id === 'adr-customer-office'
-
-  return {
-    order_id: 'order-commerce-01',
-    order_number: 'SM-2026-0001',
-    customer_id: 'usr-customer-01',
-    checkout_key: input.checkout_key,
-    order_status: input.payment_method === 'COD' ? 'PLACED' : 'PENDING_PAYMENT',
-    payment_method: input.payment_method,
-    accepted_total_vnd: 650_000,
-    placed_at: '2026-09-25T06:00:00.000Z',
-    completed_at: null,
-    address: {
-      source_address_id: input.shipping_address_id,
-      recipient_name: 'Nguyen Minh Anh',
-      recipient_phone: '0901234567',
-      address_line: isOffice ? '18 Le Thanh Ton, Quan 1, TP. Ho Chi Minh' : '25 Nguyen Trai, Quan 5, TP. Ho Chi Minh',
-    },
-    items: [{
-      order_item_id: 'order-item-01',
-      variant_id: 'var-blouse-white-m',
-      sku_snapshot: 'BLOUSE-WHITE-M',
-      product_name_snapshot: 'Ao blouse trang',
-      brand_name_snapshot: 'StyleMind',
-      color_snapshot: 'Trang',
-      size_snapshot: 'M',
-      material_snapshot: null,
-      image_url_snapshot: null,
-      quantity: 1,
-      unit_price_vnd: 650_000,
-      line_total_vnd: 650_000,
-    }],
-    history: [{
-      history_id: 'history-01',
-      from_status: null,
-      to_status: input.payment_method === 'COD' ? 'PLACED' : 'PENDING_PAYMENT',
-      actor_user_id: 'usr-customer-01',
-      changed_at: '2026-09-25T06:00:00.000Z',
-      reason: null,
-    }],
-    cancellation_request: null,
-  }
+beforeEach(() => { localStorage.clear(); sessionStorage.clear(); installIdentityMockBackend() })
+function mount(path = '/checkout', empty = false) {
+  const seed = createDemoSeed()
+  localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify({ ...seed, session: { userId: 'usr-customer-01', persistent: true }, cartLines: empty ? [] : [{ id: 'cart-1', productId: 'prd-blouse-01', variantId: 'var-blouse-white-m', quantity: 1, source: 'shop' }] }))
+  const router = createMemoryRouter(appRoutes, { initialEntries: [path] })
+  const view = render(<AppProviders><RouterProvider router={router} /></AppProviders>)
+  return { ...view, router }
 }
+const writes = () => getIdentityMockCalls().filter(call => call.path === '/commerce/api/v1/orders' && call.method === 'POST')
+async function ready() { await waitFor(() => expect(screen.getByRole('button', { name: 'Đặt hàng' })).toBeEnabled()) }
 
-function databaseWithCustomerAndCart(overrides: Partial<DemoDatabase> = {}): DemoDatabase {
-  const database = createDemoSeed()
-
-  return {
-    ...database,
-    session: { userId: 'usr-customer-01', persistent: true },
-    orders: [],
-    cancellationRequests: [],
-    returnRequests: [],
-    cartLines: [
-      {
-        id: 'cart-test-line',
-        productId: 'prd-blouse-01',
-        variantId: 'var-blouse-white-m',
-        quantity: 1,
-        source: 'shop',
-      },
-    ],
-    ...overrides,
-  }
-}
-
-function persistDatabase(database: DemoDatabase) {
-  window.localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(database))
-}
-
-function getDatabase() {
-  const raw = window.localStorage.getItem(DEMO_STORAGE_KEY)
-  if (!raw) throw new Error('Expected demo database in localStorage')
-  return JSON.parse(raw) as DemoDatabase
-}
-
-function renderAt(initialEntry: string, database: DemoDatabase) {
-  window.localStorage.clear()
-  window.sessionStorage.clear()
-  persistDatabase(database)
-  mount(initialEntry)
-}
-
-function mount(initialEntry: string) {
-  router = createMemoryRouter(appRoutes, { initialEntries: [initialEntry] })
-  render(
-    <AppProviders>
-      <RouterProvider router={router} />
-    </AppProviders>,
-  )
-}
-
-function renderCheckoutWithCustomerAndCart() {
-  renderAt('/checkout', databaseWithCustomerAndCart())
-}
-
-function currentPath() {
-  return router.state.location.pathname
-}
-
-function createActiveQrSession(overrides: Partial<QrSession> = {}): QrSession {
-  return {
-    id: 'qr-idempotent-01',
-    amount: 650_000,
-    transferContent: 'STYLEMIND QR qr-idempotent-01',
-    expiresAt: '2099-09-25T06:10:00.000Z',
-    orderId: null,
-    ...overrides,
-  }
-}
-
-function renderExpiredQrSession() {
-  window.localStorage.clear()
-  window.sessionStorage.clear()
-  persistDatabase(databaseWithCustomerAndCart())
-  window.sessionStorage.setItem(
-    CHECKOUT_QR_SESSION_KEY,
-    JSON.stringify(createActiveQrSession({ id: 'qr-expired-01', expiresAt: '2000-01-01T00:00:00.000Z' })),
-  )
-  mount('/checkout/qr')
-}
-
-describe('Checkout flow', () => {
-  beforeEach(() => {
-    vi.spyOn(commerceApi.orders, 'checkout').mockImplementation(async input => checkoutResponse(input))
+describe('Account checkout using backend contracts', () => {
+  it('uses server prices, saved Identity address, exact body and refreshes the server cart', async () => {
+    const { router } = mount(); await ready()
+    fireEvent.click(screen.getByRole('button', { name: 'Đặt hàng' }))
+    expect(await screen.findByText(/Đặt hàng thành công/)).toBeInTheDocument()
+    expect(writes()).toHaveLength(1)
+    expect(writes()[0].body).toEqual({ checkout_key: expect.any(String), shipping_address_id: 'adr-customer-home', payment_method: 'COD' })
+    expect(writes()[0].headers.has('Authorization')).toBe(true)
+    expect(writes()[0].headers.has('X-Guest-Session-Key')).toBe(false)
+    const saved = readOrderReferences()[0]
+    expect(saved).toMatchObject({ owner: 'account', accountId: 'usr-customer-01' })
+    expect(router.state.location.pathname).toBe('/payments/' + saved.orderId)
+    expect(getIdentityMockCalls().filter(call => call.path === '/commerce/api/v1/cart')).toHaveLength(2)
+    expect(localStorage.getItem(accountDraftKey('usr-customer-01'))).toBeNull()
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
+  it('creates SePay once, uses bodyless recovery and GET status, and restores on refresh', async () => {
+    const { router, unmount } = mount(); await ready()
+    fireEvent.click(screen.getByLabelText('VietQR'))
+    fireEvent.click(screen.getByRole('button', { name: 'Đặt hàng' }))
+    await screen.findByRole('img', { name: 'Mã QR chuyển khoản ngân hàng' })
+    const path = router.state.location.pathname
+    fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra trạng thái đơn' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Khôi phục thanh toán' })).toBeEnabled())
+    expect(getIdentityMockCalls().filter(call => call.path.endsWith('/payment-attempt'))).toHaveLength(1)
+    fireEvent.click(screen.getByRole('button', { name: 'Khôi phục thanh toán' }))
+    await waitFor(() => expect(getIdentityMockCalls().filter(call => call.path.endsWith('/payment-attempt'))).toHaveLength(2))
+    unmount()
+    const router2 = createMemoryRouter(appRoutes, { initialEntries: [path] })
+    render(<AppProviders><RouterProvider router={router2} /></AppProviders>)
+    await screen.findByRole('img', { name: 'Mã QR chuyển khoản ngân hàng' })
+    const attempts = getIdentityMockCalls().filter(call => call.path.endsWith('/payment-attempt'))
+    expect(attempts.every(call => call.method === 'POST' && call.body === undefined)).toBe(true)
+    expect(writes()).toHaveLength(1)
+    expect(screen.queryByText('Máy chủ đã xác nhận thanh toán.')).not.toBeInTheDocument()
   })
 
-  it('redirects an empty cart from checkout to cart', async () => {
-    renderAt('/checkout', databaseWithCustomerAndCart({ cartLines: [] }))
-
-    expect(await screen.findByText('Giỏ hàng của bạn đang trống')).toBeInTheDocument()
-    expect(currentPath()).toBe('/cart')
+  it('keeps exact checkout after unknown network delivery and blocks concurrent submits', async () => {
+    const backend = globalThis.fetch
+    let finish!: () => void
+    let count = 0
+    const bodies: string[] = []
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).endsWith('/commerce/api/v1/orders') && init?.method === 'POST') {
+        bodies.push(String(init.body)); count++
+        if (count === 1) { await new Promise<void>(resolve => { finish = resolve }); throw new TypeError('network') }
+      }
+      return backend(input, init)
+    })
+    mount(); await ready()
+    const button = screen.getByRole('button', { name: 'Đặt hàng' })
+    fireEvent.click(button); fireEvent.click(button)
+    expect(count).toBe(1)
+    await act(async () => finish())
+    expect(await screen.findByRole('alert')).toHaveTextContent('Chưa xác định')
+    fireEvent.click(screen.getByRole('button', { name: 'Thử lại đặt hàng' }))
+    await screen.findByText(/Đặt hàng thành công/)
+    expect(bodies[0]).toBe(bodies[1])
   })
 
-  it('places one COD order and clears purchased cart lines', async () => {
-    const user = userEvent.setup()
-    renderCheckoutWithCustomerAndCart()
-
-    await user.click(await screen.findByLabelText('Thanh toán khi nhận hàng'))
-    await user.click(screen.getByRole('button', { name: 'Đặt hàng' }))
-
-    expect(await screen.findByText('Đặt hàng thành công')).toBeInTheDocument()
-    await waitFor(() => expect(getDatabase().orders).toHaveLength(1))
-    expect(getDatabase().cartLines).toHaveLength(0)
+  it('refreshes JWT once after 401 on prices', async () => {
+    mount(); await ready()
+    expireNextIdentityRequest('GET', '/commerce/api/v1/checkout/prices')
+    fireEvent.click(screen.getByRole('button', { name: 'Tải lại giá và địa chỉ' }))
+    await ready()
+    expect(getIdentityMockCalls().filter(call => call.path === '/api/v1/auth/refresh')).toHaveLength(1)
+    expect(getIdentityMockCalls().filter(call => call.path === '/commerce/api/v1/checkout/prices')).toHaveLength(3)
   })
 
-  it('does not create an order when an expired QR is confirmed', async () => {
-    renderExpiredQrSession()
+  it('does not submit an empty backend cart', async () => {
+    mount('/checkout', true)
+    expect(await screen.findByRole('alert')).toHaveTextContent('trống')
+    expect(screen.getByRole('button', { name: 'Đặt hàng' })).toBeDisabled()
+    expect(writes()).toHaveLength(0)
+  })
 
-    expect(await screen.findByText('Thanh toán đã hết hạn')).toBeInTheDocument()
+  it('legacy QR route cannot mark an order paid locally', async () => {
+    mount('/checkout/qr')
+    await screen.findByLabelText('Mã đơn hàng')
     expect(screen.queryByRole('button', { name: 'Tôi đã thanh toán' })).not.toBeInTheDocument()
-    expect(getDatabase().orders).toHaveLength(0)
-  })
-
-  it('creates only one order when the same QR session is confirmed twice', async () => {
-    const session = createActiveQrSession()
-    let database = databaseWithCustomerAndCart()
-    const dispatch = (action: DemoAction) => {
-      database = demoReducer(database, action)
-    }
-
-    const first = await confirmQrPayment(session, database)
-    dispatch({ type: 'order/placed', payload: first })
-    const second = await confirmQrPayment(session, database)
-    dispatch({ type: 'order/placed', payload: second })
-
-    expect(database.orders.filter(order => order.paymentReference === session.id)).toHaveLength(1)
-  })
-
-  it('confirms a QR order from the selected checkout snapshot', async () => {
-    const database = databaseWithCustomerAndCart()
-    const session = await createQrSession({
-      database,
-      userId: 'usr-customer-01',
-      addressId: 'adr-customer-office',
-      discountCode: 'STYLE10',
-      now: '2026-09-25T06:00:00.000Z',
-    })
-    const changedDatabase = {
-      ...database,
-      cartLines: [],
-      addresses: database.addresses.map(address => ({
-        ...address,
-        isDefault: address.id === 'adr-customer-home',
-        line1: address.id === 'adr-customer-office' ? 'Địa chỉ văn phòng đã đổi' : address.line1,
-      })),
-    }
-
-    const order = await confirmQrPayment(session, changedDatabase)
-
-    expect(order.shippingAddress).toMatchObject({
-      id: 'adr-customer-office',
-      line1: '18 Lê Thánh Tôn',
-      district: 'Quận 1',
-    })
-    expect(order.items).toHaveLength(1)
-    expect(order.discount).toBe(62_000)
-    expect(order.total).toBe(session.amount)
-    expect(order.paymentReference).toBe(session.id)
-  })
-
-  it('stores the selected shipping address snapshot on the order', async () => {
-    const user = userEvent.setup()
-    renderCheckoutWithCustomerAndCart()
-
-    expect(await screen.findByRole('link', { name: 'Quản lý địa chỉ' })).toHaveAttribute('href', '/account/addresses')
-
-    await user.selectOptions(await screen.findByLabelText('Chọn địa chỉ'), 'adr-customer-office')
-    await user.click(screen.getByLabelText('Thanh toán khi nhận hàng'))
-    await user.click(screen.getByRole('button', { name: 'Đặt hàng' }))
-
-    await waitFor(() => expect(getDatabase().orders).toHaveLength(1))
-
-    expect(commerceApi.orders.checkout).toHaveBeenCalledWith(expect.objectContaining({
-      shipping_address_id: 'adr-customer-office',
-      payment_method: 'COD',
-    }))
-    expect(screen.queryByRole('textbox', { name: /uuid/i })).not.toBeInTheDocument()
-
-    const placedDatabase = getDatabase()
-    const order = placedDatabase.orders[0]
-    expect(order.shippingAddress).toMatchObject({
-      id: 'adr-customer-office',
-      line1: '18 Le Thanh Ton, Quan 1, TP. Ho Chi Minh',
-    })
-    expect('userId' in order.shippingAddress).toBe(false)
-    expect('isDefault' in order.shippingAddress).toBe(false)
-
-    const officeAddress = placedDatabase.addresses.find(address => address.id === 'adr-customer-office')
-    if (!officeAddress) throw new Error('Expected office address')
-
-    const nextDatabase = demoReducer(placedDatabase, {
-      type: 'address/upserted',
-      payload: { ...officeAddress, line1: 'Địa chỉ đã thay đổi' },
-    })
-
-    expect(nextDatabase.orders[0].shippingAddress.line1).toBe('18 Le Thanh Ton, Quan 1, TP. Ho Chi Minh')
+    expect(writes()).toHaveLength(0)
   })
 })

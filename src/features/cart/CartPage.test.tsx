@@ -16,6 +16,7 @@ function renderCartWithOneLine() {
     DEMO_STORAGE_KEY,
     JSON.stringify({
       ...database,
+      session: { userId: 'usr-customer-01', persistent: true },
       cartLines: [
         {
           id: 'cart-test-line',
@@ -41,7 +42,7 @@ describe('CartPage', () => {
     const user = userEvent.setup()
     renderCartWithOneLine()
 
-    await user.click(screen.getByRole('button', { name: 'Xóa Áo blouse cổ vuông' }))
+    await user.click(await screen.findByRole('button', { name: 'Xóa Áo blouse cổ vuông' }))
 
     expect(screen.getByRole('dialog', { name: 'Xóa sản phẩm khỏi giỏ?' })).toBeInTheDocument()
 

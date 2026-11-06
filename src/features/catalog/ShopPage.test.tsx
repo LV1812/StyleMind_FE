@@ -83,7 +83,7 @@ describe('ShopPage', () => {
     const user = userEvent.setup()
     renderShop()
 
-    await user.click(screen.getByRole('checkbox', { name: 'Áo' }))
+    await user.click(await screen.findByRole('checkbox', { name: 'Áo' }))
     await user.click(screen.getByRole('button', { name: 'Xóa bộ lọc' }))
 
     expect(await screen.findAllByRole('article')).toHaveLength(Math.min(12, createDemoSeed().products.length))

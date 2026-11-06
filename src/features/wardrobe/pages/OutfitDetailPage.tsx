@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useActiveCommerce } from '@/features/cart/model/AccountCommerceProvider'
 import { Link, useParams } from 'react-router-dom'
 
 import { ROUTES } from '@/app/router/routes'
@@ -91,6 +92,9 @@ export function OutfitDetailPage() {
   const { outfitId } = useParams()
   const { state, dispatch } = useDemoStore()
   const { currentUser } = useAuth()
+  const commerce = useActiveCommerce()
+  const adding = useRef(false)
+  const [cartBusy, setCartBusy] = useState(false)
   const detail = outfitId ? selectOutfitDetail(state, outfitId) : null
   const [nameDraft, setNameDraft] = useState('')
   const [message, setMessage] = useState('')
@@ -121,8 +125,6 @@ export function OutfitDetailPage() {
   if (!isOwner) {
     return <ReadOnlySharedOutfit detail={detail} />
   }
-
-  const cartSource = detail.outfit.source === 'ai' ? 'ai' : 'shop'
 
   const saveName = () => {
     const trimmed = nameDraft.trim()
@@ -156,39 +158,22 @@ export function OutfitDetailPage() {
     setMessage('Đã cập nhật phiên bản')
   }
 
-  const addItemToCart = (item: OutfitItemDetail) => {
-    dispatch({
-      type: 'cart/lineAdded',
-      payload: {
-        productId: item.product.id,
-        variantId: item.variant.id,
-        quantity: 1,
-        source: cartSource,
-      },
-    })
-    setMessage('Đã thêm món vào giỏ hàng')
-  }
-
-  const addOutfitToCart = () => {
-    detail.items.forEach(item => {
-      dispatch({
-        type: 'cart/lineAdded',
-        payload: {
-          productId: item.product.id,
-          variantId: item.variant.id,
-          quantity: 1,
-          source: cartSource,
-        },
-      })
-    })
-
-    if (detail.unavailableItems.length > 0) {
-      setMessage(`Đã thêm các món còn khả dụng vào giỏ. Bỏ qua ${detail.unavailableItems.map(item => item.name).join(', ')}.`)
+  const addItems = async (items: OutfitItemDetail[]) => {
+    if (adding.current || commerce.busy) return
+    if (items.some(item => !commerce.products.some(product => product.variants.some(variant => variant.id === item.variant.id)))) {
+      setMessage('Outfit chứa sản phẩm cũ chưa có trên hệ thống. Vui lòng chọn lại sản phẩm từ cửa hàng.')
       return
     }
-
-    setMessage('Đã thêm toàn bộ outfit vào giỏ hàng')
+    adding.current = true; setCartBusy(true)
+    try {
+      for (const item of items) await commerce.addItem(item.variant.id, 1)
+      setMessage(detail.unavailableItems.length ? `Đã thêm các món còn khả dụng vào giỏ. Bỏ qua ${detail.unavailableItems.map(item => item.name).join(', ')}.` : 'Đã thêm các món vào giỏ hàng')
+    } catch {
+      setMessage('Chưa hoàn tất thêm outfit. Hãy kiểm tra giỏ hàng trước khi thử lại; một số món có thể đã được lưu.')
+    } finally { adding.current = false; setCartBusy(false) }
   }
+  const addItemToCart = (item: OutfitItemDetail) => { void addItems([item]) }
+  const addOutfitToCart = () => { void addItems(detail.items) }
 
   const applyAiOutfit = (outfit: Outfit) => {
     dispatch({ type: 'outfit/updated', payload: outfit })
@@ -257,7 +242,7 @@ export function OutfitDetailPage() {
             <button
               type="button"
               className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[#684B5A] px-4 text-sm font-semibold text-white disabled:opacity-60"
-              disabled={detail.items.length === 0}
+              disabled={detail.items.length === 0 || cartBusy || commerce.busy}
               onClick={addOutfitToCart}
             >
               Thêm toàn bộ outfit vào giỏ

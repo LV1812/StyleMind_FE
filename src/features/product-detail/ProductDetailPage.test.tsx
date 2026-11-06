@@ -36,7 +36,7 @@ describe('ProductDetailPage', () => {
     const user = userEvent.setup()
     renderProductDetail('prd-blouse-01')
 
-    await user.click(screen.getByRole('button', { name: 'Thêm vào giỏ' }))
+    await user.click(await screen.findByRole('button', { name: 'Thêm vào giỏ' }))
 
     expect(screen.getByText('Vui lòng chọn kích thước')).toBeInTheDocument()
   })
@@ -45,7 +45,7 @@ describe('ProductDetailPage', () => {
     const user = userEvent.setup()
     renderProductDetail('prd-blouse-01')
 
-    await user.click(screen.getByRole('button', { name: 'Kích thước M' }))
+    await user.click(await screen.findByRole('button', { name: 'Kích thước M' }))
     await user.click(screen.getByRole('button', { name: 'Mua ngay' }))
 
     await waitFor(() => expect(currentPath()).toBe('/checkout'))

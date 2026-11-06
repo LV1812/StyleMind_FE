@@ -1,14 +1,15 @@
 import { Link } from 'react-router-dom'
 
 import { ROUTES } from '@/app/router/routes'
-import { useDemoStore } from '@/app/store/DemoStoreProvider'
+import { useCommerceDisplay } from '@/features/cart/model/GuestCommerceProvider'
+import { Button } from '@/shared/ui'
 
 import { HeroSection } from '../components/HeroSection'
 import { ProductRail } from '../components/ProductRail'
 import { WardrobeIntro } from '../components/WardrobeIntro'
 
 export function HomePage() {
-  const { state } = useDemoStore()
+  const { state, loading, error, retry } = useCommerceDisplay()
   const activeCategoryIds = new Set(state.categories.filter(category => category.active).map(category => category.id))
   const activeProducts = state.products.filter(
     product => product.active && activeCategoryIds.has(product.categoryId) && product.variants.some(variant => variant.active),
@@ -16,6 +17,8 @@ export function HomePage() {
   const newest = [...activeProducts].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   const featured = activeProducts.filter(product => product.featured)
   const activeCategories = state.categories.filter(category => category.active).sort((a, b) => a.order - b.order)
+  if (loading) return <p role="status" className="p-8">Đang tải sản phẩm…</p>
+  if (error) return <div className="grid gap-4 p-8"><p role="alert">{error}</p><Button onClick={retry}>Tải lại sản phẩm</Button></div>
 
   return (
     <>

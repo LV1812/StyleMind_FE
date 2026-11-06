@@ -16,6 +16,7 @@ import {
 import { CartPage } from '@/features/cart'
 import { ShopPage } from '@/features/catalog'
 import { CheckoutPage, OrderSuccessPage, QrPaymentPage } from '@/features/checkout'
+import GuestOrderPage from '@/features/checkout/pages/GuestOrderPage'
 import { HomePage } from '@/features/home'
 import { MessagesPage } from '@/features/messages'
 import FriendsPage from '@/features/friends/pages/FriendsPage'
@@ -31,6 +32,8 @@ import { ProductDetailPage } from '@/features/product-detail'
 import { PublicOutfitPage, PublicWardrobePage, SharedWardrobePage, SharedWithMePage, WardrobeAccessPage } from '@/features/sharing'
 import { OutfitDetailPage, WardrobePage } from '@/features/wardrobe'
 import { NotFoundPage } from '@/shared/ui/NotFoundPage'
+
+import { PaymentPage, AdminPaymentsPage } from '@/features/payments'
 
 import { ROUTES } from './routes'
 
@@ -52,8 +55,11 @@ export const appRoutes: RouteObject[] = [
       { index: true, element: <HomePage /> },
       { path: 'shop', element: <ShopPage /> },
       { path: 'products/:productId', element: <ProductDetailPage /> },
+      { path: 'payments', element: <AuthGuard><PaymentPage /></AuthGuard> },
+      { path: 'payments/:orderId', element: <AuthGuard><PaymentPage /></AuthGuard> },
       { path: 'cart', element: <CartPage /> },
-      { path: 'checkout', element: <AuthGuard><CheckoutPage /></AuthGuard> },
+      { path: 'checkout', element: <CheckoutPage /> },
+      { path: 'guest/orders/:orderId', element: <GuestOrderPage /> },
       { path: 'checkout/qr', element: <AuthGuard><QrPaymentPage /></AuthGuard> },
       { path: 'order-success/:orderId', element: <AuthGuard><OrderSuccessPage /></AuthGuard> },
       { path: 'orders', element: <AuthGuard><OrdersPage /></AuthGuard> },
@@ -74,6 +80,7 @@ export const appRoutes: RouteObject[] = [
       { path: 'friends', element: <AuthGuard roles={['customer']}><CommunityScreen demo={<FriendsPage />} live={<ApiFriendsPage />} /></AuthGuard> },
     ],
   },
+  { path: ROUTES.adminPayments, element: <AuthGuard roles={['admin']}><AdminPaymentsPage /></AuthGuard> },
   { path: ROUTES.admin, element: <AuthGuard roles={['admin']}><AdminPage /></AuthGuard> },
   { path: '*', element: <NotFoundPage /> },
 ]

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { commerceApi } from '@/api/commerce'
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
@@ -125,6 +125,7 @@ export function AdminPage() {
         navigate('/login', { replace: true })
       }}
     >
+      <Link to="/admin/payments" className="mb-4 inline-block rounded-lg bg-[#EEE8E1] px-4 py-3 font-semibold text-[#684B5A]">Thanh toán: thu COD và xem lỗi</Link>
       {commerceLoading && <p role="status" className="mb-4 rounded-lg bg-white p-4 text-sm text-[#6F6B67]">Đang tải dữ liệu Commerce…</p>}
       {commerceError && <p role="alert" className="mb-4 rounded-lg bg-[#FCEAEA] p-4 text-sm font-semibold text-[#A94B4B]">{commerceError}</p>}
       {content}

@@ -46,7 +46,7 @@ describe('customer routes', () => {
       ['/account', 'Tài khoản'],
       ['/account/addresses', 'Địa chỉ'],
       ['/orders', 'Đơn hàng'],
-      ['/orders/missing-order', 'Không tìm thấy đơn hàng'],
+      ['/orders/missing-order', 'Thanh toán đơn hàng'],
       ['/notifications', 'Thông báo'],
       ['/wardrobes', 'Tủ đồ của tôi'],
       ['/wardrobes/access', 'Quyền truy cập'],

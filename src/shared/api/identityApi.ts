@@ -368,6 +368,27 @@ function jsonRequest(method: string, body?: unknown): RequestInit {
   return { method, ...(body === undefined ? {} : { body: JSON.stringify(body) }) }
 }
 
+/** Commerce uses the existing Identity rotation/storage and expiry event. */
+export async function refreshIdentityAccessToken(): Promise<string> {
+  const session = readIdentitySession()
+  if (!session) throw new IdentityApiError('Phiên đăng nhập đã hết hạn.', 401)
+  try {
+    const tokens = await rotateStoredRefreshToken()
+    if (readIdentitySession()?.accessToken === tokens.access_token) return tokens.access_token
+    if (readIdentitySession()?.refreshToken !== session.refreshToken) {
+      throw new IdentityApiError('Phiên đăng nhập đã thay đổi. Vui lòng tải lại.', 401)
+    }
+    storeIdentityTokens(tokens, session.persistent)
+    return tokens.access_token
+  } catch (error) {
+    if (readIdentitySession()?.refreshToken === session.refreshToken) {
+      clearIdentitySession()
+      window.dispatchEvent(new Event('identity:session-expired'))
+    }
+    throw error
+  }
+}
+
 export const identityApi = {
   register(email: string, password: string) {
     return performRequest<RegisterResponse>('/api/v1/auth/register', jsonRequest('POST', { email, password }), false, false)

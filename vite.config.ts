@@ -38,6 +38,8 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       strictPort: true,
       proxy: {
+        '/commerce': { target: env.VITE_API_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
+        '/payment': { target: env.VITE_API_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
         '/wardrobe-community': {
           target: env.VITE_API_PROXY_TARGET || 'http://localhost:8080',
           changeOrigin: true,
