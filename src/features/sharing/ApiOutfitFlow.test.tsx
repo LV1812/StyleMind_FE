@@ -59,7 +59,18 @@ it('lists real server outfits instead of local demo outfits', async () => {
   const router = createMemoryRouter(appRoutes, { initialEntries: ['/wardrobes'] })
   render(<AppProviders><RouterProvider router={router} /></AppProviders>)
   expect(await screen.findByText('Outfit từ server')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Tạo Outfit' })).toHaveAttribute('href', '/wardrobes/new')
   expect(screen.queryByText('Cafe cuoi tuan')).not.toBeInTheDocument()
+})
+it('allows opening the creation page from an empty wardrobe', async () => {
+  const id = '10000000-0000-0000-0000-000000000001'
+  saveApiSession(`e30.${btoa(JSON.stringify({ sub: id, roles: ['CUSTOMER'] }))}.sig`, Date.now() + 60000)
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => new Response(JSON.stringify(path === '/api/v1/me' ? { account_id: id, email: 'real@example.test', profile: null } : { items: [], page: 0, size: 20, total_elements: 0, total_pages: 0 }), { status: 200 })))
+  const router = createMemoryRouter(appRoutes, { initialEntries: ['/wardrobes'] })
+  render(<AppProviders><RouterProvider router={router} /></AppProviders>)
+  expect(await screen.findByText('Chưa có Outfit.')).toBeInTheDocument()
+  await userEvent.setup().click(screen.getByRole('link', { name: 'Tạo Outfit' }))
+  expect(router.state.location.pathname).toBe('/wardrobes/new')
 })
 it('keeps an unsaved sharing choice when the window regains focus', async () => {
   const id = '10000000-0000-0000-0000-000000000001'
