@@ -1,0 +1,205 @@
+# Theme summary
+React 19; Tailwind v4. Ivory #FAF8F5, white #FFFFFF, sand #EEE8E1, charcoal #222222, accent #684B5A, blush #F4E7E8. Noto Serif display, Noto Sans body.
+
+# Complete CSS
+```css
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Noto+Serif:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&display=swap&subset=vietnamese');
+@import 'tailwindcss';
+
+/* CẤU HÌNH GIAO DIỆN CHUNG
+ * Đổi các biến tại đây để cập nhật toàn bộ giao diện đang sử dụng.
+ * Màu sắc quần áo / sản phẩm được lưu riêng trong dữ liệu.
+ * Xem STYLE_GUIDE.md để biết cách dùng trong component.
+ */
+@theme static {
+  /* Font chữ: nếu đổi font, cập nhật cả đường dẫn @import phía trên. */
+  --font-display: 'Noto Serif', 'Times New Roman', serif;
+  --font-serif: 'Noto Serif', 'Times New Roman', serif;
+  --font-sans: 'Noto Sans', Arial, sans-serif;
+
+  /* Nền trang, bề mặt và đường viền */
+  --color-ivory: #FAF8F5;
+  --color-surface: #FFFFFF;
+  --color-surface-soft: #FDFCFA;
+  --color-canvas: #F5F3F0;
+  --color-sand: #EEE8E1;
+  --color-sand-dark: #D8D0C6;
+  --color-divider: #E8E4DF;
+  --color-disabled-bg: #F2EFEA;
+  --color-disabled-border: #E0D9CF;
+  --color-unavailable-bg: #E8E2D9;
+  --color-unavailable-text: #78736E;
+
+  /* Chữ: chính, nội dung, phụ, chú thích và chữ trên nền đậm */
+  --color-charcoal: #222222;
+  --color-ink: #3A3632;
+  --color-secondary: #6F6B67;
+  --color-muted: #9D9894;
+  --color-on-accent: #FFFFFF;
+  --color-overlay: #000000;
+
+  /* Màu thương hiệu: nút chính, liên kết, trạng thái đang chọn */
+  --color-accent: #684B5A;
+  --color-accent-mid: #8B6475;
+  --color-accent-light: #C4A5B0;
+  --color-rose: #B98791;
+  --color-blush: #F4E7E8;
+  --color-blush-dark: #E8D0D2;
+
+  /* Trạng thái: thành công, cảnh báo, lỗi và tư vấn AI */
+  --color-success: #48755A;
+  --color-success-bg: #EAF2EC;
+  --color-success-border: #B4D3BD;
+  --color-warning: #B67A32;
+  --color-warning-ink: #83551D;
+  --color-warning-bg: #FBF1E0;
+  --color-error: #A94B4B;
+  --color-error-bg: #FCEAEA;
+  --color-ai-purple: #5B4A6B;
+  --color-ai-light: #F0EBF5;
+
+  /* Bo góc: dùng qua rounded-lg, rounded-xl, rounded-2xl... */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
+
+  /* Bóng đổ dùng chung */
+  --shadow-2xs: 0 1px color-mix(in srgb, var(--color-overlay) 5%, transparent);
+  --shadow-xs: 0 1px 2px 0 color-mix(in srgb, var(--color-overlay) 5%, transparent);
+  --shadow-sm: 0 1px 3px 0 color-mix(in srgb, var(--color-overlay) 10%, transparent), 0 1px 2px -1px color-mix(in srgb, var(--color-overlay) 10%, transparent);
+  --shadow-md: 0 4px 6px -1px color-mix(in srgb, var(--color-overlay) 10%, transparent), 0 2px 4px -2px color-mix(in srgb, var(--color-overlay) 10%, transparent);
+  --shadow-lg: 0 10px 15px -3px color-mix(in srgb, var(--color-overlay) 10%, transparent), 0 4px 6px -4px color-mix(in srgb, var(--color-overlay) 10%, transparent);
+  --shadow-xl: 0 20px 25px -5px color-mix(in srgb, var(--color-overlay) 10%, transparent), 0 8px 10px -6px color-mix(in srgb, var(--color-overlay) 10%, transparent);
+  --shadow-button: 0 2px 8px color-mix(in srgb, var(--color-accent) 18%, transparent);
+  --shadow-button-ai: 0 2px 10px color-mix(in srgb, var(--color-blush) 60%, transparent);
+  --shadow-card: 0 1px 6px color-mix(in srgb, var(--color-overlay) 3%, transparent);
+  --shadow-card-elevated: 0 8px 24px -6px color-mix(in srgb, var(--color-charcoal) 6%, transparent);
+  --shadow-icon: 0 1px 4px color-mix(in srgb, var(--color-overlay) 6%, transparent);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-ivory);
+  color: var(--color-charcoal);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --container-wide: 1280px;
+  --color-overlay: rgba(34, 34, 34, 0.42);
+  --z-sticky: 40;
+  --z-modal: 80;
+  --z-toast: 90;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+body:has([role='dialog'][aria-modal='true']) {
+  overscroll-behavior: contain;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-sand-dark);
+  border-radius: 2px;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.ai-shimmer {
+  background: linear-gradient(90deg, var(--color-blush) 25%, var(--color-sand) 50%, var(--color-blush) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up {
+  animation: fadeUp 0.45s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.pulse-soft {
+  animation: pulseSoft 2.2s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+```

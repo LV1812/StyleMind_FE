@@ -6,6 +6,7 @@ import type { DemoAction, DemoDatabase } from '@/app/store/types'
 import type { CancellationRequest, ReturnRequest } from '@/entities/order/model/types'
 import { cancellationStatusLabel, returnStatusLabel } from '@/features/admin/model/adminLabels'
 import { Button, useToast } from '@/shared/ui'
+import { apiMode } from '@/shared/api/http'
 import { formatDate } from '@/shared/lib/formatDate'
 
 import { StatusBadge } from './AdminCommon'
@@ -88,7 +89,7 @@ export function AdminRequestsPanel({ database, dispatch, reviewerId }: AdminRequ
           Quản lý yêu cầu
         </h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6F6B67]">
-          Duyệt hủy đơn và đổi/trả, đồng thời tạo thông báo để khách hàng thấy trong tài khoản của họ.
+          Xem và xử lý yêu cầu hủy đơn.
         </p>
       </div>
 
@@ -101,7 +102,7 @@ export function AdminRequestsPanel({ database, dispatch, reviewerId }: AdminRequ
         </Button>
       </div>
 
-      {activeTab === 'cancellations' ? (
+      {activeTab === 'returns' && apiMode() ? <p>Quản lý yêu cầu đổi/trả hiện chưa được hỗ trợ.</p> : activeTab === 'cancellations' ? (
         <div className="overflow-hidden rounded-xl border border-[#E5E0D8] bg-white shadow-[0_8px_24px_rgba(58,54,50,0.06)]">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1080px] border-collapse text-left text-sm">

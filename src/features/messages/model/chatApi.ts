@@ -12,6 +12,7 @@ export function mergeHistory(existing: ChatMessageDto[], incoming: ChatMessageDt
   return [...messages.values()].sort((a, b) => a.sequence_number - b.sequence_number)
 }
 export const chatApi = {
+  get: async (chatId: string, signal?: AbortSignal) => apiRequest<ChatSessionDto>(`${base}/chats/${uuid(chatId)}`, { signal }),
   open: async (friendId: string) => apiRequest<ChatSessionDto>(`${base}/me/chats`, { method: 'POST', body: { friend_account_id: uuid(friendId) } }),
   list: (page = 0, signal?: AbortSignal) => apiRequest<Page<ChatSessionDto>>(`${base}/me/chats?page=${page}&size=20`, { signal }),
   history: async (chatId: string, before?: number, signal?: AbortSignal) => {

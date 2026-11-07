@@ -4,6 +4,13 @@ import { chatApi, mergeHistory, type ChatMessageDto } from './chatApi'
 const id = '10000000-0000-0000-0000-000000000001'
 beforeEach(() => { sessionStorage.clear(); saveApiSession('test-token', Date.now() + 60000) })
 afterEach(() => { vi.unstubAllGlobals(); sessionStorage.clear() })
+it('loads the selected conversation metadata', async () => {
+  const fetcher = vi.fn(async (_path: string, _options: RequestInit) => new Response(JSON.stringify({ chat_session_id: id, friend_account_id: id }), { status: 200 }))
+  vi.stubGlobal('fetch', fetcher)
+  const result = await chatApi.get(id)
+  expect(result.chat_session_id).toBe(id)
+  expect(fetcher.mock.calls[0][0]).toBe(`/wardrobe-community/api/v1/chats/${id}`)
+})
 it('opens a chat using the friend UUID and sends text with an explicit idempotency key', async () => {
   const fetcher = vi.fn(async (_path: string, _options: RequestInit) => new Response('{}', { status: 200 })); vi.stubGlobal('fetch', fetcher)
   await chatApi.open(id); await chatApi.sendText(id, id, 'Xin chào')

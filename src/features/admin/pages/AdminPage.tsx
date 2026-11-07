@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { commerceApi } from '@/api/commerce'
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
 import { useAuth } from '@/features/auth'
+import { apiMode } from '@/shared/api/http'
 import { AdminAiPanel } from '@/features/admin/components/AdminAiPanel'
 import { AdminCategoriesPanel } from '@/features/admin/components/AdminCategoriesPanel'
 import { AdminCustomersPanel } from '@/features/admin/components/AdminCustomersPanel'
@@ -103,7 +104,7 @@ export function AdminPage() {
   }, [dispatch])
 
   const content = useMemo(() => {
-    if (activeSection === 'overview') return <AdminOverviewPanel database={state} />
+    if (activeSection === 'overview') return apiMode() ? <section className="grid gap-4"><h1 className="font-display text-3xl">Tổng quan quản trị</h1><p>Chọn mục để xem dữ liệu từ hệ thống.</p><div className="flex gap-4"><Link className="underline" to="/admin?section=orders">Đơn hàng</Link><Link className="underline" to="/admin?section=products">Sản phẩm</Link><Link className="underline" to="/admin?section=customers">Khách hàng</Link></div></section> : <AdminOverviewPanel database={state} />
     if (activeSection === 'products') return <AdminProductsPanel database={state} dispatch={dispatch} />
     if (activeSection === 'categories') return <AdminCategoriesPanel database={state} dispatch={dispatch} />
     if (activeSection === 'orders') return <AdminOrdersPanel database={state} dispatch={dispatch} />
@@ -128,7 +129,7 @@ export function AdminPage() {
       <Link to="/admin/payments" className="mb-4 inline-block rounded-lg bg-[#EEE8E1] px-4 py-3 font-semibold text-[#684B5A]">Thanh toán: thu COD và xem lỗi</Link>
       {commerceLoading && <p role="status" className="mb-4 rounded-lg bg-white p-4 text-sm text-[#6F6B67]">Đang tải dữ liệu Commerce…</p>}
       {commerceError && <p role="alert" className="mb-4 rounded-lg bg-[#FCEAEA] p-4 text-sm font-semibold text-[#A94B4B]">{commerceError}</p>}
-      {content}
+      {(!['overview', 'products', 'categories', 'orders', 'requests'].includes(activeSection) || (!commerceLoading && !commerceError)) && content}
     </AdminShell>
   )
 }

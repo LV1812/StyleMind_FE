@@ -57,7 +57,7 @@ it('hides the composer when chat history is no longer accessible', async () => {
   vi.stubEnv('VITE_COMMUNITY_MODE', 'api')
   saveApiSession(`e30.${btoa(JSON.stringify({ sub: actor, roles: ['CUSTOMER'] }))}.sig`, Date.now() + 60000)
   vi.stubGlobal('fetch', vi.fn(async (path: string) => {
-    const body = path === '/api/v1/me' ? { account_id: actor, email: 'real@example.test', profile: null } : path.includes('/me/chats?') ? { items: [{ chat_session_id: chat, friend_account_id: actor, created_at: '2026-11-03', updated_at: '2026-11-03' }], page: 0, size: 20, total_elements: 1, total_pages: 1 } : { code: 'RESOURCE_NOT_FOUND' }
+    const body = path === '/api/v1/me' ? { account_id: actor, email: 'real@example.test', profile: null } : path.includes('/me/chats?') ? { items: [{ chat_session_id: chat, friend_account_id: actor, created_at: '2026-11-03', updated_at: '2026-11-03' }], page: 0, size: 20, total_elements: 1, total_pages: 1 } : path.includes('/cart') ? { items: [] } : { code: 'RESOURCE_NOT_FOUND' }
     return new Response(JSON.stringify(body), { status: path.includes('/messages?') ? 404 : 200 })
   }))
   render(<AppProviders><RouterProvider router={createMemoryRouter(appRoutes, { initialEntries: ['/messages'] })} /></AppProviders>)

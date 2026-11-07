@@ -124,7 +124,7 @@ export function AdminOrdersPanel({ database, dispatch }: AdminOrdersPanelProps) 
           Quản lý đơn hàng
         </h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6F6B67]">
-          Theo dõi thanh toán, địa chỉ giao hàng và các bước xử lý đơn trong mock data.
+          Theo dõi thanh toán, địa chỉ giao hàng và các bước xử lý đơn.
         </p>
       </div>
 

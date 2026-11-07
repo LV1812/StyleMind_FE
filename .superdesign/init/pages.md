@@ -1,0 +1,1152 @@
+# Page dependencies
+
+## src/features/home/pages/HomePage.tsx
+- src/features/home/pages/HomePage.tsx
+  - src/app/router/routes.ts
+  - src/app/store/DemoStoreProvider.tsx
+    - src/app/store/demoReducer.ts
+      - src/entities/address/model/types.ts
+      - src/entities/cart/model/types.ts
+      - src/entities/chat/model/types.ts
+      - src/entities/notification/model/types.ts
+      - src/entities/order/model/types.ts
+        - src/entities/address/model/types.ts (seen)
+      - src/entities/outfit/model/types.ts
+      - src/entities/share/model/types.ts
+      - src/app/store/types.ts
+        - src/entities/address/model/types.ts (seen)
+        - src/entities/ai/model/types.ts
+          - src/entities/product/model/types.ts
+        - src/entities/cart/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/notification/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/friendship/model/types.ts
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/entities/user/model/types.ts
+      - src/features/friends/model/friendshipModel.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/friendship/model/types.ts (seen)
+      - src/features/sharing/model/outfitSharing.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/features/friends/model/friendshipModel.ts (seen)
+        - src/features/wardrobe/model/outfitSelectors.ts
+          - src/app/store/types.ts (seen)
+          - src/entities/product/model/types.ts (seen)
+          - src/entities/outfit/model/types.ts (seen)
+    - src/app/store/types.ts (seen)
+    - src/shared/storage/demoStorage.ts
+      - src/app/data/demoSeed.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/ai/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/shared/constants/demoAccounts.ts
+      - src/app/store/demoReducer.ts (seen)
+      - src/app/store/types.ts (seen)
+  - src/features/home/components/HeroSection.tsx
+    - src/app/router/routes.ts (seen)
+  - src/features/home/components/ProductRail.tsx
+    - src/app/router/routes.ts (seen)
+    - src/entities/product/model/types.ts (seen)
+    - src/shared/lib/formatCurrency.ts
+  - src/features/home/components/WardrobeIntro.tsx
+
+## src/features/catalog/pages/ShopPage.tsx
+- src/features/catalog/pages/ShopPage.tsx
+  - src/api/commerce.ts
+    - src/api/http.ts
+      - src/api/commerce.types.ts
+      - src/shared/api/identityApi.ts
+    - src/api/commerce.types.ts (seen)
+  - src/api/commerce.types.ts (seen)
+  - src/app/store/DemoStoreProvider.tsx
+    - src/app/store/demoReducer.ts
+      - src/entities/address/model/types.ts
+      - src/entities/cart/model/types.ts
+      - src/entities/chat/model/types.ts
+      - src/entities/notification/model/types.ts
+      - src/entities/order/model/types.ts
+        - src/entities/address/model/types.ts (seen)
+      - src/entities/outfit/model/types.ts
+      - src/entities/share/model/types.ts
+      - src/app/store/types.ts
+        - src/entities/address/model/types.ts (seen)
+        - src/entities/ai/model/types.ts
+          - src/entities/product/model/types.ts
+        - src/entities/cart/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/notification/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/friendship/model/types.ts
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/entities/user/model/types.ts
+      - src/features/friends/model/friendshipModel.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/friendship/model/types.ts (seen)
+      - src/features/sharing/model/outfitSharing.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/features/friends/model/friendshipModel.ts (seen)
+        - src/features/wardrobe/model/outfitSelectors.ts
+          - src/app/store/types.ts (seen)
+          - src/entities/product/model/types.ts (seen)
+          - src/entities/outfit/model/types.ts (seen)
+    - src/app/store/types.ts (seen)
+    - src/shared/storage/demoStorage.ts
+      - src/app/data/demoSeed.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/ai/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/shared/constants/demoAccounts.ts
+      - src/app/store/demoReducer.ts (seen)
+      - src/app/store/types.ts (seen)
+  - src/entities/product/model/types.ts (seen)
+  - src/features/commerce/data/commerceEntityAdapters.ts
+    - src/entities/cart/model/types.ts (seen)
+    - src/entities/order/model/types.ts (seen)
+    - src/entities/product/model/types.ts (seen)
+    - src/api/commerce.types.ts (seen)
+  - src/shared/ui/index.ts
+    - src/shared/ui/Button.tsx
+    - src/shared/ui/EmptyState.tsx
+    - src/shared/ui/LoadingSkeleton.tsx
+    - src/shared/ui/Modal.tsx
+    - src/shared/ui/SelectField.tsx
+    - src/shared/ui/TextField.tsx
+    - src/shared/ui/ToastProvider.tsx
+    - src/shared/ui/ToggleSwitch.tsx
+  - src/features/catalog/components/FilterPanel.tsx
+    - src/entities/product/model/types.ts (seen)
+    - src/shared/ui/index.ts (seen)
+    - src/features/catalog/model/types.ts
+      - src/entities/product/model/types.ts (seen)
+  - src/features/catalog/components/MobileFilterSheet.tsx
+    - src/entities/product/model/types.ts (seen)
+    - src/shared/ui/index.ts (seen)
+    - src/features/catalog/components/FilterPanel.tsx (seen)
+    - src/features/catalog/model/types.ts (seen)
+  - src/features/catalog/components/ProductCard.tsx
+    - src/app/router/routes.ts
+    - src/entities/product/model/types.ts (seen)
+    - src/shared/lib/formatCurrency.ts
+  - src/features/catalog/model/filterProducts.ts
+    - src/entities/product/model/types.ts (seen)
+    - src/features/catalog/model/types.ts (seen)
+  - src/features/catalog/model/types.ts (seen)
+
+## src/features/product-detail/pages/ProductDetailPage.tsx
+- src/features/product-detail/pages/ProductDetailPage.tsx
+  - src/app/router/routes.ts
+  - src/app/store/DemoStoreProvider.tsx
+    - src/app/store/demoReducer.ts
+      - src/entities/address/model/types.ts
+      - src/entities/cart/model/types.ts
+      - src/entities/chat/model/types.ts
+      - src/entities/notification/model/types.ts
+      - src/entities/order/model/types.ts
+        - src/entities/address/model/types.ts (seen)
+      - src/entities/outfit/model/types.ts
+      - src/entities/share/model/types.ts
+      - src/app/store/types.ts
+        - src/entities/address/model/types.ts (seen)
+        - src/entities/ai/model/types.ts
+          - src/entities/product/model/types.ts
+        - src/entities/cart/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/notification/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/friendship/model/types.ts
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/entities/user/model/types.ts
+      - src/features/friends/model/friendshipModel.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/friendship/model/types.ts (seen)
+      - src/features/sharing/model/outfitSharing.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/features/friends/model/friendshipModel.ts (seen)
+        - src/features/wardrobe/model/outfitSelectors.ts
+          - src/app/store/types.ts (seen)
+          - src/entities/product/model/types.ts (seen)
+          - src/entities/outfit/model/types.ts (seen)
+    - src/app/store/types.ts (seen)
+    - src/shared/storage/demoStorage.ts
+      - src/app/data/demoSeed.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/ai/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/shared/constants/demoAccounts.ts
+      - src/app/store/demoReducer.ts (seen)
+      - src/app/store/types.ts (seen)
+  - src/entities/product/model/types.ts (seen)
+  - src/features/commerce/index.ts
+    - src/features/commerce/model/CommerceProvider.tsx
+      - src/api/commerce.ts
+        - src/api/http.ts
+          - src/api/commerce.types.ts
+          - src/shared/api/identityApi.ts
+        - src/api/commerce.types.ts (seen)
+      - src/api/commerce.types.ts (seen)
+      - src/api/guestSession.ts
+      - src/app/store/DemoStoreProvider.tsx (seen)
+      - src/features/auth/index.ts
+        - src/features/auth/pages/ForgotPasswordPage.tsx
+          - src/app/router/routes.ts (seen)
+          - src/shared/api/identityApi.ts (seen)
+          - src/shared/ui/index.ts
+            - src/shared/ui/Button.tsx
+            - src/shared/ui/EmptyState.tsx
+            - src/shared/ui/LoadingSkeleton.tsx
+            - src/shared/ui/Modal.tsx
+            - src/shared/ui/SelectField.tsx
+            - src/shared/ui/TextField.tsx
+            - src/shared/ui/ToastProvider.tsx
+            - src/shared/ui/ToggleSwitch.tsx
+          - src/features/auth/components/AuthLayout.tsx
+            - src/app/router/routes.ts (seen)
+          - src/features/auth/model/useAuth.ts
+            - src/features/auth/model/IdentityAuthProvider.tsx
+              - src/app/store/DemoStoreProvider.tsx (seen)
+              - src/entities/user/model/types.ts (seen)
+              - src/shared/api/identityApi.ts (seen)
+              - src/features/auth/data/authRepository.ts
+        - src/features/auth/pages/LoginPage.tsx
+          - src/app/router/routes.ts (seen)
+          - src/shared/api/identityApi.ts (seen)
+          - src/shared/ui/index.ts (seen)
+          - src/features/auth/components/AuthLayout.tsx (seen)
+          - src/features/auth/data/authRepository.ts (seen)
+          - src/features/auth/model/useAuth.ts (seen)
+          - src/features/auth/model/validators.ts
+            - src/features/auth/data/authRepository.ts (seen)
+        - src/features/auth/pages/RegisterPage.tsx
+          - src/app/router/routes.ts (seen)
+          - src/shared/api/identityApi.ts (seen)
+          - src/shared/ui/index.ts (seen)
+          - src/features/auth/components/AuthLayout.tsx (seen)
+          - src/features/auth/data/authRepository.ts (seen)
+          - src/features/auth/model/useAuth.ts (seen)
+          - src/features/auth/model/validators.ts (seen)
+        - src/features/auth/pages/ResetPasswordPage.tsx
+          - src/app/router/routes.ts (seen)
+          - src/shared/api/identityApi.ts (seen)
+          - src/shared/ui/index.ts (seen)
+          - src/features/auth/components/AuthLayout.tsx (seen)
+          - src/features/auth/model/useAuth.ts (seen)
+        - src/features/auth/pages/VerifyOtpPage.tsx
+          - src/app/router/routes.ts (seen)
+          - src/shared/api/identityApi.ts (seen)
+          - src/shared/ui/index.ts (seen)
+          - src/features/auth/components/AuthLayout.tsx (seen)
+          - src/features/auth/model/useAuth.ts (seen)
+        - src/features/auth/model/useAuth.ts (seen)
+      - src/features/commerce/data/commerceEntityAdapters.ts
+        - src/entities/cart/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/product/model/types.ts (seen)
+        - src/api/commerce.types.ts (seen)
+      - src/features/commerce/data/loadCommerceProducts.ts
+        - src/api/commerce.ts (seen)
+        - src/api/commerce.types.ts (seen)
+  - src/shared/lib/formatCurrency.ts
+  - src/shared/ui/index.ts (seen)
+  - src/features/product-detail/components/ColorSelector.tsx
+    - src/features/product-detail/model/productSelection.ts
+      - src/entities/product/model/types.ts (seen)
+  - src/features/product-detail/components/ProductGallery.tsx
+    - src/entities/product/model/types.ts (seen)
+  - src/features/product-detail/components/SizeSelector.tsx
+    - src/entities/product/model/types.ts (seen)
+    - src/features/product-detail/model/productSelection.ts (seen)
+  - src/features/product-detail/model/productSelection.ts (seen)
+
+## src/features/wardrobe/pages/WardrobePage.tsx
+- src/features/wardrobe/pages/WardrobePage.tsx
+  - src/app/router/routes.ts
+  - src/app/store/DemoStoreProvider.tsx
+    - src/app/store/demoReducer.ts
+      - src/entities/address/model/types.ts
+      - src/entities/cart/model/types.ts
+      - src/entities/chat/model/types.ts
+      - src/entities/notification/model/types.ts
+      - src/entities/order/model/types.ts
+        - src/entities/address/model/types.ts (seen)
+      - src/entities/outfit/model/types.ts
+      - src/entities/share/model/types.ts
+      - src/app/store/types.ts
+        - src/entities/address/model/types.ts (seen)
+        - src/entities/ai/model/types.ts
+          - src/entities/product/model/types.ts
+        - src/entities/cart/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/notification/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/friendship/model/types.ts
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/entities/user/model/types.ts
+      - src/features/friends/model/friendshipModel.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/friendship/model/types.ts (seen)
+      - src/features/sharing/model/outfitSharing.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/features/friends/model/friendshipModel.ts (seen)
+        - src/features/wardrobe/model/outfitSelectors.ts
+          - src/app/store/types.ts (seen)
+          - src/entities/product/model/types.ts (seen)
+          - src/entities/outfit/model/types.ts (seen)
+    - src/app/store/types.ts (seen)
+    - src/shared/storage/demoStorage.ts
+      - src/app/data/demoSeed.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/ai/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/shared/constants/demoAccounts.ts
+      - src/app/store/demoReducer.ts (seen)
+      - src/app/store/types.ts (seen)
+  - src/features/auth/index.ts
+    - src/features/auth/pages/ForgotPasswordPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts
+      - src/shared/ui/index.ts
+        - src/shared/ui/Button.tsx
+        - src/shared/ui/EmptyState.tsx
+        - src/shared/ui/LoadingSkeleton.tsx
+        - src/shared/ui/Modal.tsx
+        - src/shared/ui/SelectField.tsx
+        - src/shared/ui/TextField.tsx
+        - src/shared/ui/ToastProvider.tsx
+        - src/shared/ui/ToggleSwitch.tsx
+      - src/features/auth/components/AuthLayout.tsx
+        - src/app/router/routes.ts (seen)
+      - src/features/auth/model/useAuth.ts
+        - src/features/auth/model/IdentityAuthProvider.tsx
+          - src/app/store/DemoStoreProvider.tsx (seen)
+          - src/entities/user/model/types.ts (seen)
+          - src/shared/api/identityApi.ts (seen)
+          - src/features/auth/data/authRepository.ts
+    - src/features/auth/pages/LoginPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/auth/components/AuthLayout.tsx (seen)
+      - src/features/auth/data/authRepository.ts (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+      - src/features/auth/model/validators.ts
+        - src/features/auth/data/authRepository.ts (seen)
+    - src/features/auth/pages/RegisterPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/auth/components/AuthLayout.tsx (seen)
+      - src/features/auth/data/authRepository.ts (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+      - src/features/auth/model/validators.ts (seen)
+    - src/features/auth/pages/ResetPasswordPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/auth/components/AuthLayout.tsx (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+    - src/features/auth/pages/VerifyOtpPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/auth/components/AuthLayout.tsx (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+    - src/features/auth/model/useAuth.ts (seen)
+  - src/features/messages/model/chatSelectors.ts
+    - src/app/store/types.ts (seen)
+    - src/entities/chat/model/types.ts (seen)
+    - src/entities/user/model/types.ts (seen)
+    - src/features/sharing/model/shareSelectors.ts
+      - src/app/store/types.ts (seen)
+      - src/entities/share/model/types.ts (seen)
+      - src/features/wardrobe/model/outfitSelectors.ts (seen)
+      - src/features/sharing/model/outfitSharing.ts (seen)
+  - src/features/sharing/components/WardrobeSharePanel.tsx
+    - src/entities/share/model/types.ts (seen)
+    - src/features/sharing/model/shareSelectors.ts (seen)
+    - src/shared/ui/index.ts (seen)
+  - src/features/sharing/model/shareSelectors.ts (seen)
+  - src/entities/share/model/types.ts (seen)
+  - src/features/wardrobe/components/OutfitCard.tsx
+    - src/entities/outfit/model/types.ts (seen)
+    - src/shared/lib/formatDate.ts
+  - src/features/wardrobe/model/outfitSelectors.ts (seen)
+
+## src/features/friends/pages/ApiFriendsPage.tsx
+- src/features/friends/pages/ApiFriendsPage.tsx
+  - src/features/friends/model/friendLabel.ts
+    - src/shared/api/communityApi.ts
+      - src/shared/api/http.ts
+        - src/shared/api/identityApi.ts
+  - src/features/messages/model/chatApi.ts
+    - src/shared/api/http.ts (seen)
+    - src/shared/api/communityApi.ts (seen)
+  - src/shared/api/communityApi.ts (seen)
+  - src/shared/api/http.ts (seen)
+  - src/shared/api/useApiQuery.ts
+    - src/features/auth/index.ts
+      - src/features/auth/pages/ForgotPasswordPage.tsx
+        - src/app/router/routes.ts
+        - src/shared/api/identityApi.ts (seen)
+        - src/shared/ui/index.ts
+          - src/shared/ui/Button.tsx
+          - src/shared/ui/EmptyState.tsx
+          - src/shared/ui/LoadingSkeleton.tsx
+          - src/shared/ui/Modal.tsx
+          - src/shared/ui/SelectField.tsx
+          - src/shared/ui/TextField.tsx
+          - src/shared/ui/ToastProvider.tsx
+          - src/shared/ui/ToggleSwitch.tsx
+        - src/features/auth/components/AuthLayout.tsx
+          - src/app/router/routes.ts (seen)
+        - src/features/auth/model/useAuth.ts
+          - src/features/auth/model/IdentityAuthProvider.tsx
+            - src/app/store/DemoStoreProvider.tsx
+              - src/app/store/demoReducer.ts
+                - src/entities/address/model/types.ts
+                - src/entities/cart/model/types.ts
+                - src/entities/chat/model/types.ts
+                - src/entities/notification/model/types.ts
+                - src/entities/order/model/types.ts
+                  - src/entities/address/model/types.ts (seen)
+                - src/entities/outfit/model/types.ts
+                - src/entities/share/model/types.ts
+                - src/app/store/types.ts
+                  - src/entities/address/model/types.ts (seen)
+                  - src/entities/ai/model/types.ts
+                    - src/entities/product/model/types.ts
+                  - src/entities/cart/model/types.ts (seen)
+                  - src/entities/chat/model/types.ts (seen)
+                  - src/entities/notification/model/types.ts (seen)
+                  - src/entities/order/model/types.ts (seen)
+                  - src/entities/outfit/model/types.ts (seen)
+                  - src/entities/friendship/model/types.ts
+                  - src/entities/product/model/types.ts (seen)
+                  - src/entities/share/model/types.ts (seen)
+                  - src/entities/user/model/types.ts
+                - src/features/friends/model/friendshipModel.ts
+                  - src/app/store/types.ts (seen)
+                  - src/entities/friendship/model/types.ts (seen)
+                - src/features/sharing/model/outfitSharing.ts
+                  - src/app/store/types.ts (seen)
+                  - src/entities/outfit/model/types.ts (seen)
+                  - src/features/friends/model/friendshipModel.ts (seen)
+                  - src/features/wardrobe/model/outfitSelectors.ts
+                    - src/app/store/types.ts (seen)
+                    - src/entities/product/model/types.ts (seen)
+                    - src/entities/outfit/model/types.ts (seen)
+              - src/app/store/types.ts (seen)
+              - src/shared/storage/demoStorage.ts
+                - src/app/data/demoSeed.ts
+                  - src/app/store/types.ts (seen)
+                  - src/entities/ai/model/types.ts (seen)
+                  - src/entities/chat/model/types.ts (seen)
+                  - src/entities/order/model/types.ts (seen)
+                  - src/entities/outfit/model/types.ts (seen)
+                  - src/entities/product/model/types.ts (seen)
+                  - src/entities/share/model/types.ts (seen)
+                  - src/shared/constants/demoAccounts.ts
+                - src/app/store/demoReducer.ts (seen)
+                - src/app/store/types.ts (seen)
+            - src/entities/user/model/types.ts (seen)
+            - src/shared/api/identityApi.ts (seen)
+            - src/features/auth/data/authRepository.ts
+      - src/features/auth/pages/LoginPage.tsx
+        - src/app/router/routes.ts (seen)
+        - src/shared/api/identityApi.ts (seen)
+        - src/shared/ui/index.ts (seen)
+        - src/features/auth/components/AuthLayout.tsx (seen)
+        - src/features/auth/data/authRepository.ts (seen)
+        - src/features/auth/model/useAuth.ts (seen)
+        - src/features/auth/model/validators.ts
+          - src/features/auth/data/authRepository.ts (seen)
+      - src/features/auth/pages/RegisterPage.tsx
+        - src/app/router/routes.ts (seen)
+        - src/shared/api/identityApi.ts (seen)
+        - src/shared/ui/index.ts (seen)
+        - src/features/auth/components/AuthLayout.tsx (seen)
+        - src/features/auth/data/authRepository.ts (seen)
+        - src/features/auth/model/useAuth.ts (seen)
+        - src/features/auth/model/validators.ts (seen)
+      - src/features/auth/pages/ResetPasswordPage.tsx
+        - src/app/router/routes.ts (seen)
+        - src/shared/api/identityApi.ts (seen)
+        - src/shared/ui/index.ts (seen)
+        - src/features/auth/components/AuthLayout.tsx (seen)
+        - src/features/auth/model/useAuth.ts (seen)
+      - src/features/auth/pages/VerifyOtpPage.tsx
+        - src/app/router/routes.ts (seen)
+        - src/shared/api/identityApi.ts (seen)
+        - src/shared/ui/index.ts (seen)
+        - src/features/auth/components/AuthLayout.tsx (seen)
+        - src/features/auth/model/useAuth.ts (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+  - src/features/auth/index.ts (seen)
+  - src/shared/api/ApiUi.tsx
+    - src/shared/ui/index.ts (seen)
+    - src/shared/api/communityApi.ts (seen)
+  - src/shared/ui/index.ts (seen)
+
+## src/features/messages/pages/ApiMessagesPage.tsx
+- src/features/messages/pages/ApiMessagesPage.tsx
+  - src/features/friends/model/friendLabel.ts
+    - src/shared/api/communityApi.ts
+      - src/shared/api/http.ts
+        - src/shared/api/identityApi.ts
+  - src/features/auth/index.ts
+    - src/features/auth/pages/ForgotPasswordPage.tsx
+      - src/app/router/routes.ts
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts
+        - src/shared/ui/Button.tsx
+        - src/shared/ui/EmptyState.tsx
+        - src/shared/ui/LoadingSkeleton.tsx
+        - src/shared/ui/Modal.tsx
+        - src/shared/ui/SelectField.tsx
+        - src/shared/ui/TextField.tsx
+        - src/shared/ui/ToastProvider.tsx
+        - src/shared/ui/ToggleSwitch.tsx
+      - src/features/auth/components/AuthLayout.tsx
+        - src/app/router/routes.ts (seen)
+      - src/features/auth/model/useAuth.ts
+        - src/features/auth/model/IdentityAuthProvider.tsx
+          - src/app/store/DemoStoreProvider.tsx
+            - src/app/store/demoReducer.ts
+              - src/entities/address/model/types.ts
+              - src/entities/cart/model/types.ts
+              - src/entities/chat/model/types.ts
+              - src/entities/notification/model/types.ts
+              - src/entities/order/model/types.ts
+                - src/entities/address/model/types.ts (seen)
+              - src/entities/outfit/model/types.ts
+              - src/entities/share/model/types.ts
+              - src/app/store/types.ts
+                - src/entities/address/model/types.ts (seen)
+                - src/entities/ai/model/types.ts
+                  - src/entities/product/model/types.ts
+                - src/entities/cart/model/types.ts (seen)
+                - src/entities/chat/model/types.ts (seen)
+                - src/entities/notification/model/types.ts (seen)
+                - src/entities/order/model/types.ts (seen)
+                - src/entities/outfit/model/types.ts (seen)
+                - src/entities/friendship/model/types.ts
+                - src/entities/product/model/types.ts (seen)
+                - src/entities/share/model/types.ts (seen)
+                - src/entities/user/model/types.ts
+              - src/features/friends/model/friendshipModel.ts
+                - src/app/store/types.ts (seen)
+                - src/entities/friendship/model/types.ts (seen)
+              - src/features/sharing/model/outfitSharing.ts
+                - src/app/store/types.ts (seen)
+                - src/entities/outfit/model/types.ts (seen)
+                - src/features/friends/model/friendshipModel.ts (seen)
+                - src/features/wardrobe/model/outfitSelectors.ts
+                  - src/app/store/types.ts (seen)
+                  - src/entities/product/model/types.ts (seen)
+                  - src/entities/outfit/model/types.ts (seen)
+            - src/app/store/types.ts (seen)
+            - src/shared/storage/demoStorage.ts
+              - src/app/data/demoSeed.ts
+                - src/app/store/types.ts (seen)
+                - src/entities/ai/model/types.ts (seen)
+                - src/entities/chat/model/types.ts (seen)
+                - src/entities/order/model/types.ts (seen)
+                - src/entities/outfit/model/types.ts (seen)
+                - src/entities/product/model/types.ts (seen)
+                - src/entities/share/model/types.ts (seen)
+                - src/shared/constants/demoAccounts.ts
+              - src/app/store/demoReducer.ts (seen)
+              - src/app/store/types.ts (seen)
+          - src/entities/user/model/types.ts (seen)
+          - src/shared/api/identityApi.ts (seen)
+          - src/features/auth/data/authRepository.ts
+    - src/features/auth/pages/LoginPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/auth/components/AuthLayout.tsx (seen)
+      - src/features/auth/data/authRepository.ts (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+      - src/features/auth/model/validators.ts
+        - src/features/auth/data/authRepository.ts (seen)
+    - src/features/auth/pages/RegisterPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/auth/components/AuthLayout.tsx (seen)
+      - src/features/auth/data/authRepository.ts (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+      - src/features/auth/model/validators.ts (seen)
+    - src/features/auth/pages/ResetPasswordPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/auth/components/AuthLayout.tsx (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+    - src/features/auth/pages/VerifyOtpPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/auth/components/AuthLayout.tsx (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+    - src/features/auth/model/useAuth.ts (seen)
+  - src/shared/api/useApiQuery.ts
+    - src/features/auth/index.ts (seen)
+  - src/shared/api/ApiUi.tsx
+    - src/shared/ui/index.ts (seen)
+    - src/shared/api/communityApi.ts (seen)
+  - src/shared/ui/index.ts (seen)
+  - src/shared/api/http.ts (seen)
+  - src/shared/api/communityApi.ts (seen)
+  - src/features/messages/model/chatApi.ts
+    - src/shared/api/http.ts (seen)
+    - src/shared/api/communityApi.ts (seen)
+  - src/features/messages/model/useChatRealtime.ts
+    - src/shared/api/http.ts (seen)
+  - src/features/messages/pages/ChatImage.tsx
+    - src/features/messages/model/chatApi.ts (seen)
+
+## src/features/sharing/pages/ApiOutfitPages.tsx
+- src/features/sharing/pages/ApiOutfitPages.tsx
+  - src/shared/api/communityApi.ts
+    - src/shared/api/http.ts
+      - src/shared/api/identityApi.ts
+  - src/shared/api/useApiQuery.ts
+    - src/features/auth/index.ts
+      - src/features/auth/pages/ForgotPasswordPage.tsx
+        - src/app/router/routes.ts
+        - src/shared/api/identityApi.ts (seen)
+        - src/shared/ui/index.ts
+          - src/shared/ui/Button.tsx
+          - src/shared/ui/EmptyState.tsx
+          - src/shared/ui/LoadingSkeleton.tsx
+          - src/shared/ui/Modal.tsx
+          - src/shared/ui/SelectField.tsx
+          - src/shared/ui/TextField.tsx
+          - src/shared/ui/ToastProvider.tsx
+          - src/shared/ui/ToggleSwitch.tsx
+        - src/features/auth/components/AuthLayout.tsx
+          - src/app/router/routes.ts (seen)
+        - src/features/auth/model/useAuth.ts
+          - src/features/auth/model/IdentityAuthProvider.tsx
+            - src/app/store/DemoStoreProvider.tsx
+              - src/app/store/demoReducer.ts
+                - src/entities/address/model/types.ts
+                - src/entities/cart/model/types.ts
+                - src/entities/chat/model/types.ts
+                - src/entities/notification/model/types.ts
+                - src/entities/order/model/types.ts
+                  - src/entities/address/model/types.ts (seen)
+                - src/entities/outfit/model/types.ts
+                - src/entities/share/model/types.ts
+                - src/app/store/types.ts
+                  - src/entities/address/model/types.ts (seen)
+                  - src/entities/ai/model/types.ts
+                    - src/entities/product/model/types.ts
+                  - src/entities/cart/model/types.ts (seen)
+                  - src/entities/chat/model/types.ts (seen)
+                  - src/entities/notification/model/types.ts (seen)
+                  - src/entities/order/model/types.ts (seen)
+                  - src/entities/outfit/model/types.ts (seen)
+                  - src/entities/friendship/model/types.ts
+                  - src/entities/product/model/types.ts (seen)
+                  - src/entities/share/model/types.ts (seen)
+                  - src/entities/user/model/types.ts
+                - src/features/friends/model/friendshipModel.ts
+                  - src/app/store/types.ts (seen)
+                  - src/entities/friendship/model/types.ts (seen)
+                - src/features/sharing/model/outfitSharing.ts
+                  - src/app/store/types.ts (seen)
+                  - src/entities/outfit/model/types.ts (seen)
+                  - src/features/friends/model/friendshipModel.ts (seen)
+                  - src/features/wardrobe/model/outfitSelectors.ts
+                    - src/app/store/types.ts (seen)
+                    - src/entities/product/model/types.ts (seen)
+                    - src/entities/outfit/model/types.ts (seen)
+              - src/app/store/types.ts (seen)
+              - src/shared/storage/demoStorage.ts
+                - src/app/data/demoSeed.ts
+                  - src/app/store/types.ts (seen)
+                  - src/entities/ai/model/types.ts (seen)
+                  - src/entities/chat/model/types.ts (seen)
+                  - src/entities/order/model/types.ts (seen)
+                  - src/entities/outfit/model/types.ts (seen)
+                  - src/entities/product/model/types.ts (seen)
+                  - src/entities/share/model/types.ts (seen)
+                  - src/shared/constants/demoAccounts.ts
+                - src/app/store/demoReducer.ts (seen)
+                - src/app/store/types.ts (seen)
+            - src/entities/user/model/types.ts (seen)
+            - src/shared/api/identityApi.ts (seen)
+            - src/features/auth/data/authRepository.ts
+      - src/features/auth/pages/LoginPage.tsx
+        - src/app/router/routes.ts (seen)
+        - src/shared/api/identityApi.ts (seen)
+        - src/shared/ui/index.ts (seen)
+        - src/features/auth/components/AuthLayout.tsx (seen)
+        - src/features/auth/data/authRepository.ts (seen)
+        - src/features/auth/model/useAuth.ts (seen)
+        - src/features/auth/model/validators.ts
+          - src/features/auth/data/authRepository.ts (seen)
+      - src/features/auth/pages/RegisterPage.tsx
+        - src/app/router/routes.ts (seen)
+        - src/shared/api/identityApi.ts (seen)
+        - src/shared/ui/index.ts (seen)
+        - src/features/auth/components/AuthLayout.tsx (seen)
+        - src/features/auth/data/authRepository.ts (seen)
+        - src/features/auth/model/useAuth.ts (seen)
+        - src/features/auth/model/validators.ts (seen)
+      - src/features/auth/pages/ResetPasswordPage.tsx
+        - src/app/router/routes.ts (seen)
+        - src/shared/api/identityApi.ts (seen)
+        - src/shared/ui/index.ts (seen)
+        - src/features/auth/components/AuthLayout.tsx (seen)
+        - src/features/auth/model/useAuth.ts (seen)
+      - src/features/auth/pages/VerifyOtpPage.tsx
+        - src/app/router/routes.ts (seen)
+        - src/shared/api/identityApi.ts (seen)
+        - src/shared/ui/index.ts (seen)
+        - src/features/auth/components/AuthLayout.tsx (seen)
+        - src/features/auth/model/useAuth.ts (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+  - src/shared/api/ApiUi.tsx
+    - src/shared/ui/index.ts (seen)
+    - src/shared/api/communityApi.ts (seen)
+  - src/shared/ui/index.ts (seen)
+
+## src/features/account/pages/AccountPage.tsx
+- src/features/account/pages/AccountPage.tsx
+  - src/app/router/routes.ts
+  - src/app/store/DemoStoreProvider.tsx
+    - src/app/store/demoReducer.ts
+      - src/entities/address/model/types.ts
+      - src/entities/cart/model/types.ts
+      - src/entities/chat/model/types.ts
+      - src/entities/notification/model/types.ts
+      - src/entities/order/model/types.ts
+        - src/entities/address/model/types.ts (seen)
+      - src/entities/outfit/model/types.ts
+      - src/entities/share/model/types.ts
+      - src/app/store/types.ts
+        - src/entities/address/model/types.ts (seen)
+        - src/entities/ai/model/types.ts
+          - src/entities/product/model/types.ts
+        - src/entities/cart/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/notification/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/friendship/model/types.ts
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/entities/user/model/types.ts
+      - src/features/friends/model/friendshipModel.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/friendship/model/types.ts (seen)
+      - src/features/sharing/model/outfitSharing.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/features/friends/model/friendshipModel.ts (seen)
+        - src/features/wardrobe/model/outfitSelectors.ts
+          - src/app/store/types.ts (seen)
+          - src/entities/product/model/types.ts (seen)
+          - src/entities/outfit/model/types.ts (seen)
+    - src/app/store/types.ts (seen)
+    - src/shared/storage/demoStorage.ts
+      - src/app/data/demoSeed.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/ai/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/shared/constants/demoAccounts.ts
+      - src/app/store/demoReducer.ts (seen)
+      - src/app/store/types.ts (seen)
+  - src/shared/api/identityApi.ts
+  - src/shared/ui/index.ts
+    - src/shared/ui/Button.tsx
+    - src/shared/ui/EmptyState.tsx
+    - src/shared/ui/LoadingSkeleton.tsx
+    - src/shared/ui/Modal.tsx
+    - src/shared/ui/SelectField.tsx
+    - src/shared/ui/TextField.tsx
+    - src/shared/ui/ToastProvider.tsx
+    - src/shared/ui/ToggleSwitch.tsx
+  - src/features/auth/index.ts
+    - src/features/auth/pages/ForgotPasswordPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/auth/components/AuthLayout.tsx
+        - src/app/router/routes.ts (seen)
+      - src/features/auth/model/useAuth.ts
+        - src/features/auth/model/IdentityAuthProvider.tsx
+          - src/app/store/DemoStoreProvider.tsx (seen)
+          - src/entities/user/model/types.ts (seen)
+          - src/shared/api/identityApi.ts (seen)
+          - src/features/auth/data/authRepository.ts
+    - src/features/auth/pages/LoginPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/auth/components/AuthLayout.tsx (seen)
+      - src/features/auth/data/authRepository.ts (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+      - src/features/auth/model/validators.ts
+        - src/features/auth/data/authRepository.ts (seen)
+    - src/features/auth/pages/RegisterPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/auth/components/AuthLayout.tsx (seen)
+      - src/features/auth/data/authRepository.ts (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+      - src/features/auth/model/validators.ts (seen)
+    - src/features/auth/pages/ResetPasswordPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/auth/components/AuthLayout.tsx (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+    - src/features/auth/pages/VerifyOtpPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/shared/api/identityApi.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/auth/components/AuthLayout.tsx (seen)
+      - src/features/auth/model/useAuth.ts (seen)
+    - src/features/auth/model/useAuth.ts (seen)
+  - src/features/account/components/BodyInfoForm.tsx
+    - src/shared/ui/index.ts (seen)
+    - src/features/account/model/validators.ts
+  - src/features/account/components/ProfileForm.tsx
+    - src/shared/ui/index.ts (seen)
+    - src/features/account/model/validators.ts (seen)
+  - src/features/account/model/validators.ts (seen)
+
+## src/features/cart/pages/CartPage.tsx
+- src/features/cart/pages/CartPage.tsx
+  - src/app/router/routes.ts
+  - src/app/store/DemoStoreProvider.tsx
+    - src/app/store/demoReducer.ts
+      - src/entities/address/model/types.ts
+      - src/entities/cart/model/types.ts
+      - src/entities/chat/model/types.ts
+      - src/entities/notification/model/types.ts
+      - src/entities/order/model/types.ts
+        - src/entities/address/model/types.ts (seen)
+      - src/entities/outfit/model/types.ts
+      - src/entities/share/model/types.ts
+      - src/app/store/types.ts
+        - src/entities/address/model/types.ts (seen)
+        - src/entities/ai/model/types.ts
+          - src/entities/product/model/types.ts
+        - src/entities/cart/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/notification/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/friendship/model/types.ts
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/entities/user/model/types.ts
+      - src/features/friends/model/friendshipModel.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/friendship/model/types.ts (seen)
+      - src/features/sharing/model/outfitSharing.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/features/friends/model/friendshipModel.ts (seen)
+        - src/features/wardrobe/model/outfitSelectors.ts
+          - src/app/store/types.ts (seen)
+          - src/entities/product/model/types.ts (seen)
+          - src/entities/outfit/model/types.ts (seen)
+    - src/app/store/types.ts (seen)
+    - src/shared/storage/demoStorage.ts
+      - src/app/data/demoSeed.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/ai/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/shared/constants/demoAccounts.ts
+      - src/app/store/demoReducer.ts (seen)
+      - src/app/store/types.ts (seen)
+  - src/features/commerce/index.ts
+    - src/features/commerce/model/CommerceProvider.tsx
+      - src/api/commerce.ts
+        - src/api/http.ts
+          - src/api/commerce.types.ts
+          - src/shared/api/identityApi.ts
+        - src/api/commerce.types.ts (seen)
+      - src/api/commerce.types.ts (seen)
+      - src/api/guestSession.ts
+      - src/app/store/DemoStoreProvider.tsx (seen)
+      - src/features/auth/index.ts
+        - src/features/auth/pages/ForgotPasswordPage.tsx
+          - src/app/router/routes.ts (seen)
+          - src/shared/api/identityApi.ts (seen)
+          - src/shared/ui/index.ts
+            - src/shared/ui/Button.tsx
+            - src/shared/ui/EmptyState.tsx
+            - src/shared/ui/LoadingSkeleton.tsx
+            - src/shared/ui/Modal.tsx
+            - src/shared/ui/SelectField.tsx
+            - src/shared/ui/TextField.tsx
+            - src/shared/ui/ToastProvider.tsx
+            - src/shared/ui/ToggleSwitch.tsx
+          - src/features/auth/components/AuthLayout.tsx
+            - src/app/router/routes.ts (seen)
+          - src/features/auth/model/useAuth.ts
+            - src/features/auth/model/IdentityAuthProvider.tsx
+              - src/app/store/DemoStoreProvider.tsx (seen)
+              - src/entities/user/model/types.ts (seen)
+              - src/shared/api/identityApi.ts (seen)
+              - src/features/auth/data/authRepository.ts
+        - src/features/auth/pages/LoginPage.tsx
+          - src/app/router/routes.ts (seen)
+          - src/shared/api/identityApi.ts (seen)
+          - src/shared/ui/index.ts (seen)
+          - src/features/auth/components/AuthLayout.tsx (seen)
+          - src/features/auth/data/authRepository.ts (seen)
+          - src/features/auth/model/useAuth.ts (seen)
+          - src/features/auth/model/validators.ts
+            - src/features/auth/data/authRepository.ts (seen)
+        - src/features/auth/pages/RegisterPage.tsx
+          - src/app/router/routes.ts (seen)
+          - src/shared/api/identityApi.ts (seen)
+          - src/shared/ui/index.ts (seen)
+          - src/features/auth/components/AuthLayout.tsx (seen)
+          - src/features/auth/data/authRepository.ts (seen)
+          - src/features/auth/model/useAuth.ts (seen)
+          - src/features/auth/model/validators.ts (seen)
+        - src/features/auth/pages/ResetPasswordPage.tsx
+          - src/app/router/routes.ts (seen)
+          - src/shared/api/identityApi.ts (seen)
+          - src/shared/ui/index.ts (seen)
+          - src/features/auth/components/AuthLayout.tsx (seen)
+          - src/features/auth/model/useAuth.ts (seen)
+        - src/features/auth/pages/VerifyOtpPage.tsx
+          - src/app/router/routes.ts (seen)
+          - src/shared/api/identityApi.ts (seen)
+          - src/shared/ui/index.ts (seen)
+          - src/features/auth/components/AuthLayout.tsx (seen)
+          - src/features/auth/model/useAuth.ts (seen)
+        - src/features/auth/model/useAuth.ts (seen)
+      - src/features/commerce/data/commerceEntityAdapters.ts
+        - src/entities/cart/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/product/model/types.ts (seen)
+        - src/api/commerce.types.ts (seen)
+      - src/features/commerce/data/loadCommerceProducts.ts
+        - src/api/commerce.ts (seen)
+        - src/api/commerce.types.ts (seen)
+  - src/shared/ui/index.ts (seen)
+  - src/features/cart/components/CartLineItem.tsx
+    - src/app/router/routes.ts (seen)
+    - src/shared/lib/formatCurrency.ts
+    - src/features/cart/model/cartSelectors.ts
+      - src/app/store/types.ts (seen)
+      - src/entities/cart/model/types.ts (seen)
+      - src/entities/product/model/types.ts (seen)
+  - src/features/cart/components/CartSummary.tsx
+    - src/shared/lib/formatCurrency.ts (seen)
+    - src/shared/ui/index.ts (seen)
+    - src/features/cart/model/cartSelectors.ts (seen)
+  - src/features/cart/model/cartSelectors.ts (seen)
+
+## src/features/checkout/pages/CheckoutPage.tsx
+- src/features/checkout/pages/CheckoutPage.tsx
+  - src/app/router/routes.ts
+  - src/app/store/DemoStoreProvider.tsx
+    - src/app/store/demoReducer.ts
+      - src/entities/address/model/types.ts
+      - src/entities/cart/model/types.ts
+      - src/entities/chat/model/types.ts
+      - src/entities/notification/model/types.ts
+      - src/entities/order/model/types.ts
+        - src/entities/address/model/types.ts (seen)
+      - src/entities/outfit/model/types.ts
+      - src/entities/share/model/types.ts
+      - src/app/store/types.ts
+        - src/entities/address/model/types.ts (seen)
+        - src/entities/ai/model/types.ts
+          - src/entities/product/model/types.ts
+        - src/entities/cart/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/notification/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/friendship/model/types.ts
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/entities/user/model/types.ts
+      - src/features/friends/model/friendshipModel.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/friendship/model/types.ts (seen)
+      - src/features/sharing/model/outfitSharing.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/features/friends/model/friendshipModel.ts (seen)
+        - src/features/wardrobe/model/outfitSelectors.ts
+          - src/app/store/types.ts (seen)
+          - src/entities/product/model/types.ts (seen)
+          - src/entities/outfit/model/types.ts (seen)
+    - src/app/store/types.ts (seen)
+    - src/shared/storage/demoStorage.ts
+      - src/app/data/demoSeed.ts
+        - src/app/store/types.ts (seen)
+        - src/entities/ai/model/types.ts (seen)
+        - src/entities/chat/model/types.ts (seen)
+        - src/entities/order/model/types.ts (seen)
+        - src/entities/outfit/model/types.ts (seen)
+        - src/entities/product/model/types.ts (seen)
+        - src/entities/share/model/types.ts (seen)
+        - src/shared/constants/demoAccounts.ts
+      - src/app/store/demoReducer.ts (seen)
+      - src/app/store/types.ts (seen)
+  - src/entities/order/model/types.ts (seen)
+  - src/features/cart/index.ts
+    - src/features/cart/pages/CartPage.tsx
+      - src/app/router/routes.ts (seen)
+      - src/app/store/DemoStoreProvider.tsx (seen)
+      - src/features/commerce/index.ts
+        - src/features/commerce/model/CommerceProvider.tsx
+          - src/api/commerce.ts
+            - src/api/http.ts
+              - src/api/commerce.types.ts
+              - src/shared/api/identityApi.ts
+            - src/api/commerce.types.ts (seen)
+          - src/api/commerce.types.ts (seen)
+          - src/api/guestSession.ts
+          - src/app/store/DemoStoreProvider.tsx (seen)
+          - src/features/auth/index.ts
+            - src/features/auth/pages/ForgotPasswordPage.tsx
+              - src/app/router/routes.ts (seen)
+              - src/shared/api/identityApi.ts (seen)
+              - src/shared/ui/index.ts
+                - src/shared/ui/Button.tsx
+                - src/shared/ui/EmptyState.tsx
+                - src/shared/ui/LoadingSkeleton.tsx
+                - src/shared/ui/Modal.tsx
+                - src/shared/ui/SelectField.tsx
+                - src/shared/ui/TextField.tsx
+                - src/shared/ui/ToastProvider.tsx
+                - src/shared/ui/ToggleSwitch.tsx
+              - src/features/auth/components/AuthLayout.tsx
+                - src/app/router/routes.ts (seen)
+              - src/features/auth/model/useAuth.ts
+                - src/features/auth/model/IdentityAuthProvider.tsx
+                  - src/app/store/DemoStoreProvider.tsx (seen)
+                  - src/entities/user/model/types.ts (seen)
+                  - src/shared/api/identityApi.ts (seen)
+                  - src/features/auth/data/authRepository.ts
+            - src/features/auth/pages/LoginPage.tsx
+              - src/app/router/routes.ts (seen)
+              - src/shared/api/identityApi.ts (seen)
+              - src/shared/ui/index.ts (seen)
+              - src/features/auth/components/AuthLayout.tsx (seen)
+              - src/features/auth/data/authRepository.ts (seen)
+              - src/features/auth/model/useAuth.ts (seen)
+              - src/features/auth/model/validators.ts
+                - src/features/auth/data/authRepository.ts (seen)
+            - src/features/auth/pages/RegisterPage.tsx
+              - src/app/router/routes.ts (seen)
+              - src/shared/api/identityApi.ts (seen)
+              - src/shared/ui/index.ts (seen)
+              - src/features/auth/components/AuthLayout.tsx (seen)
+              - src/features/auth/data/authRepository.ts (seen)
+              - src/features/auth/model/useAuth.ts (seen)
+              - src/features/auth/model/validators.ts (seen)
+            - src/features/auth/pages/ResetPasswordPage.tsx
+              - src/app/router/routes.ts (seen)
+              - src/shared/api/identityApi.ts (seen)
+              - src/shared/ui/index.ts (seen)
+              - src/features/auth/components/AuthLayout.tsx (seen)
+              - src/features/auth/model/useAuth.ts (seen)
+            - src/features/auth/pages/VerifyOtpPage.tsx
+              - src/app/router/routes.ts (seen)
+              - src/shared/api/identityApi.ts (seen)
+              - src/shared/ui/index.ts (seen)
+              - src/features/auth/components/AuthLayout.tsx (seen)
+              - src/features/auth/model/useAuth.ts (seen)
+            - src/features/auth/model/useAuth.ts (seen)
+          - src/features/commerce/data/commerceEntityAdapters.ts
+            - src/entities/cart/model/types.ts (seen)
+            - src/entities/order/model/types.ts (seen)
+            - src/entities/product/model/types.ts (seen)
+            - src/api/commerce.types.ts (seen)
+          - src/features/commerce/data/loadCommerceProducts.ts
+            - src/api/commerce.ts (seen)
+            - src/api/commerce.types.ts (seen)
+      - src/shared/ui/index.ts (seen)
+      - src/features/cart/components/CartLineItem.tsx
+        - src/app/router/routes.ts (seen)
+        - src/shared/lib/formatCurrency.ts
+        - src/features/cart/model/cartSelectors.ts
+          - src/app/store/types.ts (seen)
+          - src/entities/cart/model/types.ts (seen)
+          - src/entities/product/model/types.ts (seen)
+      - src/features/cart/components/CartSummary.tsx
+        - src/shared/lib/formatCurrency.ts (seen)
+        - src/shared/ui/index.ts (seen)
+        - src/features/cart/model/cartSelectors.ts (seen)
+      - src/features/cart/model/cartSelectors.ts (seen)
+    - src/features/cart/model/cartSelectors.ts (seen)
+    - src/features/cart/model/cartSelectors.ts (seen)
+  - src/api/commerce.ts (seen)
+  - src/shared/api/identityApi.ts (seen)
+  - src/features/checkout/components/AddressSection.tsx
+    - src/app/router/routes.ts (seen)
+    - src/shared/api/identityApi.ts (seen)
+  - src/features/checkout/components/OrderItemsSection.tsx
+    - src/shared/lib/formatCurrency.ts (seen)
+    - src/features/cart/index.ts (seen)
+  - src/features/checkout/components/OrderSummarySection.tsx
+    - src/shared/lib/formatCurrency.ts (seen)
+    - src/shared/ui/index.ts (seen)
+    - src/features/cart/index.ts (seen)
+  - src/features/checkout/components/PaymentMethodSection.tsx
+    - src/entities/order/model/types.ts (seen)
+  - src/features/checkout/data/checkoutRepository.ts
+    - src/app/store/types.ts (seen)
+    - src/entities/address/model/types.ts (seen)
+    - src/entities/order/model/types.ts (seen)
+    - src/features/cart/index.ts (seen)
+    - src/features/checkout/model/checkoutMachine.ts
+      - src/entities/order/model/types.ts (seen)
+    - src/features/checkout/model/checkoutMachine.ts (seen)
+  - src/features/checkout/data/commerceOrderAdapter.ts
+    - src/features/commerce/data/commerceEntityAdapters.ts (seen)
+  - src/features/checkout/model/checkoutMachine.ts (seen)

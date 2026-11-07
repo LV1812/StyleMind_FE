@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "targets": {
+    "/": {
+      "targetKind": "existing-ui",
+      "projectId": "3ab2f9d9-cac5-4c03-b3a3-4b6a7f3d23cc",
+      "baselineDraftId": "386aa389-a290-4afd-861f-71c3e9f3dcf7",
+      "activeDraftId": "3d129fee-2dfe-4303-865c-54d999b0bcfb",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "src/features/home/pages/HomePage.tsx",
+        "src/features/home/components/HeroSection.tsx",
+        "src/features/home/components/ProductRail.tsx",
+        "src/features/home/components/WardrobeIntro.tsx",
+        ".superdesign/init/theme.md"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "6ece951537dfcba68e8caaad17b9b2eda45a77512683c22e901d91e85b7c5f25",
+        "src/features/home/pages/HomePage.tsx": "28ffbb33baae3375fc366c864b9a79c9a6ce22d54ffc12f26cf026635aad6d65",
+        "src/features/home/components/HeroSection.tsx": "6ad2148382956bc4f073c07db84d8c11e5322ec48ac2a1e55ec67a2f8d276ff6",
+        "src/features/home/components/ProductRail.tsx": "14a1c8be1650d87beadf25b5b8583d475b80d59f44341603f98b0723152cb7da",
+        "src/features/home/components/WardrobeIntro.tsx": "fd6927e141e329882b5c98923656d42ab7eca45c3e3e47273655b3383f240356",
+        ".superdesign/init/theme.md": "3172d45b502a8a3b30656eed0eee546ee4f781b1234cb446d2eef478da0efc84"
+      },
+      "components": [
+        {
+          "name": "CustomerHeader",
+          "id": "82ad317a-cd73-4229-9157-f80209f34c1a",
+          "sourcePath": "src/app/layouts/components/CustomerHeader.tsx"
+        }
+      ],
+      "drafts": {
+        "3d129fee-2dfe-4303-865c-54d999b0bcfb": {
+          "title": "StyleMind - Editorial Redesign",
+          "visualDirection": "Tối giản, thời trang, tinh tế",
+          "parentDraftId": "386aa389-a290-4afd-861f-71c3e9f3dcf7",
+          "currentVersion": 1
+        }
+      },
+      "updatedAt": "2026-11-03T07:34:57.161Z"
+    }
+  }
+}

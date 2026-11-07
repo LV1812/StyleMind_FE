@@ -7,6 +7,7 @@ import { useDemoStore } from '@/app/store/DemoStoreProvider'
 import { useAuth } from '@/features/auth'
 import { selectUnreadNotificationCount } from '@/features/notifications/model/notificationSelectors'
 import { useActiveCommerce } from '@/features/cart/model/AccountCommerceProvider'
+import { apiMode } from '@/shared/api/http'
 
 const navItems = [
   { to: ROUTES.payments, label: 'Thanh toán' },
@@ -22,7 +23,6 @@ export function CustomerHeader() {
   const { state } = useDemoStore()
   const { currentUser, logout } = useAuth()
   const guest = useActiveCommerce()
-  const [query, setQuery] = useState('')
   const cartCount = guest.cart.items.reduce((total, line) => total + line.quantity, 0)
   const currentUserId = state.session?.userId ?? currentUser?.id ?? 'usr-customer-01'
   const unreadCount = selectUnreadNotificationCount(state, currentUserId)
@@ -57,7 +57,7 @@ export function CustomerHeader() {
           ))}
         </nav>
         <div className="ml-auto hidden items-center gap-2 lg:flex">
-          <HeaderIconLink to={ROUTES.notifications} label={`Thông báo (${unreadCount} chưa đọc)`} count={unreadCount}>
+          <HeaderIconLink to={ROUTES.notifications} label={apiMode() ? 'Thông báo' : `Thông báo (${unreadCount} chưa đọc)`} count={apiMode() ? 0 : unreadCount}>
             <Bell size={18} aria-hidden="true" />
           </HeaderIconLink>
           <HeaderIconLink to={ROUTES.messages} label="Tin nhắn">

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ApiOutfitManagement } from '../components/ApiOutfitManagement'
 import { communityApi, type OutfitDetailDto, type SharingDto, type Visibility } from '@/shared/api/communityApi'
 import { useApiQuery } from '@/shared/api/useApiQuery'
 import { ApiModal, ApiPagination, ApiSection, ApiState } from '@/shared/api/ApiUi'
@@ -26,13 +27,14 @@ function Items({ detail }: { detail: OutfitDetailDto }) {
 function Sharing({ outfitId, settings, refresh }: { outfitId: string; settings: SharingDto; refresh: () => void }) {
   const [open, setOpen] = useState(false), [draft, setDraft] = useState<Visibility>(settings.visibility), [busy, setBusy] = useState(false), [error, setError] = useState(''), [copy, setCopy] = useState('')
   const url = settings.public_enabled && settings.public_token ? `${window.location.origin}/shared/outfits/${encodeURIComponent(settings.public_token)}` : ''
-  const save = async () => { setBusy(true); setError(''); try { await communityApi.changeSharing(outfitId, draft); setOpen(false); refresh() } catch (e) { setError(e instanceof Error ? e.message : 'Không lưu được chế độ.') } finally { setBusy(false) } }
+  const save = async () => { setBusy(true); setError(''); try { if (draft === 'PUBLIC') await communityApi.enablePublicLink(outfitId); else if (draft === 'PRIVATE' && settings.visibility === 'PUBLIC') await communityApi.disablePublicLink(outfitId); else await communityApi.changeSharing(outfitId, draft); setOpen(false); refresh() } catch (e) { setError(e instanceof Error ? e.message : 'Không lưu được chế độ.') } finally { setBusy(false) } }
   return <><Button onClick={() => { setDraft(settings.visibility); setError(''); setCopy(''); setOpen(true) }}>Chia sẻ outfit</Button><ApiModal open={open} title="Chia sẻ outfit" onClose={() => { if (!busy) setOpen(false) }}><fieldset className="grid gap-3">{(['PRIVATE', 'FRIENDS', 'PUBLIC'] as const).map(v => <label key={v} className="rounded-lg border border-[#E3DAD0] p-4"><input type="radio" name="visibility" checked={draft === v} onChange={() => setDraft(v)} /> {label[v]}</label>)}</fieldset><p className="mt-4 text-sm">Bạn bè có thể xem Outfit Bạn bè. Mời bạn không tự đổi chế độ.</p>{url && draft === 'PUBLIC' && <div><label className="mt-4 grid gap-2 text-sm">Liên kết công khai<input readOnly value={url} className="min-w-0 rounded border p-2" onFocus={e => e.currentTarget.select()} /></label><Button variant="secondary" className="mt-3" onClick={async () => { try { await navigator.clipboard.writeText(url); setCopy('Đã sao chép') } catch { setCopy('Hãy chọn liên kết và sao chép thủ công.') } }}>Sao chép liên kết</Button><p role="status" className="mt-2 text-xs">{copy}</p></div>}{error && <p role="alert" className="mt-4 text-sm text-[#A94B4B]">{error}</p>}<div className="mt-5 flex justify-end gap-3"><Button variant="ghost" disabled={busy} onClick={() => setOpen(false)}>Hủy</Button><Button loading={busy} onClick={() => void save()}>Lưu chế độ</Button></div></ApiModal></>
 }
 export function ApiOutfitDetailPage({ kind }: { kind: 'owner' | 'friend' | 'public' }) {
   const { outfitId = '', ownerId = '', token = '' } = useParams()
+  const navigate = useNavigate()
   const query = useApiQuery(`${kind}:${ownerId}:${outfitId}:${token}`, signal => kind === 'public' ? communityApi.publicOutfit(token, signal) : kind === 'friend' ? communityApi.friendOutfit(ownerId, outfitId, signal) : communityApi.outfit(outfitId, signal), kind === 'public')
   const settings = useApiQuery(`sharing:${outfitId}`, signal => kind === 'owner' ? communityApi.sharing(outfitId, signal) : Promise.resolve(null), kind !== 'owner')
-  return <main className="min-h-screen bg-[#FAF8F5]"><ApiSection title={query.data?.name || 'Outfit'}><ApiState {...query} retry={query.refresh} />{query.data && <>{kind === 'owner' && <><ApiState {...settings} retry={settings.refresh} />{settings.data && <div className="mt-4 flex items-center gap-4"><span>{label[settings.data.visibility]}</span><Sharing outfitId={outfitId} settings={settings.data} refresh={() => { settings.refresh(); query.refresh() }} /></div>}</>}<Items detail={query.data} /></>}</ApiSection></main>
+  return <main className="min-h-screen bg-[#FAF8F5]"><ApiSection title={query.data?.name || 'Outfit'}><ApiState {...query} retry={query.refresh} />{query.data && <>{kind === 'owner' && <><ApiState {...settings} retry={settings.refresh} />{settings.data && <div className="mt-4 flex items-center gap-4"><span>{label[settings.data.visibility]}</span><Sharing outfitId={outfitId} settings={settings.data} refresh={() => { settings.refresh(); query.refresh() }} /></div>}</>}{kind === 'owner' ? <ApiOutfitManagement key={outfitId} detail={query.data} refresh={query.refresh} onDeleted={() => navigate('/wardrobes')} /> : <Items detail={query.data} />}</>}</ApiSection></main>
 }
 

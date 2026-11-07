@@ -11,6 +11,7 @@ interface BuilderDraftPanelProps {
   onVariantChange: (itemId: string, variantId: string) => void
   onRemoveItem: (itemId: string) => void
   onSave: () => void
+  saving?: boolean
 }
 
 interface DraftItemDetail {
@@ -50,6 +51,7 @@ export function BuilderDraftPanel({
   onVariantChange,
   onRemoveItem,
   onSave,
+  saving = false,
 }: BuilderDraftPanelProps) {
   const items = resolveDraftItems(draft, products)
   const total = items.reduce((sum, item) => sum + item.price, 0)
@@ -137,6 +139,7 @@ export function BuilderDraftPanel({
         </div>
         <button
           type="button"
+          disabled={saving}
           className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[#684B5A] px-4 text-sm font-semibold text-white transition hover:bg-[#563E4A] active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]/30"
           onClick={onSave}
         >

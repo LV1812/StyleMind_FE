@@ -9,6 +9,40 @@ beforeEach(() => { sessionStorage.clear(); saveApiSession('access-for-http-test'
 afterEach(() => { vi.unstubAllGlobals(); sessionStorage.clear() })
 
 describe('EP06 Gateway HTTP contract', () => {
+  it('enables and disables the existing public link', async () => {
+    const fetcher = vi.fn().mockImplementation(async () => json({ public_token: 'token', enabled_at: '2026-11-07' }))
+    vi.stubGlobal('fetch', fetcher)
+    await communityApi.enablePublicLink(id)
+    await communityApi.disablePublicLink(id)
+    expect(fetcher.mock.calls.map(([path, options]) => [path, options.method])).toEqual([
+      [`/wardrobe-community/api/v1/me/outfits/${id}/public-link`, 'PUT'],
+      [`/wardrobe-community/api/v1/me/outfits/${id}/public-link`, 'DELETE'],
+    ])
+  })
+  it('uses the owner Outfit endpoints for rename, delete and item mutations', async () => {
+    const fetcher = vi.fn().mockImplementation(async () => json({}))
+    vi.stubGlobal('fetch', fetcher)
+    await communityApi.renameOutfit(id, 'Tên mới')
+    await communityApi.deleteOutfit(id)
+    await communityApi.addOutfitItem(id, id)
+    await communityApi.changeOutfitItem(id, id, id)
+    await communityApi.removeOutfitItem(id, id)
+    expect(fetcher.mock.calls.map(([path, options]) => [path, options.method, options.body && JSON.parse(options.body)])).toEqual([
+      [`/wardrobe-community/api/v1/me/outfits/${id}`, 'PATCH', { name: 'Tên mới' }],
+      [`/wardrobe-community/api/v1/me/outfits/${id}`, 'DELETE', undefined],
+      [`/wardrobe-community/api/v1/me/outfits/${id}/items`, 'POST', { variant_id: id }],
+      [`/wardrobe-community/api/v1/me/outfits/${id}/items/${id}`, 'PATCH', { variant_id: id }],
+      [`/wardrobe-community/api/v1/me/outfits/${id}/items/${id}`, 'DELETE', undefined],
+    ])
+    await expect(communityApi.removeOutfitItem(id, 'demo-item')).rejects.toThrow()
+  })
+  it('creates a manual outfit with Wardrobe variant IDs and no demo owner', async () => {
+    const fetcher = vi.fn().mockResolvedValue(json({ outfit_id: id, name: 'Đi chơi', items: [] }, 201))
+    vi.stubGlobal('fetch', fetcher)
+    await communityApi.createOutfit('Đi chơi', [id])
+    expect(fetcher.mock.calls[0][0]).toBe('/wardrobe-community/api/v1/me/outfits')
+    expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({ name: 'Đi chơi', creation_source: 'MANUAL', items: [{ variant_id: id }] })
+  })
   it('sends a bearer only to the internal Gateway namespace and supports 204', async () => {
     const fetcher = vi.fn().mockResolvedValue(new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetcher)
     await communityApi.unfriend(id)

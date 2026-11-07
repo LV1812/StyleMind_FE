@@ -27,11 +27,25 @@ export const communityApi = {
   resend: async (id: string) => apiRequest<InvitationResult>(`${base}/me/friend-invitations/${uuid(id)}/resend`, { method: 'POST', body: {} }),
   unfriend: async (id: string) => apiRequest<void>(`${base}/me/friends/${uuid(id)}`, { method: 'DELETE' }),
   outfits: (index = 0, signal?: AbortSignal) => page<OutfitSummaryDto>('/me/outfits', index, signal),
+  createOutfit: async (name: string, variantIds: string[]) => {
+    const result = await apiRequest<OutfitDetailDto>(`${base}/me/outfits`, {
+      method: 'POST', body: { name, creation_source: 'MANUAL', items: variantIds.map(variant_id => ({ variant_id: uuid(variant_id) })) },
+    })
+    if (!isUuid(result.outfit_id)) throw new ApiError(502, 'INVALID_RESPONSE', 'Phản hồi tạo outfit không hợp lệ.')
+    return result
+  },
   friendOutfits: async (id: string, index = 0, signal?: AbortSignal) => page<OutfitSummaryDto>(`/me/friends/${uuid(id)}/outfits`, index, signal),
   outfit: async (id: string, signal?: AbortSignal) => apiRequest<OutfitDetailDto>(`${base}/me/outfits/${uuid(id)}`, { signal }),
+  renameOutfit: async (id: string, name: string) => apiRequest<OutfitSummaryDto>(`${base}/me/outfits/${uuid(id)}`, { method: 'PATCH', body: { name } }),
+  deleteOutfit: async (id: string) => apiRequest<void>(`${base}/me/outfits/${uuid(id)}`, { method: 'DELETE' }),
+  addOutfitItem: async (id: string, variantId: string) => apiRequest<OutfitDetailDto>(`${base}/me/outfits/${uuid(id)}/items`, { method: 'POST', body: { variant_id: uuid(variantId) } }),
+  changeOutfitItem: async (id: string, itemId: string, variantId: string) => apiRequest<OutfitDetailDto>(`${base}/me/outfits/${uuid(id)}/items/${uuid(itemId)}`, { method: 'PATCH', body: { variant_id: uuid(variantId) } }),
+  removeOutfitItem: async (id: string, itemId: string) => apiRequest<void>(`${base}/me/outfits/${uuid(id)}/items/${uuid(itemId)}`, { method: 'DELETE' }),
   friendOutfit: async (peer: string, id: string, signal?: AbortSignal) => apiRequest<OutfitDetailDto>(`${base}/me/friends/${uuid(peer)}/outfits/${uuid(id)}`, { signal }),
   publicOutfit: (token: string, signal?: AbortSignal) => apiRequest<OutfitDetailDto>(`${base}/public/outfits/${encodeURIComponent(token)}`, { auth: false, signal }),
   sharing: async (id: string, signal?: AbortSignal) => apiRequest<SharingDto>(`${base}/me/outfits/${uuid(id)}/sharing`, { signal }),
+  enablePublicLink: async (id: string) => apiRequest<{ public_token: string; enabled_at: string }>(`${base}/me/outfits/${uuid(id)}/public-link`, { method: 'PUT' }),
+  disablePublicLink: async (id: string) => apiRequest<void>(`${base}/me/outfits/${uuid(id)}/public-link`, { method: 'DELETE' }),
   changeSharing: async (id: string, value: string) => {
     const visibility = value.toUpperCase()
     if (!['PRIVATE', 'FRIENDS', 'PUBLIC'].includes(visibility)) throw new ApiError(400, 'INVALID_VISIBILITY', 'Chế độ chia sẻ không hợp lệ.')

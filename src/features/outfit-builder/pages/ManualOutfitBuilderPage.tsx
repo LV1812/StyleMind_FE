@@ -1,9 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { ROUTES } from '@/app/router/routes'
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
 import { useAuth } from '@/features/auth'
+import { loadAllCommerceProducts } from '@/features/commerce/data/loadCommerceProducts'
+import { commerceProductToEntity } from '@/features/commerce/data/commerceEntityAdapters'
+import type { Product } from '@/entities/product/model/types'
+import { communityApi } from '@/shared/api/communityApi'
+import { apiMode } from '@/shared/api/http'
 
 import { BuilderCatalogPanel } from '../components/BuilderCatalogPanel'
 import { BuilderDraftPanel } from '../components/BuilderDraftPanel'
@@ -23,7 +28,29 @@ export function ManualOutfitBuilderPage() {
   const [search, setSearch] = useState('')
   const [draft, setDraft] = useState(() => createManualOutfitDraft(ownerId))
   const [errors, setErrors] = useState<OutfitDraftErrors>({})
-  const products = state.products.filter(product => product.active)
+  const realMode = apiMode()
+  const [catalog, setCatalog] = useState<Product[]>([])
+  const [catalogLoading, setCatalogLoading] = useState(realMode)
+  const [catalogError, setCatalogError] = useState('')
+  const [catalogRevision, setCatalogRevision] = useState(0)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const savingLock = useRef(false)
+  const activeOwner = useRef(ownerId)
+  activeOwner.current = ownerId
+  const products = (realMode ? catalog : state.products).filter(product => product.active)
+
+  useEffect(() => {
+    if (!realMode) return
+    let active = true
+    setCatalogLoading(true); setCatalogError('')
+    void loadAllCommerceProducts().then(items => {
+      if (active) setCatalog(items.map(commerceProductToEntity))
+    }).catch(() => {
+      if (active) setCatalogError('Không tải được sản phẩm. Vui lòng thử lại.')
+    }).finally(() => { if (active) setCatalogLoading(false) })
+    return () => { active = false }
+  }, [realMode, catalogRevision])
 
   useEffect(() => {
     if (!ownerId) return
@@ -64,11 +91,24 @@ export function ManualOutfitBuilderPage() {
     }))
   }
 
-  const saveOutfit = () => {
+  const saveOutfit = async () => {
+    if (savingLock.current) return
     const nextErrors = validateOutfitDraft(draft)
+    if (realMode && [...draft.name.trim()].length > 100) nextErrors.name = 'Tên outfit tối đa 100 ký tự'
+    if (realMode && draft.items.length > 10) nextErrors.items = 'Mỗi outfit tối đa 10 món'
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) return
 
+    if (realMode) {
+      savingLock.current = true; setSaving(true); setSaveError('')
+      try {
+        const created = await communityApi.createOutfit(draft.name.trim(), draft.items.map(item => item.variantId))
+        if (activeOwner.current === ownerId) navigate(`/outfits/${created.outfit_id}`)
+      } catch (error) {
+        if (activeOwner.current === ownerId) setSaveError(error instanceof Error ? error.message : 'Không lưu được outfit. Vui lòng thử lại.')
+      } finally { savingLock.current = false; setSaving(false) }
+      return
+    }
     const now = new Date().toISOString()
     const outfit = draftToOutfit(draft, now)
     dispatch({ type: 'outfit/created', payload: outfit })
@@ -98,12 +138,14 @@ export function ManualOutfitBuilderPage() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
-        <BuilderCatalogPanel
+        {catalogError ? <div role="alert" className="rounded-lg border bg-white p-5">{catalogError} <button type="button" className="underline" onClick={() => setCatalogRevision(value => value + 1)}>Thử lại</button></div> : catalogLoading ? <p role="status">Đang tải sản phẩm…</p> : <BuilderCatalogPanel
           products={products}
           search={search}
           onSearchChange={setSearch}
           onAddVariant={addVariant}
-        />
+        />}
+        <div>
+        {saveError && <p role="alert" className="mb-3 text-sm text-[#A94B4B]">{saveError}</p>}
         <BuilderDraftPanel
           draft={draft}
           products={products}
@@ -111,8 +153,10 @@ export function ManualOutfitBuilderPage() {
           onNameChange={changeName}
           onVariantChange={changeVariant}
           onRemoveItem={removeItem}
-          onSave={saveOutfit}
+          onSave={() => void saveOutfit()}
+          saving={saving}
         />
+        </div>
       </div>
     </section>
   )

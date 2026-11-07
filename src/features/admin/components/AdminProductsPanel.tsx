@@ -484,7 +484,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
       <Modal
         open={modalOpen}
         title={editingProductId ? 'Sửa sản phẩm' : 'Thêm sản phẩm'}
-        description="Tạo hoặc cập nhật sản phẩm demo với metadata, biến thể màu và ảnh đại diện."
+        description="Tạo hoặc cập nhật sản phẩm với metadata, biến thể màu và ảnh đại diện."
         onClose={() => setModalOpen(false)}
       >
         <form className="grid gap-4" onSubmit={handleSubmit}>

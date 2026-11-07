@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { ROUTES } from '@/app/router/routes'
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
 import { identityApi, identityErrorMessage, type StyleProfilePayload } from '@/shared/api/identityApi'
+import { apiMode } from '@/shared/api/http'
 import { Button } from '@/shared/ui'
 import { useAuth } from '@/features/auth'
 
@@ -203,9 +204,9 @@ export function AccountPage() {
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Shortcut label="Địa chỉ" value={`${addressCount} địa chỉ`} to={ROUTES.addresses} />
-        <Shortcut label="Đơn hàng" value={`${orders.length} đơn`} to={ROUTES.orders} />
-        <Shortcut label="Thông báo" value={`${unreadCount} chưa đọc`} to={ROUTES.notifications} />
-        <Shortcut label="Tủ đồ" value={`${outfits.length} outfit`} to={ROUTES.wardrobes} />
+        <Shortcut label="Đơn hàng" value={apiMode() ? 'Xem đơn hàng' : `${orders.length} đơn`} to={ROUTES.orders} />
+        <Shortcut label="Thông báo" value={apiMode() ? 'Xem thông báo' : `${unreadCount} chưa đọc`} to={ROUTES.notifications} />
+        <Shortcut label="Tủ đồ" value={apiMode() ? 'Xem tủ đồ' : `${outfits.length} outfit`} to={ROUTES.wardrobes} />
       </section>
     </section>
   )

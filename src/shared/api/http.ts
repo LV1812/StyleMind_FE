@@ -1,7 +1,7 @@
 import { clearIdentitySession, readIdentitySession, refreshIdentitySession } from './identityApi'
 
 export const SESSION_EXPIRED = 'stylemind:api-session-expired'
-export const apiMode = () => import.meta.env.VITE_COMMUNITY_MODE === 'api'
+export const apiMode = () => true
 const gatewayBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '')
 
 export class ApiError extends Error {
