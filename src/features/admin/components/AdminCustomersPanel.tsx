@@ -8,7 +8,8 @@ import {
   type IdentityRole,
   type ManagedUser,
 } from '@/shared/api/identityApi'
-import { Button, SelectField, TextField } from '@/shared/ui'
+import { Button, SelectField, TextField, useToast } from '@/shared/ui'
+import { Plus } from 'lucide-react'
 
 import { StatusBadge } from './AdminCommon'
 
@@ -32,6 +33,7 @@ function sameRoles(left: IdentityRole[], right: IdentityRole[]) {
 
 export function AdminCustomersPanel() {
   const { currentUser } = useAuth()
+  const toast = useToast()
   const [users, setUsers] = useState<ManagedUser[]>([])
   const [query, setQuery] = useState('')
   const [role, setRole] = useState<RoleFilter>('all')
@@ -134,15 +136,18 @@ export function AdminCustomersPanel() {
 
   return (
     <section className="grid gap-5">
-      <div>
-        <p className="text-sm font-semibold text-[#684B5A]">Identity Service</p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+        <p className="text-sm font-semibold text-[#5E5F5D]">Quản trị</p>
         <h1 className="mt-2 font-display text-3xl font-semibold leading-tight text-[#222222] md:text-4xl">Quản lý tài khoản</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6F6B67]">
-          Lọc tài khoản theo email, trạng thái và vai trò. Thay đổi trạng thái hoặc toàn bộ vai trò sẽ được Identity kiểm tra quyền quản trị.
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#5E5F5D]">
+          Quản lý tài khoản, trạng thái và vai trò của người dùng.
         </p>
+        </div>
+        <Button type="button" icon={<Plus size={16} aria-hidden="true" />} onClick={() => toast.info('Chức năng chưa hỗ trợ.')}>Tạo tài khoản</Button>
       </div>
 
-      <div className="grid gap-3 rounded-lg bg-white p-4 shadow-[0_10px_28px_rgba(58,54,50,0.07)] md:grid-cols-[minmax(220px,1fr)_180px_200px_auto] md:items-end">
+      <div className="grid gap-3 rounded-lg border border-[#E3E2E2] bg-white p-4 md:grid-cols-2 xl:grid-cols-[minmax(180px,1fr)_160px_180px_auto] md:items-end">
         <TextField label="Tìm theo email" value={query} onChange={event => setQuery(event.target.value)} placeholder="Nhập một phần email" />
         <SelectField label="Vai trò" value={role} onChange={event => setRole(event.target.value as RoleFilter)}>
           <option value="all">Tất cả vai trò</option>
@@ -160,19 +165,20 @@ export function AdminCustomersPanel() {
 
       {error && <p className="rounded-lg bg-[#FCEAEA] px-4 py-3 text-sm font-semibold text-[#A94B4B]" role="alert">{error}</p>}
       {notice && <p className="rounded-lg bg-[#EAF2EC] px-4 py-3 text-sm font-semibold text-[#294C36]" role="status">{notice}</p>}
-      {loading && <p className="text-sm text-[#6F6B67]" role="status">Đang tải danh sách tài khoản…</p>}
+      {loading && <p className="text-sm text-[#5E5F5D]" role="status">Đang tải danh sách tài khoản…</p>}
 
       {!loading && users.length === 0 && (
-        <section className="rounded-lg border border-dashed border-[#D8D0C6] bg-white p-8">
+        <section className="rounded-lg border border-dashed border-[#C4C7C7] bg-white p-8">
           <h2 className="font-display text-2xl font-semibold text-[#222222]">Không tìm thấy tài khoản</h2>
-          <p className="mt-2 text-sm text-[#6F6B67]">Thử thay đổi bộ lọc email, trạng thái hoặc vai trò.</p>
+          <p className="mt-2 text-sm text-[#5E5F5D]">Thử thay đổi bộ lọc email, trạng thái hoặc vai trò.</p>
         </section>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-[#E5E0D8] bg-white shadow-[0_8px_24px_rgba(58,54,50,0.06)]">
-        <div className="overflow-x-auto">
+      <div className="overflow-hidden rounded-lg border border-[#E3E2E2] bg-white">
+        <p className="border-b border-[#E3E2E2] px-4 py-2 text-xs text-[#5E5F5D] lg:hidden">Vuốt ngang để xem toàn bộ thông tin tài khoản.</p>
+        <div className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1C1B1B]" role="region" aria-label="Bảng tài khoản" tabIndex={0}>
           <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
-            <thead className="bg-[#FAF8F5] text-xs font-semibold uppercase tracking-wide text-[#6F6B67]">
+            <thead className="bg-[#FBF9F9] text-xs font-semibold uppercase tracking-wide text-[#5E5F5D]">
               <tr>
                 <th scope="col" className="px-4 py-3">Tài khoản</th>
                 <th scope="col" className="px-4 py-3">Vai trò</th>
@@ -191,15 +197,15 @@ export function AdminCustomersPanel() {
 
                 return (
                   <Fragment key={user.account_id}>
-                    <tr className="align-middle hover:bg-[#FAF8F5]/70">
+                    <tr className="align-middle hover:bg-[#FBF9F9]/70">
                       <th scope="row" className="px-4 py-3 text-left font-normal">
                         <div className="flex min-w-64 items-center gap-3">
-                          <span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#F4E7E8] text-sm font-semibold uppercase text-[#684B5A]">
+                          <span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#E9E8E7] text-sm font-semibold uppercase text-[#1C1B1B]">
                             {user.email.trim().charAt(0) || '?'}
                           </span>
                           <span className="min-w-0">
                             <span className="block break-all font-semibold text-[#222222]">{user.email}</span>
-                            <span className="mt-0.5 block text-xs text-[#6F6B67]" title={user.account_id}>
+                            <span className="mt-0.5 block text-xs text-[#5E5F5D]" title={user.account_id}>
                               ID {user.account_id.slice(0, 8)}…
                             </span>
                             {isSelf && <span className="mt-1 inline-flex rounded-md bg-[#F5F2EE] px-2 py-0.5 text-[11px] font-semibold text-[#3A3632]">Tài khoản của bạn</span>}
@@ -215,7 +221,7 @@ export function AdminCustomersPanel() {
                         <StatusBadge tone={user.email_verified_at ? 'success' : 'warning'}>
                           {user.email_verified_at ? 'Email đã xác thực' : 'Email chưa xác thực'}
                         </StatusBadge>
-                        <p className="mt-1.5 whitespace-nowrap text-xs text-[#6F6B67]">Đăng ký {new Date(user.registered_at).toLocaleDateString('vi-VN')}</p>
+                        <p className="mt-1.5 whitespace-nowrap text-xs text-[#5E5F5D]">Đăng ký {new Date(user.registered_at).toLocaleDateString('vi-VN')}</p>
                       </td>
                       <td className="px-4 py-3"><StatusBadge tone={statusTone}>{statusLabels[user.account_status]}</StatusBadge></td>
                       <td className="px-4 py-3">
@@ -240,7 +246,7 @@ export function AdminCustomersPanel() {
                       </td>
                     </tr>
                     {isEditingRoles && (
-                      <tr className="bg-[#FAF8F5]">
+                      <tr className="bg-[#FBF9F9]">
                         <td colSpan={5} className="px-4 py-3">
                           <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
                             <span className="text-sm font-semibold text-[#3A3632]">Vai trò</span>
@@ -251,12 +257,12 @@ export function AdminCustomersPanel() {
                                   checked={roleDraft.includes(item)}
                                   disabled={isSelf || actionId === user.account_id}
                                   onChange={() => toggleRole(item)}
-                                  className="h-4 w-4 accent-[#684B5A]"
+                                  className="h-4 w-4 accent-[#1C1B1B]"
                                 />
                                 {roleLabels[item]}
                               </label>
                             ))}
-                            {isSelf && <p className="text-xs text-[#6F6B67]">BE không cho phép tự thay đổi vai trò.</p>}
+                            {isSelf && <p className="text-xs text-[#5E5F5D]">Bạn không thể tự thay đổi vai trò của tài khoản này.</p>}
                             <div className="ml-auto flex items-center gap-2">
                               <Button size="sm" type="button" loading={actionId === user.account_id} disabled={isSelf || roleDraft.length === 0} onClick={() => void saveRoles(user)}>Lưu</Button>
                               <Button size="sm" type="button" variant="ghost" className="border border-[#E5E0D8]" disabled={actionId === user.account_id} onClick={() => setEditingRolesFor('')}>Hủy</Button>
@@ -273,8 +279,8 @@ export function AdminCustomersPanel() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#E3DAD0] bg-white p-4">
-        <p className="text-sm text-[#6F6B67]">{totalElements} tài khoản · Trang {totalPages ? page + 1 : 0} / {totalPages}</p>
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#E3E2E2] bg-white p-4">
+        <p className="text-sm text-[#5E5F5D]">{totalElements} tài khoản · Trang {totalPages ? page + 1 : 0} / {totalPages}</p>
         <div className="flex gap-2">
           <Button type="button" variant="secondary" disabled={loading || page <= 0} onClick={() => setPage(value => Math.max(0, value - 1))}>Trước</Button>
           <Button type="button" variant="secondary" disabled={loading || totalPages === 0 || page + 1 >= totalPages} onClick={() => setPage(value => value + 1)}>Sau</Button>

@@ -69,6 +69,14 @@ describe('Live customer Payment page', () => {
     expect(api.getOrder).toHaveBeenCalledTimes(1)
   })
 
+  it('uses warning styling when the payment requires review', async () => {
+    api.getOrderPaymentAttempt.mockResolvedValue({ ...attempt, status: 'EXCEPTION' })
+    customer()
+    const title = await screen.findByRole('heading', { name: 'Thanh toán cần kiểm tra' })
+    expect(title.previousElementSibling).toHaveClass('bg-warning-bg')
+    expect(title.previousElementSibling).not.toHaveClass('bg-success-bg')
+  })
+
   it('reads Order again when an attempt reports PAID', async () => {
     api.getOrder.mockResolvedValueOnce(order).mockResolvedValue({ ...order, order_status: 'PAID' })
     api.getOrderPaymentAttempt.mockResolvedValue({ ...attempt, status: 'PAID' })

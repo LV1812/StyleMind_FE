@@ -37,7 +37,7 @@ const studioSlots: OutfitPiece[] = [
     status: 'owned',
     image: 'https://images.unsplash.com/photo-1645996830718-127f7e4f74fc?w=200&h=260&fit=crop&auto=format',
     color: "Be cát",
-    colorHex: '#EEE8E1',
+    colorHex: '#EFEDED',
     size: 'S',
   },
   {

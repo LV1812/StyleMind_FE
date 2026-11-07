@@ -42,30 +42,30 @@ export function WardrobeAccessPage() {
     <section className="mx-auto grid max-w-[var(--container-wide)] gap-8 px-5 py-8 md:px-8 md:py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <Link to={ROUTES.wardrobes} className="text-sm font-semibold text-[#684B5A] hover:underline">
+          <Link to={ROUTES.wardrobes} className="text-sm font-semibold text-[#1C1B1B] hover:underline">
             Tủ đồ
           </Link>
           <h1 className="mt-2 font-display text-4xl font-semibold leading-tight text-[#222222]">Quyền truy cập</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6F6B67]">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5E5F5D]">
             Quản lý những email đang được xem tủ đồ và quyền chat với bạn.
           </p>
         </div>
-        <div className="rounded-lg border border-[#E3DAD0] bg-white px-4 py-3 shadow-sm">
-          <p className="text-xs font-semibold text-[#6F6B67]">Chế độ hiện tại</p>
+        <div className="rounded-lg border border-[#E3E2E2] bg-white px-4 py-3 shadow-sm">
+          <p className="text-xs font-semibold text-[#5E5F5D]">Chế độ hiện tại</p>
           <p className="mt-1 font-semibold text-[#222222]">{getWardrobeVisibilityLabel(settings.visibility)}</p>
         </div>
       </div>
 
       {shares.length > 0 ? (
-        <section className="overflow-hidden rounded-lg border border-[#E3DAD0] bg-white shadow-sm">
-          <div className="grid grid-cols-[minmax(220px,1.2fr)_120px_minmax(180px,1fr)_140px_minmax(210px,auto)] gap-3 border-b border-[#EEE8E1] bg-[#FAF8F5] px-4 py-3 text-xs font-semibold text-[#6F6B67] max-lg:hidden">
+        <section className="overflow-hidden rounded-lg border border-[#E3E2E2] bg-white shadow-sm">
+          <div className="grid grid-cols-[minmax(220px,1.2fr)_120px_minmax(180px,1fr)_140px_minmax(210px,auto)] gap-3 border-b border-[#EFEDED] bg-[#FBF9F9] px-4 py-3 text-xs font-semibold text-[#5E5F5D] max-lg:hidden">
             <span>Email</span>
             <span>Quyền</span>
             <span>Trạng thái</span>
             <span>Chat</span>
             <span>Hành động</span>
           </div>
-          <div className="divide-y divide-[#EEE8E1]">
+          <div className="divide-y divide-[#EFEDED]">
             {shares.map(share => {
               const status = accessStatus(share.active, settings.visibility)
               const canChat = share.active && settings.visibility !== 'private'
@@ -109,8 +109,8 @@ export function WardrobeAccessPage() {
                     )}
                     <Link
                       to={`${ROUTES.messages}?conversation=${conversationId}`}
-                      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] ${
-                        canChat ? 'bg-[#EEE8E1] text-[#222222] hover:bg-[#E4DCD2]' : 'pointer-events-none bg-[#EEE8E1] text-[#8A8179]'
+                      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] ${
+                        canChat ? 'bg-[#EFEDED] text-[#222222] hover:bg-[#E3E2E2]' : 'pointer-events-none bg-[#EFEDED] text-[#8A8179]'
                       }`}
                       aria-disabled={!canChat}
                     >
@@ -124,15 +124,15 @@ export function WardrobeAccessPage() {
           </div>
         </section>
       ) : (
-        <section className="rounded-lg border border-dashed border-[#D8D0C6] bg-white p-8">
+        <section className="rounded-lg border border-dashed border-[#C4C7C7] bg-white p-8">
           <h2 className="font-display text-2xl font-semibold text-[#222222]">Chưa có người được chia sẻ</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6F6B67]">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#5E5F5D]">
             Mở tủ đồ và dùng nút Chia sẻ tủ đồ để cấp quyền xem cho email đầu tiên.
           </p>
         </section>
       )}
 
-      <p className="text-sm leading-6 text-[#6F6B67]">
+      <p className="text-sm leading-6 text-[#5E5F5D]">
         Tủ đồ hiện có {outfitCount} outfit. Người được chia sẻ bằng email sẽ tự động thấy outfit mới nếu quyền còn hiệu lực và tủ đồ không ở chế độ riêng tư.
       </p>
     </section>

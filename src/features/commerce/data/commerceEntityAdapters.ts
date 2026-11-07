@@ -120,7 +120,7 @@ export function commerceOrderToEntity(order: OrderResponse): Order {
     userId: order.customer_id,
     status: statusMap[order.order_status] ?? 'pending',
     paymentMethod: order.payment_method === 'COD' ? 'cod' : 'vietqr',
-    paymentStatus: order.order_status === 'PAID' ? 'paid' : 'pending',
+    paymentStatus: 'unknown',
     paymentReference: order.order_number,
     items: order.items.map(item => ({
       productId: item.variant_id,
@@ -131,6 +131,7 @@ export function commerceOrderToEntity(order: OrderResponse): Order {
       size: item.size_snapshot || '',
       quantity: item.quantity,
       unitPrice: item.unit_price_vnd,
+      lineTotal: item.line_total_vnd,
       imageUrl: item.image_url_snapshot || '',
     })),
     shippingAddress: {

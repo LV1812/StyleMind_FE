@@ -22,6 +22,7 @@ export const paymentStatusLabel: Record<PaymentStatus, string> = {
   paid: 'Đã thanh toán',
   expired: 'Hết hạn',
   failed: 'Thất bại',
+  unknown: 'Chưa có dữ liệu',
 }
 
 export const userRoleLabel: Record<UserRole, string> = {

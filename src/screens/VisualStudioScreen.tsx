@@ -37,7 +37,7 @@ export default function VisualStudioScreen({ app }: { app: AppState }) {
   return (
     <div style={{ height: "calc(100vh - 64px)", display: "flex", overflow: "hidden" }}>
       {/* Left: Outfit pieces panel */}
-      <aside style={{ width: 220, background: "white", borderRight: "1px solid #EEE8E1", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <aside style={{ width: 220, background: "white", borderRight: "1px solid #EFEDED", display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div style={{ padding: "16px 16px 10px" }}>
           <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "#A9A6A3", fontWeight: 600, marginBottom: 12 }}>Outfit Pieces</div>
           {slots.map((slot) => (
@@ -45,20 +45,20 @@ export default function VisualStudioScreen({ app }: { app: AppState }) {
               key={slot.id}
               onClick={() => setActiveSlot(slot.id === activeSlot ? null : slot.id)}
               style={{
-                border: `1.5px solid ${activeSlot === slot.id ? "#684B5A" : "#EEE8E1"}`,
+                border: `1.5px solid ${activeSlot === slot.id ? "#1C1B1B" : "#EFEDED"}`,
                 borderRadius: 10, marginBottom: 8, overflow: "hidden", cursor: "pointer",
-                background: activeSlot === slot.id ? "#F4E7E8" : "white",
+                background: activeSlot === slot.id ? "#E9E8E7" : "white",
                 transition: "all 0.15s",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px" }}>
                 <img src={slot.image} alt={slot.name} style={{ width: 36, height: 44, objectFit: "cover", borderRadius: 6 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 10, color: slot.owned ? "#48755A" : "#684B5A", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>
+                  <div style={{ fontSize: 10, color: slot.owned ? "#48755A" : "#1C1B1B", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>
                     {slot.owned ? "✓" : "+"} {slot.label}
                   </div>
                   <div style={{ fontSize: 12, color: "#222222", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{slot.name}</div>
-                  <div style={{ fontSize: 10, color: "#6F6B67" }}>{slot.brand}</div>
+                  <div style={{ fontSize: 10, color: "#5E5F5D" }}>{slot.brand}</div>
                 </div>
                 <div style={{ width: 12, height: 12, borderRadius: "50%", background: slot.color, border: "1.5px solid rgba(0,0,0,0.1)", flexShrink: 0 }} />
               </div>
@@ -66,10 +66,10 @@ export default function VisualStudioScreen({ app }: { app: AppState }) {
           ))}
         </div>
 
-        <div style={{ padding: "0 16px 16px", marginTop: "auto", borderTop: "1px solid #EEE8E1", paddingTop: 12 }}>
+        <div style={{ padding: "0 16px 16px", marginTop: "auto", borderTop: "1px solid #EFEDED", paddingTop: 12 }}>
           {shopItems.length > 0 && (
-            <div style={{ fontSize: 12, color: "#6F6B67", marginBottom: 10, lineHeight: 1.5 }}>
-              <span style={{ color: "#684B5A", fontWeight: 600 }}>{formatVND(totalNewSpend)}</span> in new items
+            <div style={{ fontSize: 12, color: "#5E5F5D", marginBottom: 10, lineHeight: 1.5 }}>
+              <span style={{ color: "#1C1B1B", fontWeight: 600 }}>{formatVND(totalNewSpend)}</span> in new items
             </div>
           )}
           <button className="btn-primary" style={{ width: "100%", fontSize: 12, padding: 10 }} onClick={() => { app.setCartCount(app.cartCount + shopItems.length); app.navigate("cart"); }}>
@@ -87,7 +87,7 @@ export default function VisualStudioScreen({ app }: { app: AppState }) {
         <div style={{ padding: "14px 24px", borderBottom: "1px solid rgba(0,0,0,0.06)", background: "rgba(250,248,245,0.9)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <span style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 16, color: "#222222" }}>Visual Studio</span>
-            <span style={{ fontSize: 11, color: "#B98791", marginLeft: 8, background: "#F4E7E8", padding: "2px 8px", borderRadius: 100 }}>3D Preview</span>
+            <span style={{ fontSize: 11, color: "#B98791", marginLeft: 8, background: "#E9E8E7", padding: "2px 8px", borderRadius: 100 }}>3D Preview</span>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button className="btn-secondary" style={{ fontSize: 12, padding: "7px 14px" }} onClick={() => app.navigate("outfit-result")}>
@@ -141,7 +141,7 @@ export default function VisualStudioScreen({ app }: { app: AppState }) {
                   {activeSlot === layer.id && (
                     <div style={{
                       position: "absolute", inset: 0,
-                      border: "2px solid #684B5A", borderRadius: 8,
+                      border: "2px solid #1C1B1B", borderRadius: 8,
                       background: "rgba(104,75,90,0.08)",
                     }} />
                   )}
@@ -156,8 +156,8 @@ export default function VisualStudioScreen({ app }: { app: AppState }) {
                 <span style={{ color: "#48755A", fontWeight: 500 }}>Owned</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
-                <div style={{ width: 8, height: 8, borderRadius: 2, background: "#684B5A" }} />
-                <span style={{ color: "#684B5A", fontWeight: 500 }}>Shop</span>
+                <div style={{ width: 8, height: 8, borderRadius: 2, background: "#1C1B1B" }} />
+                <span style={{ color: "#1C1B1B", fontWeight: 500 }}>Shop</span>
               </div>
             </div>
           </div>
@@ -166,31 +166,31 @@ export default function VisualStudioScreen({ app }: { app: AppState }) {
           <div style={{ position: "absolute", bottom: 24, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 8 }}>
             <button
               onClick={() => setRotation((r) => r - 45)}
-              style={{ border: "1.5px solid #D8CFCA", borderRadius: 8, padding: "8px 16px", background: "white", cursor: "pointer", fontSize: 13, color: "#6F6B67" }}
+              style={{ border: "1.5px solid #D8CFCA", borderRadius: 8, padding: "8px 16px", background: "white", cursor: "pointer", fontSize: 13, color: "#5E5F5D" }}
             >
               ← Rotate
             </button>
             <button
               onClick={() => setRotation(0)}
-              style={{ border: "1.5px solid #D8CFCA", borderRadius: 8, padding: "8px 12px", background: "white", cursor: "pointer", fontSize: 13, color: "#6F6B67" }}
+              style={{ border: "1.5px solid #D8CFCA", borderRadius: 8, padding: "8px 12px", background: "white", cursor: "pointer", fontSize: 13, color: "#5E5F5D" }}
             >
               Front
             </button>
             <button
               onClick={() => setRotation((r) => r + 45)}
-              style={{ border: "1.5px solid #D8CFCA", borderRadius: 8, padding: "8px 16px", background: "white", cursor: "pointer", fontSize: 13, color: "#6F6B67" }}
+              style={{ border: "1.5px solid #D8CFCA", borderRadius: 8, padding: "8px 16px", background: "white", cursor: "pointer", fontSize: 13, color: "#5E5F5D" }}
             >
               Rotate →
             </button>
           </div>
 
           {/* Profile notice */}
-          <div style={{ position: "absolute", top: 16, right: 16, background: "rgba(250,248,245,0.9)", border: "1px solid #EEE8E1", borderRadius: 10, padding: "10px 14px", maxWidth: 200 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#684B5A", marginBottom: 4 }}>Approximate Preview</div>
-            <div style={{ fontSize: 11, color: "#6F6B67", lineHeight: 1.5 }}>
+          <div style={{ position: "absolute", top: 16, right: 16, background: "rgba(250,248,245,0.9)", border: "1px solid #EFEDED", borderRadius: 10, padding: "10px 14px", maxWidth: 200 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#1C1B1B", marginBottom: 4 }}>Approximate Preview</div>
+            <div style={{ fontSize: 11, color: "#5E5F5D", lineHeight: 1.5 }}>
               Based on your saved profile. The visual is illustrative, not a fit guarantee.
             </div>
-            <button style={{ background: "none", border: "none", color: "#684B5A", fontSize: 11, cursor: "pointer", marginTop: 6, padding: 0 }} onClick={() => app.navigate("profile")}>
+            <button style={{ background: "none", border: "none", color: "#1C1B1B", fontSize: 11, cursor: "pointer", marginTop: 6, padding: 0 }} onClick={() => app.navigate("profile")}>
               Improve visual profile →
             </button>
           </div>
@@ -198,12 +198,12 @@ export default function VisualStudioScreen({ app }: { app: AppState }) {
       </div>
 
       {/* Right: Controls panel */}
-      <aside style={{ width: 260, background: "white", borderLeft: "1px solid #EEE8E1", display: "flex", flexDirection: "column", overflowY: "auto" }}>
-        <div style={{ padding: "16px 16px 12px", borderBottom: "1px solid #EEE8E1" }}>
+      <aside style={{ width: 260, background: "white", borderLeft: "1px solid #EFEDED", display: "flex", flexDirection: "column", overflowY: "auto" }}>
+        <div style={{ padding: "16px 16px 12px", borderBottom: "1px solid #EFEDED" }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#222222", marginBottom: 4 }}>
             {activeSlotData ? `Edit: ${activeSlotData.label}` : "Select a piece to edit"}
           </div>
-          <div style={{ fontSize: 12, color: "#6F6B67" }}>
+          <div style={{ fontSize: 12, color: "#5E5F5D" }}>
             {activeSlotData ? activeSlotData.name : "Click any item on the left to customize"}
           </div>
         </div>
@@ -214,11 +214,11 @@ export default function VisualStudioScreen({ app }: { app: AppState }) {
             <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
               <img src={activeSlotData.image} alt={activeSlotData.name} style={{ width: 60, height: 75, objectFit: "cover", borderRadius: 8 }} />
               <div>
-                <div style={{ fontSize: 10, color: activeSlotData.owned ? "#48755A" : "#684B5A", fontWeight: 600, textTransform: "uppercase", marginBottom: 3 }}>
+                <div style={{ fontSize: 10, color: activeSlotData.owned ? "#48755A" : "#1C1B1B", fontWeight: 600, textTransform: "uppercase", marginBottom: 3 }}>
                   {activeSlotData.owned ? "✓ Owned" : `+ Shop · ${formatVND(activeSlotData.price!)}`}
                 </div>
                 <div style={{ fontSize: 13, fontWeight: 500, color: "#222222" }}>{activeSlotData.name}</div>
-                <div style={{ fontSize: 12, color: "#6F6B67" }}>{activeSlotData.brand}</div>
+                <div style={{ fontSize: 12, color: "#5E5F5D" }}>{activeSlotData.brand}</div>
               </div>
             </div>
 
@@ -277,11 +277,11 @@ export default function VisualStudioScreen({ app }: { app: AppState }) {
                 <span style={{ fontWeight: 500 }}>{slots.filter((s) => s.owned).length}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
-                <span style={{ color: "#684B5A" }}>+ New to buy</span>
+                <span style={{ color: "#1C1B1B" }}>+ New to buy</span>
                 <span style={{ fontWeight: 500 }}>{slots.filter((s) => !s.owned).length}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-                <span style={{ color: "#6F6B67" }}>Estimated new spend</span>
+                <span style={{ color: "#5E5F5D" }}>Estimated new spend</span>
                 <span style={{ fontWeight: 600, color: "#222222" }}>{formatVND(totalNewSpend)}</span>
               </div>
             </div>
@@ -294,19 +294,19 @@ export default function VisualStudioScreen({ app }: { app: AppState }) {
 
         {/* Swap panel */}
         {showSwapPanel && (
-          <div style={{ padding: 16, borderTop: "1px solid #EEE8E1" }}>
+          <div style={{ padding: 16, borderTop: "1px solid #EFEDED" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#222222" }}>Swap With</div>
-              <button onClick={() => setShowSwapPanel(false)} style={{ background: "none", border: "none", color: "#6F6B67", cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>
+              <button onClick={() => setShowSwapPanel(false)} style={{ background: "none", border: "none", color: "#5E5F5D", cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>
             </div>
-            <div style={{ fontSize: 12, color: "#6F6B67", marginBottom: 10 }}>From your wardrobe:</div>
+            <div style={{ fontSize: 12, color: "#5E5F5D", marginBottom: 10 }}>From your wardrobe:</div>
             {[
               { name: "Beige Knit Cardigan", image: "https://images.unsplash.com/photo-1601512752439-a8a4e6e23e76?w=80&h=100&fit=crop&auto=format" },
               { name: "Camel Wool Coat", image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=80&h=100&fit=crop&auto=format" },
             ].map((item) => (
               <div
                 key={item.name}
-                style={{ display: "flex", gap: 8, alignItems: "center", padding: "8px", border: "1.5px solid #EEE8E1", borderRadius: 8, marginBottom: 6, cursor: "pointer" }}
+                style={{ display: "flex", gap: 8, alignItems: "center", padding: "8px", border: "1.5px solid #EFEDED", borderRadius: 8, marginBottom: 6, cursor: "pointer" }}
                 onClick={() => setShowSwapPanel(false)}
               >
                 <img src={item.image} alt={item.name} style={{ width: 36, height: 44, objectFit: "cover", borderRadius: 5 }} />

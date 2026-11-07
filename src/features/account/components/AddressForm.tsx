@@ -65,13 +65,13 @@ export function AddressForm({
   }
 
   return (
-    <form className="grid gap-4 rounded-lg border border-[#E3DAD0] bg-white p-5 shadow-sm" onSubmit={handleSubmit}>
+    <form className="grid gap-4 rounded-lg border border-[#E3E2E2] bg-white p-5 shadow-sm" onSubmit={handleSubmit}>
       <div>
         <h2 className="font-display text-2xl font-semibold text-[#222222]">
           {initialAddress ? 'Sửa địa chỉ' : 'Thêm địa chỉ'}
         </h2>
-        <p className="mt-2 text-sm leading-6 text-[#6F6B67]">
-          Nhập địa chỉ đầy đủ trong một dòng. Mã phường là lựa chọn bổ sung từ danh mục của Identity.
+        <p className="mt-2 text-sm leading-6 text-[#5E5F5D]">
+          Nhập địa chỉ đầy đủ trong một dòng. Bạn có thể chọn thêm tỉnh/thành và phường/xã.
         </p>
       </div>
 
@@ -91,7 +91,7 @@ export function AddressForm({
               setClearSavedWard(false)
               onProvinceChange(code)
             }}
-            className="h-11 rounded-lg border border-[#D8D0C6] bg-white px-3 text-sm font-medium outline-none focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20"
+            className="h-11 rounded-lg border border-[#C4C7C7] bg-white px-3 text-sm font-medium outline-none focus:border-[#1C1B1B] focus:ring-2 focus:ring-[#1C1B1B]/20"
           >
             <option value="">Chọn tỉnh/thành</option>
             {provinces.map(province => <option key={province.code} value={province.code}>{province.name}</option>)}
@@ -103,29 +103,29 @@ export function AddressForm({
             value={wardCode}
             disabled={!provinceCode || wardLoading}
             onChange={event => { setWardCode(event.target.value); setClearSavedWard(false) }}
-            className="h-11 rounded-lg border border-[#D8D0C6] bg-white px-3 text-sm font-medium outline-none focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20 disabled:cursor-not-allowed disabled:bg-[#F5F2EE]"
+            className="h-11 rounded-lg border border-[#C4C7C7] bg-white px-3 text-sm font-medium outline-none focus:border-[#1C1B1B] focus:ring-2 focus:ring-[#1C1B1B]/20 disabled:cursor-not-allowed disabled:bg-[#F5F2EE]"
           >
             <option value="">Không gắn mã phường/xã</option>
             {wards.map(ward => <option key={ward.code} value={ward.code}>{ward.name} ({ward.code})</option>)}
           </select>
-          {wardLoading && <span className="text-xs font-normal text-[#6F6B67]">Đang tải danh sách phường/xã…</span>}
+          {wardLoading && <span className="text-xs font-normal text-[#5E5F5D]">Đang tải danh sách phường/xã…</span>}
           {errors.wardCode && <span className="text-xs font-semibold text-[#A94B4B]">{errors.wardCode}</span>}
         </label>
       </div>
 
       {initialAddress?.ward_code && (
-        <div className="grid gap-2 rounded-lg bg-[#FAF8F5] p-3 text-sm text-[#3A3632]">
+        <div className="grid gap-2 rounded-lg bg-[#FBF9F9] p-3 text-sm text-[#3A3632]">
           <p>Mã phường/xã đang lưu: <span className="font-semibold">{initialAddress.ward_code}</span></p>
           <label className="inline-flex items-center gap-2">
             <input
               type="checkbox"
               checked={clearSavedWard}
               onChange={event => { setClearSavedWard(event.target.checked); if (event.target.checked) setWardCode('') }}
-              className="h-4 w-4 accent-[#684B5A]"
+              className="h-4 w-4 accent-[#1C1B1B]"
             />
             Xóa mã phường/xã đang lưu
           </label>
-          <p className="text-xs leading-5 text-[#6F6B67]">Nếu không chọn mã mới hoặc xóa, mã hiện tại sẽ được giữ nguyên.</p>
+          <p className="text-xs leading-5 text-[#5E5F5D]">Nếu không chọn mã mới hoặc xóa, mã hiện tại sẽ được giữ nguyên.</p>
         </div>
       )}
 

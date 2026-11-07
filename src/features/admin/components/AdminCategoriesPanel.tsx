@@ -119,12 +119,12 @@ export function AdminCategoriesPanel({ database, dispatch }: AdminCategoriesPane
     <section className="grid gap-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-semibold text-[#684B5A]">Cấu trúc cửa hàng</p>
+          <p className="text-sm font-semibold text-[#1C1B1B]">Cấu trúc cửa hàng</p>
           <h1 className="mt-2 font-display text-3xl font-semibold leading-tight text-[#222222] md:text-4xl">
             Quản lý danh mục
           </h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6F6B67]">
-            Sắp xếp nhóm sản phẩm quần áo nữ đang hiển thị trong cửa hàng.
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#5E5F5D]">
+            Quản lý các nhóm sản phẩm hiển thị trong cửa hàng.
           </p>
         </div>
         <Button type="button" onClick={openCreateModal} icon={<Plus size={17} aria-hidden="true" />}>
@@ -132,10 +132,11 @@ export function AdminCategoriesPanel({ database, dispatch }: AdminCategoriesPane
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-[#E5E0D8] bg-white shadow-[0_8px_24px_rgba(58,54,50,0.06)]">
-        <div className="overflow-x-auto">
+      <div className="overflow-hidden rounded-lg border border-[#E3E2E2] bg-white">
+        <p className="border-b border-[#E3E2E2] px-4 py-2 text-xs text-[#5E5F5D] lg:hidden">Vuốt ngang để xem toàn bộ danh mục.</p>
+        <div className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1C1B1B]" role="region" aria-label="Bảng danh mục" tabIndex={0}>
           <table className="w-full min-w-[780px] border-collapse text-left text-sm">
-            <thead className="bg-[#FAF8F5] text-xs font-semibold uppercase tracking-wide text-[#6F6B67]">
+            <thead className="bg-[#FBF9F9] text-xs font-semibold uppercase tracking-wide text-[#5E5F5D]">
               <tr>
                 <th scope="col" className="w-16 px-4 py-3">#</th>
                 <th scope="col" className="px-4 py-3">Danh mục</th>
@@ -146,15 +147,15 @@ export function AdminCategoriesPanel({ database, dispatch }: AdminCategoriesPane
             </thead>
             <tbody className="divide-y divide-[#E5E0D8]">
               {categories.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-[#6F6B67]">Chưa có danh mục.</td></tr>
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-[#5E5F5D]">Chưa có danh mục.</td></tr>
               ) : categories.map(category => (
-                <tr key={category.id} className="align-middle hover:bg-[#FAF8F5]/70">
-                  <td className="px-4 py-3 font-semibold tabular-nums text-[#6F6B67]">#{category.order}</td>
+                <tr key={category.id} className="align-middle hover:bg-[#FBF9F9]/70">
+                  <td className="px-4 py-3 font-semibold tabular-nums text-[#5E5F5D]">#{category.order}</td>
                   <td className="px-4 py-3">
                     <p className="font-semibold text-[#222222]">{category.label}</p>
-                    <span className="mt-1 inline-flex rounded-md bg-[#F5F2EE] px-2 py-0.5 text-xs italic text-[#6F6B67]">{category.id}</span>
+                    <span className="mt-1 inline-flex rounded-md bg-[#F5F2EE] px-2 py-0.5 text-xs italic text-[#5E5F5D]">{category.id}</span>
                   </td>
-                  <td className="max-w-[28rem] px-4 py-3 leading-5 text-[#6F6B67]">{category.description}</td>
+                  <td className="max-w-[28rem] px-4 py-3 leading-5 text-[#5E5F5D]">{category.description}</td>
                   <td className="px-4 py-3 text-center">
                     <ToggleSwitch
                       checked={category.active}
@@ -197,7 +198,7 @@ export function AdminCategoriesPanel({ database, dispatch }: AdminCategoriesPane
         onClose={() => setModalOpen(false)}
       >
         <form className="grid gap-4" onSubmit={handleSubmit}>
-          {formError && <p className="rounded-lg bg-[#FCEAEA] p-3 text-sm font-semibold text-[#A94B4B]">{formError}</p>}
+          {formError && <p role="alert" className="rounded-lg border border-[#E7BBBB] bg-[#FCEAEA] p-3 text-sm font-semibold text-[#A94B4B]">{formError}</p>}
           <TextField
             label="ID danh mục"
             value={form.id}
@@ -214,7 +215,7 @@ export function AdminCategoriesPanel({ database, dispatch }: AdminCategoriesPane
             value={form.order}
             onChange={event => updateField('order', event.target.value)}
           />
-          <div className="flex flex-wrap justify-end gap-3">
+          <div className="flex flex-wrap justify-end gap-3 border-t border-[#E3E2E2] pt-4">
             <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>
               Hủy
             </Button>

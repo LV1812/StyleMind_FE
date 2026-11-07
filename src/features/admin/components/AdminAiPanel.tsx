@@ -73,7 +73,7 @@ const metadataColorSwatches: Record<string, string> = {
   blue: '#8FAEC9',
   green: '#6F8B72',
   red: '#A94B4B',
-  plum: '#684B5A',
+  plum: '#1C1B1B',
   navy: '#24344D',
 }
 
@@ -198,11 +198,11 @@ export function AdminAiPanel({ database, dispatch }: AdminAiPanelProps) {
   return (
     <section className="grid gap-5">
       <div>
-        <p className="text-sm font-semibold text-[#684B5A]">Dữ liệu gợi ý</p>
+        <p className="text-sm font-semibold text-[#1C1B1B]">Dữ liệu gợi ý</p>
         <h1 className="mt-2 font-display text-3xl font-semibold leading-tight text-[#222222] md:text-4xl">
           Quản lý dữ liệu AI
         </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6F6B67]">
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#5E5F5D]">
           Quản trị các thuộc tính thời trang và luật tương thích dùng cho dữ liệu gợi ý phối đồ.
         </p>
       </div>
@@ -239,9 +239,9 @@ export function AdminAiPanel({ database, dispatch }: AdminAiPanelProps) {
                   return (
                     <div key={option.id} className="group flex min-h-11 items-center justify-between gap-3 py-2">
                       <div className="flex min-w-0 items-center gap-2">
-                        {colorHex && <span aria-hidden="true" className="h-3.5 w-3.5 shrink-0 rounded-full border border-[#D8D0C6]" style={{ backgroundColor: colorHex }} />}
+                        {colorHex && <span aria-hidden="true" className="h-3.5 w-3.5 shrink-0 rounded-full border border-[#C4C7C7]" style={{ backgroundColor: colorHex }} />}
                         <span className="truncate font-semibold text-[#222222]">{option.label}</span>
-                        <span className="max-w-40 truncate rounded-md bg-[#F5F2EE] px-2 py-0.5 text-xs text-[#6F6B67]" title={option.id}>{option.id}</span>
+                        <span className="max-w-40 truncate rounded-md bg-[#F5F2EE] px-2 py-0.5 text-xs text-[#5E5F5D]" title={option.id}>{option.id}</span>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
                         <ToggleSwitch
@@ -273,14 +273,14 @@ export function AdminAiPanel({ database, dispatch }: AdminAiPanelProps) {
       ) : (
         <div className="overflow-hidden rounded-xl border border-[#E5E0D8] bg-white shadow-[0_8px_24px_rgba(58,54,50,0.06)]">
           {compatibilityRules.length === 0 ? (
-            <p className="p-6 text-center text-sm text-[#6F6B67]">Chưa có luật tương thích nào.</p>
+            <p className="p-6 text-center text-sm text-[#5E5F5D]">Chưa có luật tương thích nào.</p>
           ) : (
             <div className="divide-y divide-[#E5E0D8]">
               {compatibilityRules.map(rule => (
                 <div key={rule.id} className="group grid gap-3 px-4 py-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
                   <div className="min-w-0">
                     <p className="font-semibold text-[#222222]">{rule.sourceType} <span className="text-[#9D9894]">→</span> {rule.targetType}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#6F6B67]">
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#5E5F5D]">
                       <span className="rounded-md bg-[#F5F2EE] px-2 py-0.5">{rule.id}</span>
                       <span>Điểm {rule.score}</span>
                       {rule.note && <span className="max-w-2xl truncate">{rule.note}</span>}

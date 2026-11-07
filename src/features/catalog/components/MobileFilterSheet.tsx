@@ -44,7 +44,7 @@ export function MobileFilterSheet({
 
   return (
     <>
-      <Button variant="secondary" icon={<SlidersHorizontal size={17} aria-hidden="true" />} onClick={() => setOpen(true)} className="md:hidden">
+      <Button variant="secondary" icon={<SlidersHorizontal size={17} aria-hidden="true" />} onClick={() => setOpen(true)} className="lg:hidden">
         Bộ lọc
       </Button>
       <Modal

@@ -10,24 +10,24 @@ interface NotificationCardProps {
 
 export function NotificationCard({ notification, onRead }: NotificationCardProps) {
   return (
-    <article className={`rounded-lg border p-5 shadow-sm ${notification.read ? 'border-[#E3DAD0] bg-white' : 'border-[#D8B9C2] bg-[#FFF9FB]'}`}>
+    <article className={`rounded-lg border p-5 shadow-sm ${notification.read ? 'border-[#E3E2E2] bg-white' : 'border-[#D8B9C2] bg-[#FFF9FB]'}`}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-[#222222]">{notification.title}</h2>
           <p className="mt-1 text-xs font-semibold text-[#8A8179]">{formatDate(notification.createdAt)}</p>
         </div>
         {!notification.read && (
-          <span className="w-fit rounded-full bg-[#684B5A] px-3 py-1 text-xs font-semibold text-white">
+          <span className="w-fit rounded-full bg-[#1C1B1B] px-3 py-1 text-xs font-semibold text-white">
             Mới
           </span>
         )}
       </div>
-      <p className="mt-3 text-sm leading-6 text-[#6F6B67]">{notification.body}</p>
+      <p className="mt-3 text-sm leading-6 text-[#5E5F5D]">{notification.body}</p>
       <div className="mt-4 flex flex-wrap gap-2">
         {notification.link && (
           <Link
             to={notification.link}
-            className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#EEE8E1] px-3 text-sm font-semibold text-[#222222]"
+            className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#EFEDED] px-3 text-sm font-semibold text-[#222222]"
           >
             Mở {notification.title}
           </Link>
@@ -35,7 +35,7 @@ export function NotificationCard({ notification, onRead }: NotificationCardProps
         {!notification.read && (
           <button
             type="button"
-            className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#F4E7E8] px-3 text-sm font-semibold text-[#684B5A]"
+            className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#E9E8E7] px-3 text-sm font-semibold text-[#1C1B1B]"
             onClick={() => onRead(notification.id)}
           >
             Đánh dấu đã đọc {notification.title}

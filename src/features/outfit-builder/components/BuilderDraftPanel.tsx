@@ -59,11 +59,11 @@ export function BuilderDraftPanel({
   return (
     <section
       aria-label="Outfit đang tạo"
-      className="grid h-fit gap-5 rounded-lg border border-[#E3DAD0] bg-white p-4 shadow-sm md:p-5"
+      className="grid h-fit min-w-0 gap-5 rounded-xl border border-[#E3E2E2] bg-white p-5 md:p-7"
     >
       <div>
         <h2 className="font-display text-2xl font-semibold text-[#222222]">Outfit đang tạo</h2>
-        <p className="mt-2 text-sm leading-6 text-[#6F6B67]">
+        <p className="mt-2 text-sm leading-6 text-[#5E5F5D]">
           Đặt tên, kiểm tra phiên bản từng món rồi lưu vào tủ đồ.
         </p>
       </div>
@@ -73,7 +73,7 @@ export function BuilderDraftPanel({
         <input
           value={draft.name}
           onChange={event => onNameChange(event.target.value)}
-          className="min-h-11 rounded-lg border border-[#D8D0C6] bg-white px-3 text-sm font-medium text-[#222222] outline-none transition focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20"
+          className="min-h-11 rounded-lg border border-[#C4C7C7] bg-white px-3 text-sm font-medium text-[#222222] outline-none transition focus:border-[#1C1B1B] focus:ring-2 focus:ring-[#1C1B1B]/20"
           placeholder="Ví dụ: Outfit đi chơi"
         />
         {errors.name && <span className="text-xs font-medium text-[#A94B4B]">{errors.name}</span>}
@@ -81,21 +81,21 @@ export function BuilderDraftPanel({
 
       <div className="grid gap-3">
         {items.length === 0 ? (
-          <div className="rounded-lg bg-[#FAF8F5] px-4 py-6 text-sm font-medium text-[#6F6B67]">
+          <div className="rounded-lg bg-[#FBF9F9] px-4 py-6 text-sm font-medium text-[#5E5F5D]">
             Chưa có món nào trong outfit
           </div>
         ) : (
           items.map(item => (
-            <article key={item.id} className="rounded-lg bg-[#FAF8F5] p-4">
+            <article key={item.id} className="rounded-lg bg-[#FBF9F9] p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h3 className="font-semibold text-[#222222]">{item.product.name}</h3>
-                  <p className="mt-1 text-sm text-[#6F6B67]">
+                  <p className="mt-1 text-sm text-[#5E5F5D]">
                     {item.variant.color} · {item.variant.size}
                   </p>
                 </div>
                 <span
-                  className="h-6 w-6 flex-none rounded-full border border-[#D8D0C6]"
+                  className="h-6 w-6 flex-none rounded-full border border-[#C4C7C7]"
                   style={{ backgroundColor: item.variant.colorHex }}
                   aria-hidden="true"
                 />
@@ -106,7 +106,7 @@ export function BuilderDraftPanel({
                 <select
                   value={item.variant.id}
                   onChange={event => onVariantChange(item.id, event.target.value)}
-                  className="min-h-10 rounded-lg border border-[#D8D0C6] bg-white px-3 text-sm font-semibold text-[#222222] outline-none focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20"
+                  className="min-h-10 rounded-lg border border-[#C4C7C7] bg-white px-3 text-sm font-semibold text-[#222222] outline-none focus:border-[#1C1B1B] focus:ring-2 focus:ring-[#1C1B1B]/20"
                 >
                   {item.activeVariants.map(variant => (
                     <option key={variant.id} value={variant.id} aria-label={`${variant.color} ${variant.size}`}>
@@ -132,15 +132,15 @@ export function BuilderDraftPanel({
         {errors.items && <span className="text-xs font-medium text-[#A94B4B]">{errors.items}</span>}
       </div>
 
-      <div className="rounded-lg bg-[#EEE8E1] p-4">
+      <div className="rounded-lg bg-[#EFEDED] p-4">
         <div className="flex items-center justify-between gap-4 text-sm">
-          <span className="font-medium text-[#6F6B67]">Tạm tính</span>
+          <span className="font-medium text-[#5E5F5D]">Tạm tính</span>
           <span className="font-semibold text-[#222222]">{formatCurrency(total)}</span>
         </div>
         <button
           type="button"
           disabled={saving}
-          className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[#684B5A] px-4 text-sm font-semibold text-white transition hover:bg-[#563E4A] active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]/30"
+          className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1C1B1B] px-4 text-sm font-semibold text-white transition hover:bg-[#563E4A] active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]/30"
           onClick={onSave}
         >
           Lưu outfit

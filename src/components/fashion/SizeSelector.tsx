@@ -33,12 +33,12 @@ export default function SizeSelector({
                 onClick={() => isAvailable && onSelectSize(size)}
                 aria-pressed={isSelected}
                 aria-label={`Size ${size}${!isAvailable ? ' - currently unavailable' : ''}${isRecommended ? ' - recommended for your fit' : ''}`}
-                className={`relative min-w-[48px] h-11 px-3.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-150 flex items-center justify-center border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] ${
+                className={`relative min-w-[48px] h-11 px-3.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-150 flex items-center justify-center border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] ${
                   isSelected
-                    ? 'bg-[#684B5A] text-[#FAF8F5] border-[#684B5A] shadow-xs'
+                    ? 'bg-[#1C1B1B] text-[#FBF9F9] border-[#1C1B1B] shadow-xs'
                     : isAvailable
-                    ? 'bg-[#FAF8F5] text-[#222222] border-[#D8D0C6] hover:border-[#684B5A] hover:bg-[#F4E7E8]/40'
-                    : 'bg-[#EEE8E1]/60 text-[#9D9894] border-[#E0D9CF] cursor-not-allowed opacity-60'
+                    ? 'bg-[#FBF9F9] text-[#222222] border-[#C4C7C7] hover:border-[#1C1B1B] hover:bg-[#E9E8E7]/40'
+                    : 'bg-[#EFEDED]/60 text-[#9D9894] border-[#E0D9CF] cursor-not-allowed opacity-60'
                 }`}
               >
                 {size}
@@ -47,7 +47,7 @@ export default function SizeSelector({
                 )}
               </button>
               {isRecommended && isAvailable && (
-                <span className="absolute -top-2.5 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-[#F4E7E8] text-[#684B5A] border border-[#E8D0D2] shadow-2xs whitespace-nowrap">
+                <span className="absolute -top-2.5 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-[#E9E8E7] text-[#1C1B1B] border border-[#E8D0D2] shadow-2xs whitespace-nowrap">
                   Fit
                 </span>
               )}
@@ -56,8 +56,8 @@ export default function SizeSelector({
         })}
       </div>
       {recommendedSize && (
-        <p className="text-xs text-[#6F6B67] flex items-center gap-1.5 pt-1">
-          <span className="text-[#684B5A]">✦</span>
+        <p className="text-xs text-[#5E5F5D] flex items-center gap-1.5 pt-1">
+          <span className="text-[#1C1B1B]">✦</span>
           <span>Size <strong>{recommendedSize}</strong> recommended for your preferred fit.</span>
         </p>
       )}

@@ -56,8 +56,8 @@ function AddressStep({ onNext }: { onNext: () => void }) {
         <input className="input-field" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street number, building, apartment" />
       </div>
 
-      <div style={{ display: "flex", gap: 8, alignItems: "center", padding: "12px 14px", background: "#F5EFE8", borderRadius: 8, marginBottom: 24, fontSize: 12, color: "#6F6B67" }}>
-        <input type="checkbox" id="save-address" style={{ accentColor: "#684B5A" }} defaultChecked />
+      <div style={{ display: "flex", gap: 8, alignItems: "center", padding: "12px 14px", background: "#F5EFE8", borderRadius: 8, marginBottom: 24, fontSize: 12, color: "#5E5F5D" }}>
+        <input type="checkbox" id="save-address" style={{ accentColor: "#1C1B1B" }} defaultChecked />
         <label htmlFor="save-address">Save this address to my account</label>
       </div>
 
@@ -96,32 +96,32 @@ function PaymentStep({ onCOD, onSePay }: { onCOD: () => void; onSePay: () => voi
             key={opt.id}
             style={{
               display: "flex", gap: 14, padding: "16px 18px", cursor: "pointer",
-              border: `1.5px solid ${selected === opt.id ? "#684B5A" : "#D8CFCA"}`,
-              borderRadius: 12, background: selected === opt.id ? "#F4E7E8" : "white",
+              border: `1.5px solid ${selected === opt.id ? "#1C1B1B" : "#D8CFCA"}`,
+              borderRadius: 12, background: selected === opt.id ? "#E9E8E7" : "white",
               transition: "all 0.15s",
             }}
           >
-            <input type="radio" name="payment" value={opt.id} checked={selected === opt.id} onChange={() => setSelected(opt.id)} style={{ accentColor: "#684B5A", marginTop: 2 }} />
+            <input type="radio" name="payment" value={opt.id} checked={selected === opt.id} onChange={() => setSelected(opt.id)} style={{ accentColor: "#1C1B1B", marginTop: 2 }} />
             <div style={{ fontSize: 24, lineHeight: 1 }}>{opt.icon}</div>
             <div>
               <div style={{ fontSize: 14, fontWeight: 500, color: "#222222", marginBottom: 3 }}>{opt.label}</div>
-              <div style={{ fontSize: 12.5, color: "#6F6B67", lineHeight: 1.6 }}>{opt.sub}</div>
+              <div style={{ fontSize: 12.5, color: "#5E5F5D", lineHeight: 1.6 }}>{opt.sub}</div>
             </div>
           </label>
         ))}
       </div>
 
-      <div style={{ background: "#FAF8F5", border: "1px solid #EEE8E1", borderRadius: 12, padding: 16, marginBottom: 24 }}>
+      <div style={{ background: "#FBF9F9", border: "1px solid #EFEDED", borderRadius: 12, padding: 16, marginBottom: 24 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: "#222222", marginBottom: 10 }}>Order Summary</div>
         {ORDER_ITEMS.map((item) => (
           <div key={item.name} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
-            <span style={{ color: "#6F6B67" }}>{item.name} × {item.qty} ({item.size} · {item.color})</span>
+            <span style={{ color: "#5E5F5D" }}>{item.name} × {item.qty} ({item.size} · {item.color})</span>
             <span style={{ color: "#222222", fontWeight: 500 }}>{formatVND(item.price)}</span>
           </div>
         ))}
-        <div style={{ borderTop: "1px solid #EEE8E1", paddingTop: 10, marginTop: 10, display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 600 }}>
+        <div style={{ borderTop: "1px solid #EFEDED", paddingTop: 10, marginTop: 10, display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 600 }}>
           <span>Total</span>
-          <span style={{ color: "#684B5A" }}>{formatVND(total)}</span>
+          <span style={{ color: "#1C1B1B" }}>{formatVND(total)}</span>
         </div>
         {shipping === 0 && <div style={{ fontSize: 12, color: "#48755A", marginTop: 6 }}>✓ Free shipping applied</div>}
       </div>
@@ -150,7 +150,7 @@ function SePay({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () =>
       <h3 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 20, color: "#222222", marginBottom: 6, textAlign: "center" }}>
         SePay / VietQR Payment
       </h3>
-      <p style={{ color: "#6F6B67", fontSize: 13, textAlign: "center", marginBottom: 24 }}>
+      <p style={{ color: "#5E5F5D", fontSize: 13, textAlign: "center", marginBottom: 24 }}>
         Scan the QR code or transfer manually. Your order is confirmed automatically once we receive payment.
       </p>
 
@@ -162,12 +162,12 @@ function SePay({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () =>
               <div style={{
                 width: 200, height: 200, background: "#222222", borderRadius: 8, margin: "0 auto 12px",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                backgroundImage: "repeating-linear-gradient(0deg, #222 0px, #222 8px, #FAF8F5 8px, #FAF8F5 16px), repeating-linear-gradient(90deg, #222 0px, #222 8px, #FAF8F5 8px, #FAF8F5 16px)",
+                backgroundImage: "repeating-linear-gradient(0deg, #222 0px, #222 8px, #FBF9F9 8px, #FBF9F9 16px), repeating-linear-gradient(90deg, #222 0px, #222 8px, #FBF9F9 8px, #FBF9F9 16px)",
                 backgroundBlendMode: "difference",
               }}>
                 <span style={{ color: "white", fontSize: 12, background: "rgba(0,0,0,0.7)", padding: "4px 8px", borderRadius: 4 }}>QR Code</span>
               </div>
-              <div style={{ fontSize: 12, color: "#6F6B67" }}>Scan with any banking app</div>
+              <div style={{ fontSize: 12, color: "#5E5F5D" }}>Scan with any banking app</div>
             </div>
           </div>
 
@@ -180,13 +180,13 @@ function SePay({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () =>
               { label: "Transfer content", value: ref, copyable: true },
             ].map((row) => (
               <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <span style={{ fontSize: 12, color: "#6F6B67" }}>{row.label}</span>
+                <span style={{ fontSize: 12, color: "#5E5F5D" }}>{row.label}</span>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <span style={{ fontSize: row.accent ? 16 : 13, fontWeight: row.accent ? 700 : 500, color: row.accent ? "#684B5A" : "#222222" }}>{row.value}</span>
+                  <span style={{ fontSize: row.accent ? 16 : 13, fontWeight: row.accent ? 700 : 500, color: row.accent ? "#1C1B1B" : "#222222" }}>{row.value}</span>
                   {row.copyable && (
                     <button
                       onClick={() => navigator.clipboard.writeText(row.value)}
-                      style={{ background: "#684B5A", color: "white", border: "none", borderRadius: 4, padding: "3px 8px", fontSize: 10, cursor: "pointer" }}
+                      style={{ background: "#1C1B1B", color: "white", border: "none", borderRadius: 4, padding: "3px 8px", fontSize: 10, cursor: "pointer" }}
                     >
                       Copy
                     </button>
@@ -198,7 +198,7 @@ function SePay({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () =>
 
           {/* Countdown */}
           <div style={{ textAlign: "center", marginBottom: 20 }}>
-            <div style={{ fontSize: 12, color: "#6F6B67", marginBottom: 4 }}>Payment window expires in</div>
+            <div style={{ fontSize: 12, color: "#5E5F5D", marginBottom: 4 }}>Payment window expires in</div>
             <div style={{ fontFamily: "monospace", fontSize: 28, color: countdown < 120 ? "#A94B4B" : "#222222", fontWeight: 700 }}>
               {mins}:{secs}
             </div>
@@ -213,7 +213,7 @@ function SePay({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () =>
             </button>
             <button
               onClick={() => setStatus("expired")}
-              style={{ border: "1.5px solid #D8CFCA", borderRadius: 8, padding: "12px 16px", cursor: "pointer", fontSize: 13, color: "#6F6B67", background: "white" }}
+              style={{ border: "1.5px solid #D8CFCA", borderRadius: 8, padding: "12px 16px", cursor: "pointer", fontSize: 13, color: "#5E5F5D", background: "white" }}
             >
               Cancel
             </button>
@@ -231,7 +231,7 @@ function SePay({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () =>
             ✓
           </div>
           <h3 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, color: "#48755A", marginBottom: 8 }}>Payment Received</h3>
-          <p style={{ color: "#6F6B67", fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
+          <p style={{ color: "#5E5F5D", fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
             Thank you! Your payment of <strong>{formatVND(total)}</strong> has been confirmed. Your order is now being processed.
           </p>
           <button className="btn-primary" onClick={onSuccess} style={{ width: "100%", fontSize: 14, padding: 13 }}>
@@ -244,7 +244,7 @@ function SePay({ onSuccess, onCancel }: { onSuccess: () => void; onCancel: () =>
         <div style={{ textAlign: "center", padding: 32 }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>⏱</div>
           <h3 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, color: "#A94B4B", marginBottom: 8 }}>Payment Expired</h3>
-          <p style={{ color: "#6F6B67", fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
+          <p style={{ color: "#5E5F5D", fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
             The payment window has expired. Your order has not been placed.
           </p>
           <div style={{ display: "flex", gap: 10 }}>
@@ -266,27 +266,27 @@ function OrderSuccess() {
       <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 26, color: "#222222", marginBottom: 10 }}>
         Order Confirmed!
       </h2>
-      <p style={{ color: "#6F6B67", fontSize: 14, lineHeight: 1.7, marginBottom: 8 }}>
+      <p style={{ color: "#5E5F5D", fontSize: 14, lineHeight: 1.7, marginBottom: 8 }}>
         Your order <strong>ORD-2024-0892</strong> has been placed successfully.
       </p>
-      <p style={{ color: "#6F6B67", fontSize: 13, marginBottom: 28 }}>
+      <p style={{ color: "#5E5F5D", fontSize: 13, marginBottom: 28 }}>
         A confirmation will be sent to your email and notifications.
       </p>
-      <div style={{ background: "#FAF8F5", border: "1px solid #EEE8E1", borderRadius: 12, padding: 20, textAlign: "left", marginBottom: 28 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: "#6F6B67", marginBottom: 12, letterSpacing: "0.06em", textTransform: "uppercase" }}>Order Details</div>
+      <div style={{ background: "#FBF9F9", border: "1px solid #EFEDED", borderRadius: 12, padding: 20, textAlign: "left", marginBottom: 28 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: "#5E5F5D", marginBottom: 12, letterSpacing: "0.06em", textTransform: "uppercase" }}>Order Details</div>
         {ORDER_ITEMS.map((item) => (
           <div key={item.name} style={{ display: "flex", gap: 12, marginBottom: 10, alignItems: "center" }}>
             <img src={item.image} alt={item.name} style={{ width: 48, height: 60, objectFit: "cover", borderRadius: 6 }} />
             <div>
               <div style={{ fontSize: 13, fontWeight: 500, color: "#222222" }}>{item.name}</div>
-              <div style={{ fontSize: 12, color: "#6F6B67" }}>{item.brand} · {item.size} · {item.color}</div>
+              <div style={{ fontSize: 12, color: "#5E5F5D" }}>{item.brand} · {item.size} · {item.color}</div>
             </div>
             <span style={{ marginLeft: "auto", fontSize: 13, fontWeight: 600, color: "#222222" }}>{formatVND(item.price)}</span>
           </div>
         ))}
-        <div style={{ borderTop: "1px solid #EEE8E1", paddingTop: 12, marginTop: 12, display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 600 }}>
+        <div style={{ borderTop: "1px solid #EFEDED", paddingTop: 12, marginTop: 12, display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 600 }}>
           <span>Total paid</span>
-          <span style={{ color: "#684B5A" }}>{formatVND(total)}</span>
+          <span style={{ color: "#1C1B1B" }}>{formatVND(total)}</span>
         </div>
       </div>
     </div>
@@ -307,7 +307,7 @@ export default function CheckoutScreen({ app }: { app: AppState }) {
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "32px 32px 64px" }}>
-      <button onClick={() => app.navigate("cart")} style={{ background: "none", border: "none", color: "#6F6B67", cursor: "pointer", fontSize: 13, marginBottom: 20, display: "flex", alignItems: "center", gap: 6 }}>
+      <button onClick={() => app.navigate("cart")} style={{ background: "none", border: "none", color: "#5E5F5D", cursor: "pointer", fontSize: 13, marginBottom: 20, display: "flex", alignItems: "center", gap: 6 }}>
         ← Back to Cart
       </button>
 
@@ -321,7 +321,7 @@ export default function CheckoutScreen({ app }: { app: AppState }) {
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{
                   width: 28, height: 28, borderRadius: "50%",
-                  background: i <= stepIndex ? "#684B5A" : "#EEE8E1",
+                  background: i <= stepIndex ? "#1C1B1B" : "#EFEDED",
                   color: i <= stepIndex ? "white" : "#A9A6A3",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 12, fontWeight: 600, flexShrink: 0,
@@ -330,13 +330,13 @@ export default function CheckoutScreen({ app }: { app: AppState }) {
                 </div>
                 <span style={{ fontSize: 13, color: i <= stepIndex ? "#222222" : "#A9A6A3", fontWeight: i === stepIndex ? 500 : 400 }}>{label}</span>
               </div>
-              {i < 2 && <div style={{ flex: 1, height: 1, background: i < stepIndex ? "#684B5A" : "#EEE8E1", margin: "0 12px" }} />}
+              {i < 2 && <div style={{ flex: 1, height: 1, background: i < stepIndex ? "#1C1B1B" : "#EFEDED", margin: "0 12px" }} />}
             </div>
           ))}
         </div>
       )}
 
-      <div style={{ background: "white", border: "1px solid #EEE8E1", borderRadius: 16, padding: 32 }}>
+      <div style={{ background: "white", border: "1px solid #EFEDED", borderRadius: 16, padding: 32 }}>
         {step === "address" && <AddressStep onNext={() => setStep("payment")} />}
         {step === "payment" && (
           <PaymentStep

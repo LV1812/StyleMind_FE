@@ -1,13 +1,16 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { createDemoSeed } from '@/app/data/demoSeed'
 import { AppProviders } from '@/app/providers/AppProviders'
 import { appRoutes } from '@/app/router/AppRouter'
 import type { DemoDatabase } from '@/app/store/types'
 import { DEMO_STORAGE_KEY } from '@/shared/storage/demoStorage'
+import { communityApi } from '@/shared/api/communityApi'
+
+afterEach(() => vi.restoreAllMocks())
 
 function databaseWithCustomer(overrides: Partial<DemoDatabase> = {}): DemoDatabase {
   return {
@@ -79,8 +82,12 @@ describe('Manual outfit builder', () => {
     expect(getDatabase().outfits.some(outfit => outfit.name === 'Outfit chưa đặt tên')).toBe(false)
   })
 
-  it('saves a manual outfit and navigates to its detail page', async () => {
+  it('saves a manual outfit through the API and navigates to its detail page', async () => {
     const user = userEvent.setup()
+    const id = '40000000-0000-0000-0000-000000000004'
+    const create = vi.spyOn(communityApi, 'createOutfit').mockResolvedValue({ outfit_id: id, name: 'Outfit đi chơi', visibility: 'PRIVATE', items: [] })
+    vi.spyOn(communityApi, 'outfit').mockResolvedValue({ outfit_id: id, name: 'Outfit đi chơi', visibility: 'PRIVATE', items: [] })
+    vi.spyOn(communityApi, 'sharing').mockResolvedValue({ outfit_id: id, visibility: 'PRIVATE', public_enabled: false, public_token: null, public_enabled_at: null })
     const router = renderBuilder()
 
     await user.click(await screen.findByRole('button', { name: 'Thêm Áo blouse cổ vuông' }))
@@ -88,16 +95,8 @@ describe('Manual outfit builder', () => {
     await user.click(screen.getByRole('button', { name: 'Lưu outfit' }))
 
     expect(await screen.findByRole('heading', { name: 'Outfit đi chơi' })).toBeInTheDocument()
-    expect(router.state.location.pathname).toMatch(/^\/outfits\//)
-
-    await waitFor(() => {
-      const created = getDatabase().outfits.find(outfit => outfit.name === 'Outfit đi chơi')
-      expect(created).toMatchObject({
-        ownerId: 'usr-customer-01',
-        source: 'manual',
-        visibility: 'private',
-      })
-      expect(created?.items).toHaveLength(1)
-    })
+    expect(router.state.location.pathname).toBe(`/outfits/${id}`)
+    await waitFor(() => expect(create).toHaveBeenCalledWith('Outfit đi chơi', ['var-blouse-white-m']))
+    expect(getDatabase().outfits.some(outfit => outfit.name === 'Outfit đi chơi')).toBe(false)
   })
 })

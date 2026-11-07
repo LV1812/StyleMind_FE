@@ -1,70 +1,86 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
-import { describe, expect, it, vi } from 'vitest'
-import { createDemoSeed } from '@/app/data/demoSeed'
-import { DemoStoreProvider, useDemoStore } from '@/app/store/DemoStoreProvider'
-import { ToastProvider } from '@/shared/ui'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { AppProviders } from '@/app/providers/AppProviders'
 import { appRoutes } from '@/app/router/AppRouter'
-import { DEMO_STORAGE_KEY } from '@/shared/storage/demoStorage'
-import type { DemoDatabase } from '@/app/store/types'
+import { saveApiSession } from '@/test/communitySession'
 
-vi.mock('@/features/auth', async importOriginal => ({
-  ...await importOriginal<typeof import('@/features/auth')>(),
-  LoginPage: () => <h1>Đăng nhập</h1>,
-  useAuth: () => {
-    const { state } = useDemoStore()
-    return { currentUser: state.users.find(user => user.id === state.session?.userId) ?? null, isInitializing: false, logout: vi.fn() }
-  },
-}))
+const actor = '10000000-0000-0000-0000-000000000001'
+const peer = '20000000-0000-0000-0000-000000000002'
+const invitation = '30000000-0000-0000-0000-000000000003'
+const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status })
+const page = (items: unknown[]) => ({ items, page: 0, size: 20, total_elements: items.length, total_pages: items.length ? 1 : 0 })
 
-function setup(authenticated = true, overrides: Partial<DemoDatabase> = {}) {
-  window.localStorage.clear()
-  const seed = createDemoSeed(), now = Date.now()
-  seed.friendInvitations = [{ ...seed.friendInvitations[0], createdAt: now, lastAttemptAt: now, expiresAt: now + 7 * 86400000 }]
-  window.localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify({ ...seed, session: authenticated ? { userId: 'usr-customer-01', persistent: true } : null, ...overrides }))
+beforeEach(() => { localStorage.clear(); sessionStorage.clear() })
+afterEach(() => { vi.unstubAllGlobals(); localStorage.clear(); sessionStorage.clear() })
+function renderFriends(authenticated = true) {
+  if (authenticated) saveApiSession(`e30.${btoa(JSON.stringify({ sub: actor, roles: ['CUSTOMER'] }))}.sig`, Date.now() + 60000)
   const router = createMemoryRouter(appRoutes, { initialEntries: ['/friends'] })
-  render(<DemoStoreProvider><ToastProvider><RouterProvider router={router} /></ToastProvider></DemoStoreProvider>)
+  render(<AppProviders><RouterProvider router={router} /></AppProviders>)
   return router
 }
-describe('Friends route', () => {
-  it('does not announce a renewed invitation when retry is rejected', async () => {
-    const user = userEvent.setup(), seed = createDemoSeed(), now = Date.now()
-    setup(true, { users: seed.users.map(u => u.id === 'usr-friend-01' ? { ...u, status: 'locked' } : u), friendInvitations: [{ id: 'old-out', senderId: 'usr-customer-01', recipientEmail: 'friend@stylemind.vn', status: 'PENDING', delivery: 'SENT', createdAt: now - 9 * 86400000, lastAttemptAt: now - 60000, expiresAt: now - 1 }] })
-    await user.click(await screen.findByRole('button', { name: /Đã gửi/ }))
-    await user.click(screen.getByRole('button', { name: 'Gửi lại' }))
-    expect(await screen.findByText(/Tài khoản này không thể nhận lời mời/)).toBeInTheDocument()
-    expect(screen.queryByText(/Đã làm mới lời mời/)).not.toBeInTheDocument()
-  })
+
+describe('Friends route with API', () => {
   it('requires sign-in and preserves the intended route', async () => {
-    const router = setup(false)
+    const router = renderFriends(false)
     expect(await screen.findByRole('heading', { name: 'Đăng nhập' })).toBeInTheDocument()
     expect(router.state.location.state.from.pathname).toBe('/friends')
   })
-  it('accepts an invitation then removes the friend only after confirmation', async () => {
-    const user = userEvent.setup(); setup()
-    expect(await screen.findByRole('heading', { name: 'Bạn bè' })).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: /Đã nhận/ }))
-    await user.click(screen.getByRole('button', { name: 'Chấp nhận' }))
-    await user.click(screen.getByRole('button', { name: /Bạn bè \(/ }))
-    expect(screen.getByRole('heading', { name: 'Lê Mai' })).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Hủy kết bạn với Lê Mai' }))
+
+  it('only removes a friend after confirmation', async () => {
+    let removed = false
+    const fetcher = vi.fn(async (path: string, options: RequestInit) => {
+      if (path === '/api/v1/me') return response({ account_id: actor, email: 'real@example.test', profile: null })
+      if (options.method === 'DELETE') { removed = true; return new Response(null, { status: 204 }) }
+      if (path.includes('/me/friends?')) return response(page(removed ? [] : [{ friendship_id: invitation, friend_account_id: peer, email: 'friend@example.test', display_name: 'Bạn An' }]))
+      return response(page([]))
+    })
+    vi.stubGlobal('fetch', fetcher)
+    renderFriends()
+    const user = userEvent.setup()
+    expect(await screen.findByText('friend@example.test (Bạn An)')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Hủy kết bạn' }))
     await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Giữ bạn bè' }))
-    expect(screen.getByRole('heading', { name: 'Lê Mai' })).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Hủy kết bạn với Lê Mai' }))
+    expect(removed).toBe(false)
+    await user.click(screen.getByRole('button', { name: 'Hủy kết bạn' }))
     await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Hủy kết bạn' }))
-    expect(screen.queryByRole('heading', { name: 'Lê Mai' })).not.toBeInTheDocument()
-    await waitFor(() => expect(JSON.parse(window.localStorage.getItem(DEMO_STORAGE_KEY)!).friendships[0].active).toBe(false))
+    await waitFor(() => expect(removed).toBe(true))
+    await waitFor(() => expect(screen.queryByText('friend@example.test (Bạn An)')).not.toBeInTheDocument())
+    expect(fetcher.mock.calls.filter(([, options]) => options.method === 'DELETE')).toHaveLength(1)
   })
-  it('adds one normalized outgoing invitation and shows validation for duplicates', async () => {
-    const user = userEvent.setup(); setup()
+
+  it('sends a normalized email and displays a duplicate rejection', async () => {
+    const fetcher = vi.fn(async (path: string, options: RequestInit) => {
+      if (path === '/api/v1/me') return response({ account_id: actor, email: 'real@example.test', profile: null })
+      if (options.method === 'POST') return response({ code: 'INVITATION_ALREADY_PENDING', detail: 'Lời mời đã tồn tại.' }, 409)
+      return response(page([]))
+    })
+    vi.stubGlobal('fetch', fetcher)
+    renderFriends()
+    const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: 'Mời bạn bè' }))
-    await user.type(screen.getByLabelText('Email người nhận'), 'new@example.test')
-    await user.click(screen.getByRole('button', { name: 'Thêm lời mời' }))
-    await user.click(screen.getByRole('button', { name: 'Mời bạn bè' }))
-    await user.type(screen.getByLabelText('Email người nhận'), 'new@example.test')
-    await user.click(screen.getByRole('button', { name: 'Thêm lời mời' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent(/đã có lời mời/i)
-    expect(JSON.parse(window.localStorage.getItem(DEMO_STORAGE_KEY)!).friendInvitations.filter((i: { recipientEmail: string }) => i.recipientEmail === 'new@example.test')).toHaveLength(1)
+    await user.type(screen.getByLabelText('Email người nhận'), 'Friend@Example.Test')
+    await user.click(screen.getByRole('button', { name: 'Gửi lời mời' }))
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+    const request = fetcher.mock.calls.find(([, options]) => options.method === 'POST')
+    expect(JSON.parse(String(request?.[1].body))).toEqual({ recipient_email: 'friend@example.test' })
+    expect(screen.queryByText(/Máy chủ email đã tiếp nhận/)).not.toBeInTheDocument()
+  })
+
+  it('does not claim success if resending is rejected', async () => {
+    const fetcher = vi.fn(async (path: string, options: RequestInit) => {
+      if (path === '/api/v1/me') return response({ account_id: actor, email: 'real@example.test', profile: null })
+      if (path.endsWith('/resend')) return response({ code: 'EMAIL_DELIVERY_FAILED', detail: 'Gửi email không thành công.' }, 503)
+      if (path.includes('/me/friend-invitations?')) return response(page([{ friend_invitation_id: invitation, recipient_email: 'friend@example.test', status: 'EXPIRED', expires_at: '2026-01-01' }]))
+      return response(page([]))
+    })
+    vi.stubGlobal('fetch', fetcher)
+    renderFriends()
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: /Đã gửi/ }))
+    await user.click(await screen.findByRole('button', { name: 'Gửi lại' }))
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+    expect(screen.queryByText(/Máy chủ email đã tiếp nhận/)).not.toBeInTheDocument()
   })
 })

@@ -35,7 +35,7 @@ export default function WardrobeScreen({ app }: { app: AppState }) {
           <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 32, color: "#222222", marginBottom: 6 }}>
             My Wardrobe
           </h1>
-          <p style={{ color: "#6F6B67", fontSize: 14 }}>
+          <p style={{ color: "#5E5F5D", fontSize: 14 }}>
             {mockWardrobeItems.length} items · {mockWardrobeItems.filter((i) => i.favorite).length} favorites · StyleMind can build 24 outfits
           </p>
         </div>
@@ -51,22 +51,22 @@ export default function WardrobeScreen({ app }: { app: AppState }) {
 
       {/* AI Insights bar */}
       <div style={{
-        background: "linear-gradient(135deg, #F4E7E8 0%, #EEE8E1 100%)",
+        background: "linear-gradient(135deg, #E9E8E7 0%, #EFEDED 100%)",
         borderRadius: 14, padding: "16px 20px", marginBottom: 28,
         border: "1px solid #D9C8D0",
       }}>
-        <div style={{ fontSize: 11, color: "#684B5A", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 12 }}>
+        <div style={{ fontSize: 11, color: "#1C1B1B", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 12 }}>
           ✦ StyleMind Wardrobe Insights
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
           {AI_INSIGHTS.map((insight) => (
             <div key={insight.item} style={{ background: "rgba(250,248,245,0.8)", borderRadius: 10, padding: "12px 14px" }}>
               <div style={{ fontSize: 13, fontWeight: 500, color: "#222222", marginBottom: 4 }}>{insight.item}</div>
-              <div style={{ fontSize: 12, color: "#6F6B67", lineHeight: 1.6, marginBottom: 8 }}>{insight.insight}</div>
+              <div style={{ fontSize: 12, color: "#5E5F5D", lineHeight: 1.6, marginBottom: 8 }}>{insight.insight}</div>
               <button
                 className="btn-ghost"
                 onClick={() => app.navigate(insight.screen)}
-                style={{ fontSize: 11, padding: 0, color: "#684B5A" }}
+                style={{ fontSize: 11, padding: 0, color: "#1C1B1B" }}
               >
                 {insight.cta} →
               </button>
@@ -106,7 +106,7 @@ export default function WardrobeScreen({ app }: { app: AppState }) {
 
       {/* Category tabs */}
       <div style={{ overflowX: "auto", marginBottom: 24 }}>
-        <div style={{ display: "flex", gap: 0, borderBottom: "1.5px solid #EEE8E1", minWidth: "max-content" }}>
+        <div style={{ display: "flex", gap: 0, borderBottom: "1.5px solid #EFEDED", minWidth: "max-content" }}>
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
@@ -148,7 +148,7 @@ export default function WardrobeScreen({ app }: { app: AppState }) {
                 </div>
               </div>
               <div style={{ padding: "12px 14px" }}>
-                <div style={{ fontSize: 10, color: "#6F6B67", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 500, marginBottom: 3 }}>
+                <div style={{ fontSize: 10, color: "#5E5F5D", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 500, marginBottom: 3 }}>
                   {item.category}
                 </div>
                 <div style={{ fontSize: 13.5, color: "#222222", fontWeight: 500, marginBottom: 2, lineHeight: 1.3 }}>{item.name}</div>
@@ -166,8 +166,8 @@ export default function WardrobeScreen({ app }: { app: AppState }) {
                   </button>
                   <button
                     style={{
-                      border: "1.5px solid #EEE8E1", borderRadius: 6, background: "white",
-                      padding: "5px 8px", cursor: "pointer", color: "#6F6B67", fontSize: 12,
+                      border: "1.5px solid #EFEDED", borderRadius: 6, background: "white",
+                      padding: "5px 8px", cursor: "pointer", color: "#5E5F5D", fontSize: 12,
                     }}
                     title="Edit item"
                   >
@@ -186,7 +186,7 @@ export default function WardrobeScreen({ app }: { app: AppState }) {
               <h3 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, color: "#222222", marginBottom: 10 }}>
                 Your wardrobe is ready to become smarter.
               </h3>
-              <p style={{ color: "#6F6B67", fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
+              <p style={{ color: "#5E5F5D", fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
                 Add your first item and let StyleMind start building outfits around what you already own.
               </p>
               <button className="btn-primary" onClick={() => setShowAddModal(true)}>Add Your First Item</button>
@@ -194,7 +194,7 @@ export default function WardrobeScreen({ app }: { app: AppState }) {
           ) : (
             <>
               <div style={{ fontSize: 32, marginBottom: 12 }}>✦</div>
-              <p style={{ color: "#6F6B67" }}>No items match your search.</p>
+              <p style={{ color: "#5E5F5D" }}>No items match your search.</p>
               <button className="btn-ghost" onClick={() => { setSearchQuery(""); setActiveCategory("All"); }}>Clear filters</button>
             </>
           )}
@@ -218,7 +218,7 @@ export default function WardrobeScreen({ app }: { app: AppState }) {
               <h3 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, color: "#222222" }}>
                 Add to Wardrobe
               </h3>
-              <button onClick={() => setShowAddModal(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#6F6B67" }}>×</button>
+              <button onClick={() => setShowAddModal(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#5E5F5D" }}>×</button>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
@@ -235,14 +235,14 @@ export default function WardrobeScreen({ app }: { app: AppState }) {
                 >
                   <div style={{ fontSize: 28, marginBottom: 8 }}>{opt.icon}</div>
                   <div style={{ fontSize: 14, fontWeight: 500, color: "#222222", marginBottom: 4 }}>{opt.label}</div>
-                  <div style={{ fontSize: 12, color: "#6F6B67" }}>{opt.sub}</div>
+                  <div style={{ fontSize: 12, color: "#5E5F5D" }}>{opt.sub}</div>
                 </div>
               ))}
             </div>
 
             <div style={{ padding: 14, background: "#F5EFE8", borderRadius: 10, marginBottom: 20 }}>
-              <div style={{ fontSize: 12, color: "#684B5A", marginBottom: 4, fontWeight: 500 }}>Note</div>
-              <div style={{ fontSize: 12.5, color: "#6F6B67", lineHeight: 1.6 }}>
+              <div style={{ fontSize: 12, color: "#1C1B1B", marginBottom: 4, fontWeight: 500 }}>Note</div>
+              <div style={{ fontSize: 12.5, color: "#5E5F5D", lineHeight: 1.6 }}>
                 StyleMind will use the details you add to generate outfit recommendations. You can always edit or remove items later.
               </div>
             </div>

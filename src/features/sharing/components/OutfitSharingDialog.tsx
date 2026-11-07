@@ -46,21 +46,21 @@ export default function OutfitSharingDialog({ outfit }: { outfit: Outfit }) {
       <div data-outfit-sharing>
         <fieldset className="grid gap-3">
           <legend className="sr-only">Chế độ hiển thị Outfit</legend>
-          {choices.map(({ value, label, description, icon: Icon }) => <label key={value} className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${draft === value ? 'border-[#684B5A] bg-[#F4E7E8]/50' : 'border-[#E3DAD0] bg-white hover:bg-[#FAF8F5]'}`}>
-            <input type="radio" name="outfit-visibility" value={value} checked={draft === value} onChange={() => { setDraft(value); setCopyState('idle') }} className="mt-1 accent-[#684B5A]" />
-            <Icon size={19} className="mt-0.5 shrink-0 text-[#684B5A]" aria-hidden="true" />
-            <span className="min-w-0"><span className="block text-sm font-semibold text-[#222222]">{label}</span><span className="mt-1 block text-xs leading-6 text-[#6F6B67]">{description}</span></span>
+          {choices.map(({ value, label, description, icon: Icon }) => <label key={value} className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${draft === value ? 'border-[#1C1B1B] bg-[#E9E8E7]/50' : 'border-[#E3E2E2] bg-white hover:bg-[#FBF9F9]'}`}>
+            <input type="radio" name="outfit-visibility" value={value} checked={draft === value} onChange={() => { setDraft(value); setCopyState('idle') }} className="mt-1 accent-[#1C1B1B]" />
+            <Icon size={19} className="mt-0.5 shrink-0 text-[#1C1B1B]" aria-hidden="true" />
+            <span className="min-w-0"><span className="block text-sm font-semibold text-[#222222]">{label}</span><span className="mt-1 block text-xs leading-6 text-[#5E5F5D]">{description}</span></span>
           </label>)}
         </fieldset>
-        <p className="mt-4 text-xs leading-6 text-[#6F6B67]">Mời hoặc chấp nhận kết bạn không tự thay đổi chế độ Outfit. Người xem chỉ xem được Outfit và các sản phẩm trong đó.</p>
-        {draft === 'public' && <div className="mt-4 rounded-lg bg-[#EEE8E1]/70 p-4">
+        <p className="mt-4 text-xs leading-6 text-[#5E5F5D]">Mời hoặc chấp nhận kết bạn không tự thay đổi chế độ Outfit. Người xem chỉ xem được Outfit và các sản phẩm trong đó.</p>
+        {draft === 'public' && <div className="mt-4 rounded-lg bg-[#EFEDED]/70 p-4">
           {outfit.visibility === 'public' && publicUrl ? <>
-            <label className="grid gap-2 text-sm font-semibold text-[#3A3632]">Liên kết công khai<input readOnly value={publicUrl} onFocus={event => event.target.select()} className="min-h-11 min-w-0 w-full rounded-lg border border-[#D8D0C6] bg-white px-3 text-xs font-normal" /></label>
+            <label className="grid gap-2 text-sm font-semibold text-[#3A3632]">Liên kết công khai<input readOnly value={publicUrl} onFocus={event => event.target.select()} className="min-h-11 min-w-0 w-full rounded-lg border border-[#C4C7C7] bg-white px-3 text-xs font-normal" /></label>
             <Button className="mt-3" variant="secondary" icon={copyState === 'copied' ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />} onClick={async () => {
               try { await navigator.clipboard.writeText(publicUrl); setCopyState('copied') } catch { setCopyState('error') }
             }}>{copyState === 'copied' ? 'Đã sao chép' : 'Sao chép liên kết'}</Button>
             {copyState === 'error' && <p role="alert" className="mt-2 text-xs leading-6 text-[#A94B4B]">Không thể sao chép tự động. Chọn liên kết ở trên và sao chép thủ công.</p>}
-          </> : <p className="text-xs leading-6 text-[#6F6B67]">Lưu chế độ Công khai để kích hoạt liên kết. Tắt rồi bật lại sẽ dùng cùng liên kết.</p>}
+          </> : <p className="text-xs leading-6 text-[#5E5F5D]">Lưu chế độ Công khai để kích hoạt liên kết. Tắt rồi bật lại sẽ dùng cùng liên kết.</p>}
         </div>}
         <p className="mt-4 text-xs leading-6 text-[#8A8179]">Bản demo lưu trên trình duyệt này; chưa kết nối API chia sẻ.</p>
       </div>

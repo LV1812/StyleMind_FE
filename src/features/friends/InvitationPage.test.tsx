@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { afterEach, expect, it, vi } from 'vitest'
@@ -32,7 +32,7 @@ it('uses the new credential when another invitation opens in the same page', asy
   const router = createMemoryRouter(appRoutes, { initialEntries: [`/friend-invitations/accept#invitation_id=${first}&token=old`] })
   render(<AppProviders><RouterProvider router={router} /></AppProviders>)
   await screen.findByRole('button', { name: 'Chấp nhận kết bạn' })
-  await router.navigate(`/friend-invitations/accept#invitation_id=${second}&token=new`)
+  await act(async () => { await router.navigate(`/friend-invitations/accept#invitation_id=${second}&token=new`) })
   await userEvent.setup().click(await screen.findByRole('button', { name: 'Chấp nhận kết bạn' }))
   await waitFor(() => expect(fetcher.mock.calls.some(([path, options]) => path.endsWith('/friend-invitations/accept') && JSON.parse(options.body as string).friend_invitation_id === second && JSON.parse(options.body as string).token === 'new')).toBe(true))
 })

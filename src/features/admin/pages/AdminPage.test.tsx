@@ -1,15 +1,23 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { createDemoSeed } from '@/app/data/demoSeed'
 import { AppProviders } from '@/app/providers/AppProviders'
 import { appRoutes } from '@/app/router/AppRouter'
 import type { DemoDatabase } from '@/app/store/types'
 import { DEMO_STORAGE_KEY } from '@/shared/storage/demoStorage'
+import { commerceApi } from '@/api/commerce'
 
 let router: ReturnType<typeof createMemoryRouter>
+afterEach(() => vi.restoreAllMocks())
+
+function mockCommerceReads() {
+  vi.spyOn(commerceApi.products, 'list').mockResolvedValue({ items: [], page: 0, size: 100, total_elements: 0, total_pages: 0 })
+  vi.spyOn(commerceApi.categories, 'listAdmin').mockResolvedValue({ items: [{ id: 'tops', name: 'Áo', slug: 'tops', is_active: true }] })
+  vi.spyOn(commerceApi.orders, 'listAdmin').mockResolvedValue({ items: [], page: 0, size: 100, total_elements: 0, total_pages: 0 })
+}
 
 function setupUser() {
   return userEvent.setup({ delay: null })
@@ -125,6 +133,7 @@ describe('AdminPage', () => {
   })
 
   it('opens the products section from the sidebar query navigation', async () => {
+    mockCommerceReads()
     const user = setupUser()
     renderAt('/admin', adminDatabase())
 
@@ -180,6 +189,7 @@ describe('AdminPage', () => {
   })
 
   it('validates product price before saving', async () => {
+    mockCommerceReads()
     const user = setupUser()
     renderAt('/admin?section=products', adminDatabase())
 
@@ -382,92 +392,15 @@ describe('AdminPage', () => {
     expect(within(adminCard).getByRole('button', { name: 'Tạm khóa' })).toBeDisabled()
   })
 
-  it('adds and deactivates an AI metadata option', async () => {
-    const user = setupUser()
-    renderAt('/admin?section=ai', adminDatabase())
-
-    await user.click(await screen.findByRole('button', { name: 'Thêm thuộc tính AI' }))
-    fireEvent.change(screen.getByLabelText('Nhóm dữ liệu'), { target: { value: 'styles' } })
-    fireEvent.change(screen.getByLabelText('ID thuộc tính'), { target: { value: 'style-test' } })
-    fireEvent.change(screen.getByLabelText('Tên hiển thị'), { target: { value: 'Phong cách test' } })
-    await user.click(screen.getByRole('button', { name: 'Lưu thuộc tính' }))
-
-    expect(await screen.findByText('Phong cách test')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Tắt thuộc tính style-test' }))
-
-    await waitFor(() => {
-      const option = getDatabase().fashionMetadata.styles.find(item => item.id === 'style-test')
-      expect(option).toMatchObject({ label: 'Phong cách test', active: false })
-    })
-  })
-
-  it('edits an AI metadata option', async () => {
-    const user = setupUser()
-    renderAt('/admin?section=ai', adminDatabase())
-
-    await user.click(await screen.findByRole('button', { name: 'Sửa thuộc tính minimal' }))
-    fireEvent.change(screen.getByLabelText('Tên hiển thị'), { target: { value: 'Tối giản chỉnh sửa' } })
-    await user.click(screen.getByRole('button', { name: 'Lưu thuộc tính' }))
-
-    await waitFor(() => {
-      expect(getDatabase().fashionMetadata.styles.find(item => item.id === 'minimal')).toMatchObject({
-        label: 'Tối giản chỉnh sửa',
-        active: true,
-      })
-    })
-  })
-
-  it('adds and deactivates a compatibility rule', async () => {
-    const user = setupUser()
-    renderAt('/admin?section=ai', adminDatabase())
-
-    await user.click(await screen.findByRole('button', { name: 'Luật tương thích' }))
-    await user.click(screen.getByRole('button', { name: 'Thêm luật' }))
-    fireEvent.change(screen.getByLabelText('ID luật'), { target: { value: 'rule-test' } })
-    fireEvent.change(screen.getByLabelText('Nguồn'), { target: { value: 'style:minimal' } })
-    fireEvent.change(screen.getByLabelText('Đích'), { target: { value: 'occasion:work' } })
-    fireEvent.change(screen.getByLabelText('Điểm'), { target: { value: '82' } })
-    fireEvent.change(screen.getByLabelText('Ghi chú'), { target: { value: 'Demo rule cho admin' } })
-    await user.click(screen.getByRole('button', { name: 'Lưu luật' }))
-
-    expect(await screen.findByText('rule-test')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Tắt luật rule-test' }))
-
-    await waitFor(() => {
-      const rule = getDatabase().compatibilityRules.find(item => item.id === 'rule-test')
-      expect(rule).toMatchObject({ sourceType: 'style:minimal', targetType: 'occasion:work', score: 82, active: false })
-    })
-  })
-
-  it('edits a compatibility rule', async () => {
-    const user = setupUser()
-    const database = {
-      ...adminDatabase(),
-      compatibilityRules: [
-        {
-          id: 'rule-edit',
-          sourceType: 'style:minimal',
-          targetType: 'occasion:work',
-          score: 40,
-          note: 'Luật trước khi sửa',
-          active: true,
-        },
-      ],
-    }
+  it('shows unsupported AI administration without modifying demo metadata', async () => {
+    const database = adminDatabase()
     renderAt('/admin?section=ai', database)
 
-    await user.click(await screen.findByRole('button', { name: 'Luật tương thích' }))
-    await user.click(screen.getByRole('button', { name: 'Sửa luật rule-edit' }))
-    fireEvent.change(screen.getByLabelText('Điểm'), { target: { value: '91' } })
-    fireEvent.change(screen.getByLabelText('Ghi chú'), { target: { value: 'Luật đã sửa' } })
-    await user.click(screen.getByRole('button', { name: 'Lưu luật' }))
-
-    await waitFor(() => {
-      expect(getDatabase().compatibilityRules.find(item => item.id === 'rule-edit')).toMatchObject({
-        score: 91,
-        note: 'Luật đã sửa',
-        active: true,
-      })
-    })
+    expect(await screen.findByRole('heading', { name: 'Quản lý AI' })).toBeInTheDocument()
+    expect(await screen.findByText('Chức năng chưa hỗ trợ.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Thêm thuộc tính AI' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Thêm luật' })).not.toBeInTheDocument()
+    expect(getDatabase().fashionMetadata).toEqual(database.fashionMetadata)
+    expect(getDatabase().compatibilityRules).toEqual(database.compatibilityRules)
   })
 })

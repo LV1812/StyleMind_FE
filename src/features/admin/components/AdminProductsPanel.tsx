@@ -286,12 +286,12 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
     <section className="grid gap-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-semibold text-[#684B5A]">Danh mục bán hàng</p>
+          <p className="text-sm font-semibold text-[#1C1B1B]">Danh mục bán hàng</p>
           <h1 className="mt-2 font-display text-3xl font-semibold leading-tight text-[#222222] md:text-4xl">
             Quản lý sản phẩm
           </h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6F6B67]">
-            Cập nhật danh sách quần áo nữ dùng chung cho cửa hàng và gợi ý AI.
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#5E5F5D]">
+            Quản lý danh sách sản phẩm và biến thể trong cửa hàng.
           </p>
         </div>
         <Button type="button" onClick={openCreateModal} icon={<Plus size={17} aria-hidden="true" />}>
@@ -299,7 +299,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
         </Button>
       </div>
 
-      <div className="grid gap-3 rounded-lg bg-white p-4 shadow-[0_10px_28px_rgba(58,54,50,0.07)] md:grid-cols-[minmax(220px,1fr)_180px_180px]">
+      <div className="grid gap-3 rounded-lg border border-[#E3E2E2] bg-white p-4 md:grid-cols-2 xl:grid-cols-[minmax(180px,1fr)_180px_180px]">
         <TextField
           label="Tìm sản phẩm"
           value={filters.query ?? ''}
@@ -329,10 +329,11 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
         </SelectField>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-[#E5E0D8] bg-white shadow-[0_8px_24px_rgba(58,54,50,0.06)]">
-        <div className="overflow-x-auto">
+      <div className="overflow-hidden rounded-lg border border-[#E3E2E2] bg-white">
+        <p className="border-b border-[#E3E2E2] px-4 py-2 text-xs text-[#5E5F5D] lg:hidden">Vuốt ngang để xem toàn bộ thông tin sản phẩm.</p>
+        <div className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1C1B1B]" role="region" aria-label="Bảng sản phẩm" tabIndex={0}>
           <table className="w-full min-w-[920px] border-collapse text-left text-sm">
-            <thead className="bg-[#FAF8F5] text-xs font-semibold uppercase tracking-wide text-[#6F6B67]">
+            <thead className="bg-[#FBF9F9] text-xs font-semibold uppercase tracking-wide text-[#5E5F5D]">
               <tr>
                 <th scope="col" className="px-4 py-3">Sản phẩm</th>
                 <th scope="col" className="px-4 py-3">Danh mục</th>
@@ -344,24 +345,24 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
             </thead>
             <tbody className="divide-y divide-[#E5E0D8]">
               {rows.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-[#6F6B67]">Không có sản phẩm phù hợp.</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-[#5E5F5D]">Không có sản phẩm phù hợp.</td></tr>
               ) : rows.map(row => {
                 const isExpanded = expandedProductId === row.id
                 const variantsTableId = `variants-${row.id}`
 
                 return (
                   <Fragment key={row.id}>
-                    <tr className="align-middle hover:bg-[#FAF8F5]/70">
+                    <tr className="align-middle hover:bg-[#FBF9F9]/70">
                       <td className="px-4 py-3">
                         <div className="flex min-w-56 items-center gap-3">
                           {row.imageUrl ? (
                             <img src={row.imageUrl} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
                           ) : (
-                            <span aria-hidden="true" className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-[#F5F2EE] text-[10px] font-semibold text-[#6F6B67]">Ảnh</span>
+                            <span aria-hidden="true" className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-[#F5F2EE] text-[10px] font-semibold text-[#5E5F5D]">Ảnh</span>
                           )}
                           <span className="min-w-0">
                             <span className="block truncate font-semibold text-[#222222]">{row.name}</span>
-                            <span className="mt-0.5 block truncate text-xs text-[#6F6B67]">{row.id} · {row.brand}</span>
+                            <span className="mt-0.5 block truncate text-xs text-[#5E5F5D]">{row.id} · {row.brand}</span>
                           </span>
                         </div>
                       </td>
@@ -373,7 +374,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                           aria-expanded={isExpanded}
                           aria-controls={variantsTableId}
                           onClick={() => setExpandedProductId(current => current === row.id ? null : row.id)}
-                          className="inline-flex h-9 items-center gap-2 rounded-md border border-[#E5E0D8] bg-[#FAF8F5] px-3 text-xs font-semibold text-[#3A3632] transition hover:bg-[#EEE8E1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] focus-visible:ring-offset-2"
+                          className="inline-flex h-9 items-center gap-2 rounded-md border border-[#E5E0D8] bg-[#FBF9F9] px-3 text-xs font-semibold text-[#3A3632] transition hover:bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] focus-visible:ring-offset-2"
                         >
                           {row.variantCount} biến thể
                           <ChevronDown aria-hidden="true" size={14} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
@@ -416,11 +417,11 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                     </tr>
                     {isExpanded && (
                       <tr>
-                        <td colSpan={6} className="bg-[#FAF8F5] px-4 py-3">
+                        <td colSpan={6} className="bg-[#FBF9F9] px-4 py-3">
                           <div id={variantsTableId} className="overflow-x-auto rounded-lg border border-[#E5E0D8] bg-white">
                             <table className="w-full min-w-[540px] text-left text-sm">
                               <caption className="sr-only">Biến thể của {row.name}</caption>
-                              <thead className="bg-[#F5F2EE] text-xs font-semibold text-[#6F6B67]">
+                              <thead className="bg-[#F5F2EE] text-xs font-semibold text-[#5E5F5D]">
                                 <tr>
                                   <th scope="col" className="px-3 py-2">Màu</th>
                                   <th scope="col" className="px-3 py-2">Cỡ</th>
@@ -433,7 +434,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                                   <tr key={variant.id}>
                                     <td className="px-3 py-2.5">
                                       <span className="inline-flex items-center gap-2 text-[#3A3632]">
-                                        <span aria-hidden="true" className="h-3.5 w-3.5 rounded-full border border-[#D8D0C6]" style={{ backgroundColor: variant.colorHex }} />
+                                        <span aria-hidden="true" className="h-3.5 w-3.5 rounded-full border border-[#C4C7C7]" style={{ backgroundColor: variant.colorHex }} />
                                         {variant.color}
                                       </span>
                                     </td>
@@ -483,13 +484,15 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
 
       <Modal
         open={modalOpen}
+        layout="drawer"
         title={editingProductId ? 'Sửa sản phẩm' : 'Thêm sản phẩm'}
-        description="Tạo hoặc cập nhật sản phẩm với metadata, biến thể màu và ảnh đại diện."
+        description="Điền thông tin sản phẩm và phiên bản để hiển thị trong cửa hàng."
         onClose={() => setModalOpen(false)}
       >
-        <form className="grid gap-4" onSubmit={handleSubmit}>
-          {formError && <p className="rounded-lg bg-[#FCEAEA] p-3 text-sm font-semibold text-[#A94B4B]">{formError}</p>}
-          <div className="grid gap-3 md:grid-cols-2">
+        <form className="grid gap-5" onSubmit={handleSubmit}>
+          {formError && <p role="alert" className="rounded-lg border border-[#E7BBBB] bg-[#FCEAEA] p-3 text-sm font-semibold text-[#A94B4B]">{formError}</p>}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="border-b border-[#E3E2E2] pb-3 sm:col-span-2"><h3 className="font-display text-xl font-semibold">Thông tin sản phẩm</h3><p className="mt-1 text-sm text-[#5E5F5D]">Tên, danh mục và thông tin hiển thị trong cửa hàng.</p></div>
             <TextField
               label="ID sản phẩm"
               value={form.id}
@@ -510,6 +513,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
             <TextField label="Chất liệu" value={form.material} onChange={event => updateField('material', event.target.value)} />
             <TextField label="Phom dáng" value={form.fit} onChange={event => updateField('fit', event.target.value)} />
             <TextField label="Họa tiết" value={form.pattern} onChange={event => updateField('pattern', event.target.value)} />
+            <div className="mt-2 border-b border-[#E3E2E2] pb-3 sm:col-span-2"><h3 className="font-display text-xl font-semibold">Phong cách và tìm kiếm</h3></div>
             <SelectField label="Phong cách" value={form.styleId} onChange={event => updateField('styleId', event.target.value)}>
               <option value="">Chưa chọn</option>
               {database.fashionMetadata.styles.map(option => (
@@ -527,6 +531,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
               ))}
             </SelectField>
             <TextField label="Thẻ tìm kiếm" value={form.tags} onChange={event => updateField('tags', event.target.value)} />
+            <div className="mt-2 border-b border-[#E3E2E2] pb-3 sm:col-span-2"><h3 className="font-display text-xl font-semibold">Phiên bản sản phẩm</h3><p className="mt-1 text-sm text-[#5E5F5D]">Màu sắc, kích thước, giá và hình ảnh.</p></div>
             <TextField label="Màu" value={form.color} onChange={event => updateField('color', event.target.value)} />
             <TextField label="Mã màu" value={form.colorHex} onChange={event => updateField('colorHex', event.target.value)} />
             <SelectField label="Size" value={form.size} onChange={event => updateField('size', event.target.value as ProductSize)}>
@@ -546,13 +551,13 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
             <TextField label="URL ảnh" value={form.imageUrl} onChange={event => updateField('imageUrl', event.target.value)} />
           </div>
           <TextField label="Mô tả" value={form.description} onChange={event => updateField('description', event.target.value)} />
-          <div className="grid gap-2 rounded-lg border border-[#E3DAD0] bg-white p-3 sm:grid-cols-2">
+          <div className="grid gap-2 rounded-lg border border-[#E3E2E2] bg-white p-3 sm:grid-cols-2">
             <label className="inline-flex items-center gap-3 text-sm font-semibold text-[#3A3632]">
               <input
                 type="checkbox"
                 checked={form.productActive}
                 onChange={event => updateField('productActive', event.target.checked)}
-                className="h-4 w-4 accent-[#684B5A]"
+                className="h-4 w-4 accent-[#1C1B1B]"
               />
               Sản phẩm đang bán
             </label>
@@ -561,12 +566,12 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                 type="checkbox"
                 checked={form.variantActive}
                 onChange={event => updateField('variantActive', event.target.checked)}
-                className="h-4 w-4 accent-[#684B5A]"
+                className="h-4 w-4 accent-[#1C1B1B]"
               />
               Biến thể đang bật
             </label>
           </div>
-          <div className="flex flex-wrap justify-end gap-3">
+          <div className="flex flex-wrap justify-end gap-3 border-t border-[#E3E2E2] pt-5">
             <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>
               Hủy
             </Button>

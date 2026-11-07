@@ -19,7 +19,7 @@ const colorPalette = [
   { name: "Trắng ngà", hex: '#F5EDD8' },
   { name: "Be cát", hex: '#E8DDD2' },
   { name: "Nâu camel", hex: '#C8A882' },
-  { name: "Tím mận đậm", hex: '#684B5A' },
+  { name: "Tím mận đậm", hex: '#1C1B1B' },
   { name: "Hồng trầm", hex: '#B98791' },
   { name: "Đen than", hex: '#222222' },
   { name: "Xanh xám", hex: '#2B3A54' },

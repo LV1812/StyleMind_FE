@@ -66,6 +66,7 @@ export function AccountPage() {
   const [savingProfile, setSavingProfile] = useState(false)
   const [savingStyle, setSavingStyle] = useState(false)
   const [loadError, setLoadError] = useState('')
+  const [loadVersion, setLoadVersion] = useState(0)
   const [profileMessage, setProfileMessage] = useState('')
   const [styleMessage, setStyleMessage] = useState('')
   const [addressCount, setAddressCount] = useState(0)
@@ -102,7 +103,7 @@ export function AccountPage() {
     return () => {
       active = false
     }
-  }, [userId])
+  }, [userId, loadVersion])
 
   if (!currentUser) return null
 
@@ -159,28 +160,29 @@ export function AccountPage() {
   }
 
   return (
-    <section className="mx-auto grid max-w-[var(--container-wide)] gap-8 px-5 py-8 md:px-8 md:py-12">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <section className="mx-auto grid max-w-5xl gap-8 px-5 py-10 md:px-8 md:py-12">
+      <div className="flex flex-col gap-4 border-b border-[#E3E2E2] pb-7 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[#684B5A]">StyleMind</p>
+          <p className="text-sm font-medium text-[#5E5F5D]">Tài khoản của tôi</p>
           <h1 className="mt-2 font-display text-4xl font-semibold leading-tight text-[#222222]">Tài khoản</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6F6B67]">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5E5F5D]">
             Quản lý thông tin hồ sơ, số đo, lựa chọn phong cách và địa chỉ giao hàng.
           </p>
-          <p className="mt-2 text-sm text-[#6F6B67]">{currentUser.email}</p>
+          <p className="mt-2 text-sm text-[#5E5F5D]">{currentUser.email}</p>
         </div>
         <Link
           to={ROUTES.addresses}
-          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#684B5A] px-4 text-sm font-semibold text-white transition hover:bg-[#593f4d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#1C1B1B] px-4 text-sm font-semibold text-white transition hover:bg-[#444746] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
         >
           Quản lý địa chỉ
         </Link>
       </div>
 
-      {loading && <p className="text-sm text-[#6F6B67]" role="status">Đang tải thông tin tài khoản…</p>}
-      {loadError && <p className="rounded-lg bg-[#FCEAEA] px-4 py-3 text-sm font-semibold text-[#A94B4B]">{loadError}</p>}
+      {loading && <p className="text-sm text-[#5E5F5D]" role="status">Đang tải thông tin tài khoản…</p>}
+      {loadError && <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#FCEAEA] px-4 py-3"><p role="alert" className="text-sm font-semibold text-[#A94B4B]">{loadError}</p><Button type="button" variant="secondary" onClick={() => setLoadVersion(value => value + 1)}>Thử tải lại</Button></div>}
 
-      <section className="grid gap-4 rounded-lg border border-[#E3DAD0] bg-white p-5 shadow-sm">
+      {!loading && !loadError && <>
+      <section className="grid gap-4 rounded-lg border border-[#E3E2E2] bg-white p-5 sm:p-7">
         <ProfileForm value={profileDraft} errors={profileErrors} onChange={setProfileDraft} />
         <div className="flex flex-wrap items-center gap-3">
           <Button type="button" loading={savingProfile} disabled={loading} onClick={handleProfileSave}>Lưu hồ sơ</Button>
@@ -188,11 +190,11 @@ export function AccountPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 rounded-lg border border-[#E3DAD0] bg-white p-5 shadow-sm">
+      <section className="grid gap-4 rounded-lg border border-[#E3E2E2] bg-white p-5 sm:p-7">
         <div>
           <h2 className="font-display text-2xl font-semibold text-[#222222]">Thông tin vóc dáng và phong cách</h2>
-          <p className="mt-2 text-sm leading-6 text-[#6F6B67]">
-            Các danh sách mã được phân tách bằng dấu phẩy. Để xóa danh sách, để trống trường tương ứng.
+          <p className="mt-2 text-sm leading-6 text-[#5E5F5D]">
+            Cập nhật số đo và kích cỡ thường dùng của bạn.
           </p>
         </div>
         <BodyInfoForm value={styleDraft} errors={styleErrors} onChange={setStyleDraft} />
@@ -201,9 +203,10 @@ export function AccountPage() {
           {styleMessage && <p className="text-sm font-semibold text-[#3A3632]" role="status">{styleMessage}</p>}
         </div>
       </section>
+      </>}
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Shortcut label="Địa chỉ" value={`${addressCount} địa chỉ`} to={ROUTES.addresses} />
+        <Shortcut label="Địa chỉ" value={loading || loadError ? 'Xem địa chỉ' : `${addressCount} địa chỉ`} to={ROUTES.addresses} />
         <Shortcut label="Đơn hàng" value={apiMode() ? 'Xem đơn hàng' : `${orders.length} đơn`} to={ROUTES.orders} />
         <Shortcut label="Thông báo" value={apiMode() ? 'Xem thông báo' : `${unreadCount} chưa đọc`} to={ROUTES.notifications} />
         <Shortcut label="Tủ đồ" value={apiMode() ? 'Xem tủ đồ' : `${outfits.length} outfit`} to={ROUTES.wardrobes} />
@@ -216,10 +219,10 @@ function Shortcut({ label, value, to }: { label: string; value: string; to: stri
   return (
     <Link
       to={to}
-      className="rounded-lg border border-[#E3DAD0] bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+      className="rounded-lg border border-[#E3E2E2] bg-white p-5 transition hover:border-[#777] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
     >
-      <p className="text-sm font-semibold text-[#684B5A]">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-[#222222]">{value}</p>
+      <p className="text-sm font-semibold text-[#1C1B1B]">{label}</p>
+      <p className="mt-2 text-sm text-[#5E5F5D]">{value}</p>
     </Link>
   )
 }

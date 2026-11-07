@@ -7,13 +7,13 @@ interface AccessListProps {
 
 export function AccessList({ shares, onRevoke }: AccessListProps) {
   if (shares.length === 0) {
-    return <p className="text-sm leading-6 text-[#6F6B67]">Chưa chia sẻ riêng với email nào.</p>
+    return <p className="text-sm leading-6 text-[#5E5F5D]">Chưa chia sẻ riêng với email nào.</p>
   }
 
   return (
     <ul className="grid gap-2">
       {shares.map(share => (
-        <li key={share.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#FAF8F5] px-3 py-2">
+        <li key={share.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#FBF9F9] px-3 py-2">
           <span className="text-sm font-semibold text-[#222222]">{share.viewerEmail}</span>
           <button
             type="button"

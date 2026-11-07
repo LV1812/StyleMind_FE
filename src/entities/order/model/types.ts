@@ -1,7 +1,7 @@
 import type { AddressSnapshot } from '@/entities/address/model/types'
 
 export type PaymentMethod = 'cod' | 'vietqr'
-export type PaymentStatus = 'pending' | 'paid' | 'expired' | 'failed'
+export type PaymentStatus = 'pending' | 'paid' | 'expired' | 'failed' | 'unknown'
 export type OrderStatus =
   | 'pending'
   | 'payment_pending'
@@ -21,6 +21,7 @@ export interface OrderItemSnapshot {
   size: string
   quantity: number
   unitPrice: number
+  lineTotal?: number
   imageUrl: string
 }
 

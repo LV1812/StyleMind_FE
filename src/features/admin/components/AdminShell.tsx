@@ -2,11 +2,13 @@ import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   ClipboardList,
+  Bell,
   LayoutDashboard,
   Package,
   PanelLeftClose,
   PanelLeftOpen,
   ShoppingBag,
+  Settings,
   Sparkles,
   Store,
   Tags,
@@ -33,6 +35,8 @@ const navItems = [
   { id: 'orders', label: 'Đơn hàng', Icon: ShoppingBag },
   { id: 'requests', label: 'Yêu cầu', Icon: ClipboardList },
   { id: 'customers', label: 'Khách hàng', Icon: UsersRound },
+  { id: 'notifications', label: 'Thông báo', Icon: Bell },
+  { id: 'settings', label: 'Cài đặt', Icon: Settings },
   { id: 'ai', label: 'AI', Icon: Sparkles },
 ] satisfies { id: AdminSection; label: string; Icon: typeof LayoutDashboard }[]
 
@@ -60,12 +64,12 @@ export function AdminShell({ activeSection, adminName, adminEmail, onLogout, chi
 
   return (
     <div
-      className={`min-h-screen bg-[#F5F2EE] text-[#222222] transition-[grid-template-columns] duration-200 motion-reduce:transition-none lg:grid ${
+      className={`min-h-screen bg-[#FBF9F9] text-[#222222] transition-[grid-template-columns] duration-200 motion-reduce:transition-none lg:grid ${
         isSidebarCollapsed ? 'lg:grid-cols-[76px_minmax(0,1fr)]' : 'lg:grid-cols-[260px_minmax(0,1fr)]'
       }`}
     >
       <aside
-        className={`border-b border-[#E3DAD0] bg-[#25211F] px-4 py-4 text-white lg:sticky lg:top-0 lg:h-screen lg:self-start lg:overflow-y-auto lg:border-b-0 lg:border-r lg:border-[#3A3632] ${
+        className={`border-b border-[#E3E2E2] bg-white px-4 py-4 text-[#1C1B1B] lg:sticky lg:top-0 lg:h-screen lg:self-start lg:overflow-y-auto lg:border-b-0 lg:border-r ${
           isSidebarCollapsed ? 'lg:px-3' : ''
         }`}
       >
@@ -77,12 +81,12 @@ export function AdminShell({ activeSection, adminName, adminEmail, onLogout, chi
               isSidebarCollapsed ? 'lg:justify-center' : ''
             }`}
           >
-            <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#F4E7E8] font-display text-xl font-semibold text-[#684B5A]">
+            <span className="grid h-10 w-10 place-items-center rounded-lg bg-[#E9E8E7] font-display text-xl font-semibold text-[#1C1B1B]">
               S
             </span>
             <span className={isSidebarCollapsed ? 'lg:hidden' : ''}>
               <span className="block font-display text-xl font-semibold">StyleMind</span>
-              <span className="block text-sm font-semibold text-white/55">Quản trị</span>
+              <span className="block text-sm font-semibold text-[#5E5F5D]">Quản trị</span>
             </span>
           </Link>
 
@@ -93,7 +97,7 @@ export function AdminShell({ activeSection, adminName, adminEmail, onLogout, chi
             aria-expanded={!isSidebarCollapsed}
             aria-controls="admin-navigation"
             title={isSidebarCollapsed ? 'Mở rộng thanh điều hướng' : 'Thu gọn thanh điều hướng'}
-            className="hidden h-10 w-10 shrink-0 place-items-center rounded-lg text-white/70 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4A5B0] lg:grid"
+            className="hidden h-10 w-10 shrink-0 place-items-center rounded-lg text-[#5E5F5D] transition hover:bg-[#EFEDED] hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black lg:grid"
           >
             {isSidebarCollapsed ? <PanelLeftOpen aria-hidden="true" size={18} /> : <PanelLeftClose aria-hidden="true" size={18} />}
           </button>
@@ -119,7 +123,7 @@ export function AdminShell({ activeSection, adminName, adminEmail, onLogout, chi
                 aria-current={active ? 'page' : undefined}
                 title={isSidebarCollapsed ? item.label : undefined}
                 className={`inline-flex min-h-11 shrink-0 items-center gap-3 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-light ${
-                  active ? 'bg-blush text-accent active:bg-blush-dark' : 'text-white/85 hover:bg-white/10 hover:text-white active:bg-white/15'
+                  active ? 'bg-[#EFEDED] text-black' : 'text-[#5E5F5D] hover:bg-[#F5F3F3] hover:text-black'
                 } ${isSidebarCollapsed ? 'lg:justify-center lg:px-0 lg:py-3' : ''}`}
               >
                 <Icon aria-hidden="true" size={18} className="shrink-0" />
@@ -131,11 +135,11 @@ export function AdminShell({ activeSection, adminName, adminEmail, onLogout, chi
       </aside>
 
       <div className="min-w-0">
-        <header className="sticky top-0 z-[var(--z-sticky)] border-b border-[#E3DAD0] bg-[#FDFCFA]/95 px-4 py-3 backdrop-blur md:px-6">
+        <header className="sticky top-0 z-[var(--z-sticky)] border-b border-[#E3E2E2] bg-[#FFFFFF]/95 px-4 py-3 backdrop-blur md:px-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-semibold text-secondary">Tài khoản quản trị</p>
-              <p className="mt-1 text-sm font-semibold text-charcoal">
+              <p className="mt-1 break-words text-sm font-semibold text-charcoal">
                 {adminName} · {adminEmail}
               </p>
             </div>

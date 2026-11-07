@@ -1,208 +1,43 @@
-import { paymentApi } from '@/features/payments/api/paymentClient'
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
-
-import { createDemoSeed } from '@/app/data/demoSeed'
+import { afterEach, expect, it, vi } from 'vitest'
 import { AppProviders } from '@/app/providers/AppProviders'
 import { appRoutes } from '@/app/router/AppRouter'
-import type { DemoDatabase } from '@/app/store/types'
-import type { Outfit } from '@/entities/outfit/model/types'
-import type { ProductVariant } from '@/entities/product/model/types'
-import { DEMO_STORAGE_KEY } from '@/shared/storage/demoStorage'
+import { saveApiSession } from '@/test/communitySession'
 
-function databaseWithCustomer(overrides: Partial<DemoDatabase> = {}): DemoDatabase {
-  return {
-    ...createDemoSeed(),
-    session: { userId: 'usr-customer-01', persistent: true },
-    ...overrides,
-  }
-}
+const owner = '10000000-0000-0000-0000-000000000001'
+const outfitId = '20000000-0000-0000-0000-000000000002'
+const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status })
+const page = (items: unknown[]) => ({ items, page: 0, size: 20, total_elements: items.length, total_pages: items.length ? 1 : 0 })
+afterEach(() => { vi.unstubAllGlobals(); localStorage.clear(); sessionStorage.clear() })
 
-function persistDatabase(database: DemoDatabase) {
-  window.localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(database))
-}
-
-function getDatabase() {
-  const raw = window.localStorage.getItem(DEMO_STORAGE_KEY)
-  if (!raw) throw new Error('Expected database in localStorage')
-  return JSON.parse(raw) as DemoDatabase
-}
-
-function renderAt(initialEntry: string, database = databaseWithCustomer()) {
-  window.localStorage.clear()
-  persistDatabase(database)
-  const router = createMemoryRouter(appRoutes, { initialEntries: [initialEntry] })
-
-  render(
-    <AppProviders>
-      <RouterProvider router={router} />
-    </AppProviders>,
-  )
-
+function setup(path: string, api: (path: string) => Response) {
+  saveApiSession(`e30.${btoa(JSON.stringify({ sub: owner, roles: ['CUSTOMER'] }))}.sig`, Date.now() + 60000)
+  vi.stubGlobal('fetch', vi.fn(async (url: string) => url === '/api/v1/me' ? response({ account_id: owner, email: 'real@example.test', profile: null }) : api(String(url))))
+  const router = createMemoryRouter(appRoutes, { initialEntries: [path] })
+  render(<AppProviders><RouterProvider router={router} /></AppProviders>)
   return router
 }
 
-function databaseWithInactiveVariant(): DemoDatabase {
-  const database = databaseWithCustomer()
-  const product = database.products.find(item => item.id === 'prd-blouse-01')
-  if (!product) throw new Error('Expected blouse product')
-  const baseVariant = product.variants[0]
-  const inactiveVariant: ProductVariant = {
-    ...baseVariant,
-    id: 'var-blouse-inactive-test',
-    color: 'Xám tắt',
-    active: false,
-  }
+it('lists owner outfits from the API and links to creation', async () => {
+  setup('/wardrobes', url => url.includes('/me/outfits?') ? response(page([{ outfit_id: outfitId, name: 'Bộ đi làm', visibility: 'PRIVATE', item_count: 1 }])) : response(page([])))
+  expect(await screen.findByRole('link', { name: /Bộ đi làm/ })).toHaveAttribute('href', `/outfits/${outfitId}`)
+  expect(screen.getByRole('link', { name: 'Tạo Outfit' })).toHaveAttribute('href', '/wardrobes/new')
+  expect(screen.queryByRole('button', { name: 'Chia sẻ tủ đồ' })).not.toBeInTheDocument()
+})
 
-  return {
-    ...database,
-    products: database.products.map(item =>
-      item.id === product.id ? { ...item, variants: [...item.variants, inactiveVariant] } : item,
-    ),
-  }
-}
+it('shows a permission error without exposing a private outfit', async () => {
+  setup(`/shared-with-me/${owner}/outfits/${outfitId}`, url => url.includes('/outfits/') ? response({ code: 'FORBIDDEN' }, 403) : response(page([])))
+  expect(await screen.findByRole('alert')).toHaveTextContent('chưa có quyền')
+  expect(screen.queryByRole('button', { name: 'Đổi tên' })).not.toBeInTheDocument()
+})
 
-describe('Wardrobe flow', () => {
-  it('lists the current customers outfits as wardrobe cards', async () => {
-    renderAt('/wardrobes')
-
-    expect(await screen.findByRole('heading', { name: 'Tủ đồ của tôi' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Tạo tủ đồ' })).toHaveAttribute('href', '/wardrobes/new')
-    expect(screen.queryByRole('link', { name: 'Tạo thủ công' })).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Di lam toi gian/ })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Cafe cuoi tuan/ })).toBeInTheDocument()
-  })
-
-  it('shares the entire wardrobe from the wardrobe header', async () => {
-    const user = userEvent.setup()
-    renderAt('/wardrobes')
-
-    await user.click(await screen.findByRole('button', { name: 'Chia sẻ tủ đồ' }))
-    await screen.findByRole('dialog', { name: 'Chia sẻ tủ đồ' })
-    await user.type(screen.getByLabelText('Email được chia sẻ'), 'banbe@example.com')
-    await user.click(screen.getByRole('button', { name: 'Xác nhận chia sẻ' }))
-
-    await waitFor(() => expect(screen.getAllByText(/banbe@example.com/).length).toBeGreaterThan(0))
-    await waitFor(() => {
-      const database = getDatabase()
-      const ownedOutfitIds = database.outfits
-        .filter(outfit => outfit.ownerId === 'usr-customer-01')
-        .map(outfit => outfit.id)
-      const sharedOutfitIds = database.outfitShares
-        .filter(share => share.viewerEmail === 'banbe@example.com' && share.active)
-        .map(share => share.outfitId)
-
-      expect(sharedOutfitIds.sort()).toEqual(ownedOutfitIds.sort())
-    })
-  })
-
-  it('opens an owner outfit detail with product-linked items', async () => {
-    renderAt('/outfits/outfit-work-minimal')
-
-    expect(await screen.findByRole('heading', { name: 'Di lam toi gian' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Áo blouse cổ vuông/ })).toHaveAttribute('href', '/products/prd-blouse-01')
-    expect(screen.getByRole('link', { name: /Quần tây ống suông/ })).toHaveAttribute('href', '/products/prd-trousers-01')
-  })
-
-  it('renames an outfit and removes an item', async () => {
-    const user = userEvent.setup()
-    renderAt('/outfits/outfit-work-minimal')
-
-    const nameInput = await screen.findByDisplayValue('Di lam toi gian')
-    await user.clear(nameInput)
-    await user.type(screen.getByLabelText('Tên outfit'), 'Đi làm thứ hai')
-    await user.click(screen.getByRole('button', { name: 'Lưu tên outfit' }))
-    await user.click(screen.getByRole('button', { name: 'Xóa món Áo blouse cổ vuông' }))
-
-    expect(await screen.findByRole('heading', { name: 'Đi làm thứ hai' })).toBeInTheDocument()
-    await waitFor(() => {
-      const outfit = getDatabase().outfits.find(item => item.id === 'outfit-work-minimal')
-      expect(outfit?.name).toBe('Đi làm thứ hai')
-      expect(outfit?.items.some(item => item.id === 'outfit-item-blouse-white')).toBe(false)
-    })
-  })
-
-  it('changes an outfit item variant only to an active variant', async () => {
-    const user = userEvent.setup()
-    renderAt('/outfits/outfit-work-minimal', databaseWithInactiveVariant())
-
-    const select = await screen.findByLabelText('Đổi phiên bản Áo blouse cổ vuông')
-    expect(screen.queryByRole('option', { name: /Xám tắt/ })).not.toBeInTheDocument()
-
-    await user.selectOptions(select, 'var-blouse-01-black-m')
-
-    await waitFor(() => {
-      const outfit = getDatabase().outfits.find(item => item.id === 'outfit-work-minimal')
-      expect(outfit?.items.find(item => item.id === 'outfit-item-blouse-white')?.variantId).toBe('var-blouse-01-black-m')
-    })
-  })
-
-  it('adds one item and the entire outfit to cart', async () => {
-    const user = userEvent.setup()
-    renderAt('/outfits/outfit-ai-cafe')
-
-    await user.click(await screen.findByRole('button', { name: 'Thêm Áo dệt kim cổ lọ vào giỏ' }))
-    expect(await screen.findByText('Đã thêm các món vào giỏ hàng')).toBeInTheDocument()
-    await waitFor(async () => expect((await paymentApi.getCart()).items).toHaveLength(1))
-
-    await user.click(screen.getByRole('button', { name: 'Thêm toàn bộ outfit vào giỏ' }))
-    expect(await screen.findByText('Đã thêm các món vào giỏ hàng')).toBeInTheDocument()
-    await waitFor(async () => expect((await paymentApi.getCart()).items.reduce((total, line) => total + line.quantity, 0)).toBe(3))
-  })
-
-  it('shows unavailable outfit items and skips them when adding the entire outfit to cart', async () => {
-    const user = userEvent.setup()
-    const database = databaseWithCustomer()
-    const inactiveDatabase = {
-      ...database,
-      products: database.products.map(product =>
-        product.id === 'prd-trousers-01' ? { ...product, active: false } : product,
-      ),
-    }
-    renderAt('/outfits/outfit-work-minimal', inactiveDatabase)
-
-    expect(await screen.findByText('Quần tây ống suông')).toBeInTheDocument()
-    expect(screen.getByText('Sản phẩm này hiện không thể thêm vào giỏ')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'Thêm toàn bộ outfit vào giỏ' }))
-
-    expect(await screen.findByText(/Đã thêm các món còn khả dụng vào giỏ/)).toBeInTheDocument()
-    expect(screen.getByText(/Bỏ qua Quần tây ống suông/)).toBeInTheDocument()
-    await waitFor(async () => {
-      const cartLines = (await paymentApi.getCart()).items
-      expect(cartLines).toHaveLength(2)
-      expect(cartLines.some(line => line.variant_id.startsWith('var-trousers'))).toBe(false)
-    })
-  })
-
-  it('shows a no-access state for a private outfit owned by someone else', async () => {
-    const database = databaseWithCustomer()
-    const privateOutfit: Outfit = {
-      id: 'outfit-private-other',
-      ownerId: 'usr-other',
-      name: 'Outfit riêng của người khác',
-      source: 'manual',
-      visibility: 'private',
-      createdAt: '2026-09-28T09:00:00.000Z',
-      updatedAt: '2026-09-28T09:00:00.000Z',
-      items: [
-        {
-          id: 'other-item-01',
-          productId: 'prd-blouse-01',
-          variantId: 'var-blouse-white-m',
-          addedBy: 'owner',
-        },
-      ],
-    }
-
-    renderAt('/outfits/outfit-private-other', {
-      ...database,
-      outfits: [...database.outfits, privateOutfit],
-    })
-
-    expect(await screen.findByRole('heading', { name: 'Không tìm thấy outfit' })).toBeInTheDocument()
-    expect(screen.queryByLabelText('Tên outfit')).not.toBeInTheDocument()
-  })
+it('shows unavailable outfit items without a purchasable action for them', async () => {
+  setup(`/outfits/${outfitId}`, url => url.endsWith('/sharing')
+    ? response({ outfit_id: outfitId, visibility: 'PRIVATE', public_enabled: false, public_token: null, public_enabled_at: null })
+    : url.includes('/me/outfits/') ? response({ outfit_id: outfitId, name: 'Bộ cá nhân', visibility: 'PRIVATE', items: [{ outfit_item_id: 'item', variant_id: 'variant', product_id: null, product_name: null, color: null, size: null, unit_price_vnd: null, image_url: null, available: false }] })
+    : response(page([])))
+  expect((await screen.findAllByText('Sản phẩm không còn khả dụng')).length).toBeGreaterThan(0)
+  expect(screen.getByRole('button', { name: 'Thêm Outfit vào giỏ' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Thêm món này vào giỏ' })).toBeDisabled()
 })

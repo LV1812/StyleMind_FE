@@ -5,7 +5,11 @@ import { commerceApi } from '@/api/commerce'
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
 import { useAuth } from '@/features/auth'
 import { apiMode } from '@/shared/api/http'
-import { AdminAiPanel } from '@/features/admin/components/AdminAiPanel'
+import { UnavailableFeature } from '@/shared/ui/UnavailableFeature'
+import { Button } from '@/shared/ui'
+import { AdminNotificationsUnavailable } from '@/features/admin/components/AdminNotificationsUnavailable'
+import { AdminSettingsUnavailable } from '@/features/admin/components/AdminSettingsUnavailable'
+import { AdminOverviewLive } from '@/features/admin/components/AdminOverviewLive'
 import { AdminCategoriesPanel } from '@/features/admin/components/AdminCategoriesPanel'
 import { AdminCustomersPanel } from '@/features/admin/components/AdminCustomersPanel'
 import { AdminOverviewPanel } from '@/features/admin/components/AdminOverviewPanel'
@@ -21,8 +25,9 @@ import {
   commerceProductToEntity,
 } from '@/features/commerce/data/commerceEntityAdapters'
 import { loadAllCommerceProducts } from '@/features/commerce/data/loadCommerceProducts'
+import { loadAdminOrders } from '@/features/commerce/data/loadAdminOrders'
 
-const sections = new Set<AdminSection>(['overview', 'products', 'categories', 'orders', 'requests', 'customers', 'ai'])
+const sections = new Set<AdminSection>(['overview', 'products', 'categories', 'orders', 'requests', 'customers', 'notifications', 'settings', 'ai'])
 
 function resolveSection(value: string | null): AdminSection {
   return value && sections.has(value as AdminSection) ? (value as AdminSection) : 'overview'
@@ -36,15 +41,17 @@ function sectionPlaceholder(section: AdminSection) {
     orders: 'Quản lý đơn hàng',
     requests: 'Quản lý yêu cầu',
     customers: 'Quản lý khách hàng',
+    notifications: 'Quản lý thông báo',
+    settings: 'Cài đặt hệ thống',
     ai: 'Quản lý dữ liệu AI',
   }
 
   return (
     <section className="grid gap-4">
       <div>
-        <p className="text-sm font-semibold text-[#684B5A]">Bảng quản trị StyleMind</p>
+        <p className="text-sm font-semibold text-[#1C1B1B]">Bảng quản trị StyleMind</p>
         <h1 className="mt-2 font-display text-3xl font-semibold text-[#222222]">{title[section]}</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6F6B67]">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5E5F5D]">
           Khu vực này đã có điều hướng và bố cục sẵn sàng; các thao tác chi tiết sẽ được mở trong bước tiếp theo của MVP quản trị.
         </p>
       </div>
@@ -59,16 +66,21 @@ export function AdminPage() {
   const { currentUser, logout } = useAuth()
   const [commerceError, setCommerceError] = useState<string | null>(null)
   const [commerceLoading, setCommerceLoading] = useState(true)
+  const [reloadVersion, setReloadVersion] = useState(0)
+  const [summary, setSummary] = useState<{ productCount: number | null; orderCount: number | null }>({ productCount: null, orderCount: null })
   const activeSection = resolveSection(searchParams.get('section'))
 
   useEffect(() => {
     let active = true
+    setCommerceLoading(true)
+    setSummary({ productCount: null, orderCount: null })
     Promise.all([
       loadAllCommerceProducts(),
       commerceApi.categories.listAdmin(),
-      commerceApi.orders.listAdmin({ page: 0, size: 100 }),
+      loadAdminOrders(),
     ]).then(([products, categories, orders]) => {
       if (!active) return
+      setSummary({ productCount: products.length, orderCount: Number.isSafeInteger(orders.total) ? orders.total : null })
       dispatch({
         type: 'commerce/catalogSynced',
         payload: {
@@ -101,18 +113,20 @@ export function AdminPage() {
     return () => {
       active = false
     }
-  }, [dispatch])
+  }, [dispatch, activeSection, reloadVersion])
 
   const content = useMemo(() => {
-    if (activeSection === 'overview') return apiMode() ? <section className="grid gap-4"><h1 className="font-display text-3xl">Tổng quan quản trị</h1><p>Chọn mục để xem dữ liệu từ hệ thống.</p><div className="flex gap-4"><Link className="underline" to="/admin?section=orders">Đơn hàng</Link><Link className="underline" to="/admin?section=products">Sản phẩm</Link><Link className="underline" to="/admin?section=customers">Khách hàng</Link></div></section> : <AdminOverviewPanel database={state} />
+    if (activeSection === 'overview') return apiMode() ? <AdminOverviewLive {...summary} loading={commerceLoading} /> : <AdminOverviewPanel database={state} />
     if (activeSection === 'products') return <AdminProductsPanel database={state} dispatch={dispatch} />
     if (activeSection === 'categories') return <AdminCategoriesPanel database={state} dispatch={dispatch} />
     if (activeSection === 'orders') return <AdminOrdersPanel database={state} dispatch={dispatch} />
     if (activeSection === 'requests') return <AdminRequestsPanel database={state} dispatch={dispatch} reviewerId={currentUser?.id ?? ''} />
     if (activeSection === 'customers') return <AdminCustomersPanel />
-    if (activeSection === 'ai') return <AdminAiPanel database={state} dispatch={dispatch} />
+    if (activeSection === 'notifications') return <AdminNotificationsUnavailable />
+    if (activeSection === 'settings') return <AdminSettingsUnavailable />
+    if (activeSection === 'ai') return <UnavailableFeature title="Quản lý AI" backTo="/admin" backLabel="Về tổng quan" />
     return sectionPlaceholder(activeSection)
-  }, [activeSection, currentUser?.id, dispatch, state])
+  }, [activeSection, currentUser?.id, dispatch, state, summary, commerceLoading])
 
   if (!currentUser) return null
 
@@ -126,10 +140,10 @@ export function AdminPage() {
         navigate('/login', { replace: true })
       }}
     >
-      <Link to="/admin/payments" className="mb-4 inline-block rounded-lg bg-[#EEE8E1] px-4 py-3 font-semibold text-[#684B5A]">Thanh toán: thu COD và xem lỗi</Link>
-      {commerceLoading && <p role="status" className="mb-4 rounded-lg bg-white p-4 text-sm text-[#6F6B67]">Đang tải dữ liệu Commerce…</p>}
-      {commerceError && <p role="alert" className="mb-4 rounded-lg bg-[#FCEAEA] p-4 text-sm font-semibold text-[#A94B4B]">{commerceError}</p>}
-      {(!['overview', 'products', 'categories', 'orders', 'requests'].includes(activeSection) || (!commerceLoading && !commerceError)) && content}
+      <Link to="/admin/payments" className="mb-4 inline-block rounded-lg bg-[#EFEDED] px-4 py-3 font-semibold text-[#1C1B1B]">Thanh toán: thu COD và xem lỗi</Link>
+      {commerceLoading && <p role="status" className="mb-4 rounded-lg bg-white p-4 text-sm text-[#5E5F5D]">Đang tải dữ liệu Commerce…</p>}
+      {commerceError && <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#E7BBBB] bg-[#FCEAEA] p-4"><p role="alert" className="text-sm font-semibold text-[#A94B4B]">{commerceError}</p><Button type="button" variant="secondary" disabled={commerceLoading} onClick={() => { setCommerceError(null); setReloadVersion(value => value + 1) }}>Thử tải lại</Button></div>}
+      {(!['products', 'categories', 'orders', 'requests'].includes(activeSection) || (!commerceLoading && !commerceError)) && content}
     </AdminShell>
   )
 }

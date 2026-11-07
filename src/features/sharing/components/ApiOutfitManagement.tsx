@@ -6,6 +6,7 @@ import { ApiModal } from '@/shared/api/ApiUi'
 import { communityApi, type OutfitDetailDto, type OutfitItemDto } from '@/shared/api/communityApi'
 import { ApiError } from '@/shared/api/http'
 import { Button } from '@/shared/ui'
+import { Shirt } from 'lucide-react'
 
 type Dialog = 'rename' | 'delete' | 'add' | 'change' | 'remove' | null
 const optionLabel = (product: CommerceProduct, variant: ProductVariant) =>
@@ -84,15 +85,15 @@ export function ApiOutfitManagement({ detail, refresh, onDeleted }: { detail: Ou
       <Button variant="secondary" disabled={detail.items.length >= 10} onClick={() => open('add')}>Thêm món</Button>
       <Button variant="danger" onClick={() => open('delete')}>Xóa outfit</Button>
     </div>
-    <div className="mt-6 grid gap-4 md:grid-cols-3">{detail.items.map(item => <article key={item.outfit_item_id} className="rounded-lg border border-[#E3DAD0] bg-white p-4">
-      {item.available && item.image_url && <img src={item.image_url} alt="" className="aspect-[4/5] w-full object-cover" />}
-      <h2 className="mt-3 font-semibold">{item.product_name || 'Sản phẩm không còn khả dụng'}</h2>
-      {item.available && <p className="mt-2 text-sm">{item.color} · {item.size} · {item.unit_price_vnd?.toLocaleString('vi-VN')} ₫</p>}
+    <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{detail.items.map(item => <article key={item.outfit_item_id} className="min-w-0 overflow-hidden rounded-xl border border-[#E3E2E2] bg-white p-4">
+      {item.available && item.image_url ? <img src={item.image_url} alt="" className="aspect-[4/5] w-full rounded-lg object-cover" /> : <div className="grid aspect-[4/5] place-items-center rounded-lg bg-[#F5F3F3] text-[#C4C7C7]"><Shirt size={40} strokeWidth={1} aria-hidden="true" /></div>}
+      <h2 className="mt-4 break-words font-display text-xl font-semibold">{item.product_name || 'Sản phẩm không còn khả dụng'}</h2>
+      {item.available && <p className="mt-2 text-sm text-[#5E5F5D]">{item.color} · {item.size} · {item.unit_price_vnd?.toLocaleString('vi-VN')} ₫</p>}
       <div className="mt-4 flex flex-wrap gap-2">
         <Button variant="secondary" disabled={!item.available || !item.product_id} onClick={() => open('change', item)}>Đổi phiên bản {item.product_name || 'món này'}</Button>
         <Button variant="ghost" disabled={detail.items.length <= 1} onClick={() => open('remove', item)}>Xóa {item.product_name || 'món này'} khỏi outfit</Button>
       </div>
-      {detail.items.length <= 1 && <p className="mt-2 text-xs text-[#6F6B67]">Outfit cần giữ ít nhất một món.</p>}
+      {detail.items.length <= 1 && <p className="mt-2 text-xs text-[#5E5F5D]">Outfit cần giữ ít nhất một món.</p>}
     </article>)}</div>
 
     <ApiModal open={dialog === 'rename'} title="Đổi tên outfit" onClose={close}>

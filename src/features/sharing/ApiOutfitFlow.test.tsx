@@ -8,6 +8,13 @@ import { saveApiSession } from '@/test/communitySession'
 import { waitFor } from '@testing-library/react'
 
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); sessionStorage.clear(); localStorage.clear() })
+it('identifies friends by email and display name in shared wardrobes', async () => {
+  const id = '10000000-0000-0000-0000-000000000001'
+  saveApiSession(`e30.${btoa(JSON.stringify({ sub: id, roles: ['CUSTOMER'] }))}.sig`, Date.now() + 60000)
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => new Response(JSON.stringify(path === '/api/v1/me' ? { account_id: id, email: 'real@example.test', profile: null } : { items: [{ friendship_id: 'friendship', friend_account_id: 'friend', email: 'friend@example.test', display_name: 'Bạn An' }], page: 0, size: 20, total_elements: 1, total_pages: 1 }), { status: 200 })))
+  render(<AppProviders><RouterProvider router={createMemoryRouter(appRoutes, { initialEntries: ['/shared-with-me'] })} /></AppProviders>)
+  expect(await screen.findByText('Tủ đồ của friend@example.test (Bạn An)')).toBeInTheDocument()
+})
 it('does not expose the retired email access controls in live mode', async () => {
   const id = '10000000-0000-0000-0000-000000000001'
   vi.stubEnv('VITE_COMMUNITY_MODE', 'api')
@@ -23,8 +30,9 @@ it('shows that notifications are unavailable instead of demo notifications', asy
   saveApiSession(`e30.${btoa(JSON.stringify({ sub: id, roles: ['CUSTOMER'] }))}.sig`, Date.now() + 60000)
   vi.stubGlobal('fetch', vi.fn(async (path: string) => new Response(JSON.stringify(path === '/api/v1/me' ? { account_id: id, email: 'real@example.test', profile: null } : { items: [], total_elements: 0, total_pages: 0 }), { status: 200 })))
   render(<AppProviders><RouterProvider router={createMemoryRouter(appRoutes, { initialEntries: ['/notifications'] })} /></AppProviders>)
-  expect(await screen.findByText('Danh sách thông báo hiện chưa được hỗ trợ.')).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Đánh dấu tất cả đã đọc' })).not.toBeInTheDocument()
+  expect(await screen.findByText('Thông báo trong ứng dụng hiện chưa được hỗ trợ.')).toBeInTheDocument()
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Đánh dấu tất cả đã đọc' }))
+  expect(screen.getAllByText('Chức năng chưa hỗ trợ.').length).toBeGreaterThan(0)
 })
 it('uses the public link endpoints to turn public sharing on and off', async () => {
   const id = '10000000-0000-0000-0000-000000000001'
@@ -98,5 +106,19 @@ it('does not show owner controls on a friend or public outfit', async () => {
   expect(screen.queryByRole('button', { name: 'Đổi tên' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Xóa outfit' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Thêm món' })).not.toBeInTheDocument()
+})
+
+it('does not display private outfit content when the server denies access', async () => {
+  const id = '10000000-0000-0000-0000-000000000001'
+  saveApiSession(`e30.${btoa(JSON.stringify({ sub: id, roles: ['CUSTOMER'] }))}.sig`, Date.now() + 60000)
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => {
+    if (path === '/api/v1/me') return new Response(JSON.stringify({ account_id: id, email: 'real@example.test', profile: null }), { status: 200 })
+    if (path.includes('/friends/') && path.includes('/outfits/')) return new Response(JSON.stringify({ code: 'FORBIDDEN' }), { status: 403 })
+    return new Response(JSON.stringify({ items: [], page: 0, size: 20, total_elements: 0, total_pages: 0 }), { status: 200 })
+  }))
+  render(<AppProviders><RouterProvider router={createMemoryRouter(appRoutes, { initialEntries: [`/shared-with-me/${id}/outfits/${id}`] })} /></AppProviders>)
+  expect(await screen.findByRole('alert')).toHaveTextContent('chưa có quyền')
+  expect(screen.queryByRole('button', { name: 'Chia sẻ outfit' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Đổi tên' })).not.toBeInTheDocument()
 })
 

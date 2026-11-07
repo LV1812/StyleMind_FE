@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, Copy, MapPin, PackageCheck, QrCode, RefreshCw, ShieldCheck, Smartphone, Truck } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, Copy, MapPin, PackageCheck, QrCode, RefreshCw, ShieldCheck, Smartphone, Truck } from 'lucide-react'
 import type { OrderResponse, PaymentAttempt } from '@/features/payments/api/types'
 import { Button } from '@/shared/ui'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
@@ -113,8 +113,8 @@ export default function GuestPaymentView({
             </div>
             <p className="mt-4 flex items-center justify-center gap-2 text-center text-xs text-secondary"><Smartphone size={15} className="shrink-0" aria-hidden="true" />Mở ứng dụng ngân hàng để quét mã VietQR</p>
           </> : <div className="mx-auto grid max-w-md place-items-center gap-4 py-4 text-center">
-            <span className={`grid h-20 w-20 place-items-center rounded-full ${qrExpired ? 'bg-warning-bg text-warning-ink' : closed ? 'bg-sand text-secondary' : 'bg-success-bg text-success'}`}>
-              {qrExpired ? <Clock3 size={34} strokeWidth={1.5} aria-hidden="true" /> : paid ? <CheckCircle2 size={34} strokeWidth={1.5} aria-hidden="true" /> : <Truck size={34} strokeWidth={1.5} aria-hidden="true" />}
+            <span className={`grid h-20 w-20 place-items-center rounded-full ${blocked || qrExpired || (pending && online) ? 'bg-warning-bg text-warning-ink' : closed ? 'bg-sand text-secondary' : 'bg-success-bg text-success'}`}>
+              {blocked ? <AlertTriangle size={34} strokeWidth={1.5} aria-hidden="true" /> : qrExpired || (pending && online) ? <Clock3 size={34} strokeWidth={1.5} aria-hidden="true" /> : paid ? <CheckCircle2 size={34} strokeWidth={1.5} aria-hidden="true" /> : <Truck size={34} strokeWidth={1.5} aria-hidden="true" />}
             </span>
             <h3 className="font-display text-2xl font-medium text-charcoal">{blocked ? 'Thanh toán cần kiểm tra' : qrExpired ? 'Mã QR đã hết hạn' : paid ? 'Thanh toán thành công' : closed ? 'Đơn hàng đã kết thúc' : pending && online ? 'Đang chờ thanh toán' : online ? 'Thông tin thanh toán' : 'Đơn hàng của bạn đã được lưu'}</h3>
             {paid && <p role="status" className="text-sm leading-6 text-secondary">Máy chủ đã xác nhận thanh toán.</p>}

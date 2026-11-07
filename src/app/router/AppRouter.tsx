@@ -5,7 +5,7 @@ import { AuthGuard } from '@/app/router/guards/AuthGuard'
 import { GuestGuard } from '@/app/router/guards/GuestGuard'
 import { AccountPage, AddressBookPage } from '@/features/account'
 import { AdminPage } from '@/features/admin'
-import { AiStylistCreatePage } from '@/features/ai-stylist'
+import { UnavailableFeature } from '@/shared/ui/UnavailableFeature'
 import {
   ForgotPasswordPage,
   LoginPage,
@@ -26,6 +26,7 @@ import ApiMessagesPage from '@/features/messages/pages/ApiMessagesPage'
 import { apiMode } from '@/shared/api/http'
 import { ApiWardrobePage, ApiSharedWithMePage, ApiFriendWardrobePage, ApiOutfitDetailPage } from '@/features/sharing/pages/ApiOutfitPages'
 import { NotificationsPage } from '@/features/notifications'
+import { UnavailableNotificationsPage } from '@/features/notifications/pages/UnavailableNotificationsPage'
 import { ManualOutfitBuilderPage } from '@/features/outfit-builder'
 import { OrderDetailPage, OrdersPage } from '@/features/orders'
 import { ProductDetailPage } from '@/features/product-detail'
@@ -39,7 +40,6 @@ import { ROUTES } from './routes'
 
 function CommunityScreen({ demo, live }: { demo: React.ReactNode; live: React.ReactNode }) { return apiMode() ? live : demo }
 function ApiWardrobeAccessPage() { return <main className="mx-auto max-w-3xl px-5 py-12"><h1 className="font-display text-4xl">Quyền truy cập</h1><p className="mt-4">Quyền xem được quản lý theo từng Outfit và danh sách bạn bè.</p><div className="mt-5 flex gap-4"><Link className="underline" to="/wardrobes">Quản lý Outfit</Link><Link className="underline" to="/friends">Xem bạn bè</Link></div></main> }
-function ApiNotificationsPage() { return <main className="mx-auto max-w-3xl px-5 py-12"><h1 className="font-display text-4xl">Thông báo</h1><p className="mt-4">Danh sách thông báo hiện chưa được hỗ trợ.</p></main> }
 
 export const appRoutes: RouteObject[] = [
   { path: '/friend-invitations/accept', element: <InvitationPage /> },
@@ -66,14 +66,14 @@ export const appRoutes: RouteObject[] = [
       { path: 'order-success/:orderId', element: <AuthGuard><OrderSuccessPage /></AuthGuard> },
       { path: 'orders', element: <AuthGuard><OrdersPage /></AuthGuard> },
       { path: 'orders/:orderId', element: <AuthGuard><OrderDetailPage /></AuthGuard> },
-      { path: 'notifications', element: <AuthGuard><CommunityScreen demo={<NotificationsPage />} live={<ApiNotificationsPage />} /></AuthGuard> },
+      { path: 'notifications', element: <AuthGuard><CommunityScreen demo={<NotificationsPage />} live={<UnavailableNotificationsPage />} /></AuthGuard> },
       { path: 'account', element: <AuthGuard><AccountPage /></AuthGuard> },
       { path: 'account/addresses', element: <AuthGuard><AddressBookPage /></AuthGuard> },
-      { path: 'ai-wardrobe', element: <AuthGuard><AiStylistCreatePage /></AuthGuard> },
+      { path: 'ai-wardrobe', element: <AuthGuard><UnavailableFeature title="AI Stylist" /></AuthGuard> },
       { path: 'wardrobes', element: <AuthGuard><CommunityScreen demo={<WardrobePage />} live={<ApiWardrobePage />} /></AuthGuard> },
       { path: 'wardrobes/access', element: <AuthGuard><CommunityScreen demo={<WardrobeAccessPage />} live={<ApiWardrobeAccessPage />} /></AuthGuard> },
       { path: 'wardrobes/new', element: <AuthGuard><ManualOutfitBuilderPage /></AuthGuard> },
-      { path: 'wardrobes/new/ai', element: <AuthGuard><AiStylistCreatePage /></AuthGuard> },
+      { path: 'wardrobes/new/ai', element: <AuthGuard><UnavailableFeature title="AI Stylist" /></AuthGuard> },
       { path: 'outfits/:outfitId', element: <AuthGuard><CommunityScreen demo={<OutfitDetailPage />} live={<ApiOutfitDetailPage kind="owner" />} /></AuthGuard> },
       { path: 'shared-with-me', element: <AuthGuard><CommunityScreen demo={<SharedWithMePage />} live={<ApiSharedWithMePage />} /></AuthGuard> },
       { path: 'shared-with-me/:ownerId', element: <AuthGuard><CommunityScreen demo={<SharedWardrobePage />} live={<ApiFriendWardrobePage />} /></AuthGuard> },

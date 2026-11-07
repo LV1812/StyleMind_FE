@@ -73,27 +73,28 @@ export default function AccountCheckoutPage() {
       setError(paymentErrorMessage(failure))
     } finally { if (!controller.signal.aborted) { locked.current = false; setBusy(false) } }
   }
-  return <div className="mx-auto grid max-w-3xl gap-5 px-5 py-8">
-    <h1 className="font-display text-4xl font-semibold">Hoàn tất đơn hàng</h1>
-    <fieldset disabled={busy || Boolean(draft.submitted)} className="grid gap-4 rounded-2xl border border-sand bg-white p-5">
-      <h2 className="text-lg font-semibold">Địa chỉ giao hàng</h2>
+  return <div className="mx-auto grid max-w-[1440px] items-start gap-6 px-5 py-10 sm:px-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)] lg:gap-10 lg:px-16 lg:py-14">
+    <header className="border-b border-[#E3E2E2] pb-6 lg:col-span-2"><p className="mb-2 text-xs font-semibold uppercase tracking-widest text-secondary">Thanh toán</p><h1 className="font-display text-4xl font-semibold">Hoàn tất đơn hàng</h1><p className="mt-2 text-sm text-secondary">Kiểm tra địa chỉ, phương thức thanh toán và thông tin đơn hàng.</p></header>
+    {busy && <section role="status" className="rounded-2xl border border-[#E3E2E2] bg-white p-6 text-center lg:col-span-2"><p className="font-display text-2xl">Đang xử lý đơn hàng</p><p className="mt-2 text-sm text-secondary">Vui lòng chờ trong khi hệ thống xác nhận yêu cầu.</p></section>}
+    <fieldset disabled={busy || Boolean(draft.submitted)} className="grid min-w-0 gap-4 rounded-xl border border-[#E3E2E2] bg-white p-5 sm:p-7">
+      <h2 className="font-display text-2xl font-semibold">Địa chỉ giao hàng</h2>
       <Link to={ROUTES.addresses} className="text-sm text-accent underline">Quản lý địa chỉ</Link>
       {!addressesReady ? <p>Đang tải địa chỉ…</p> : selected ? <>
         <label className="grid gap-2 text-sm">Chọn địa chỉ<select className="min-h-11 rounded-lg border border-sand bg-white px-3" value={selected.address_id} onChange={event => update({ ...draft, addressId: event.target.value })}>
           {addresses.map(address => <option key={address.address_id} value={address.address_id}>{address.recipient_name} — {address.address_line}</option>)}
-        </select></label><p className="text-sm leading-6 text-secondary">{selected.recipient_name}<br />{selected.recipient_phone}<br />{selected.address_line}</p>
+        </select></label><p className="rounded-lg bg-[#FBF9F9] p-4 text-sm leading-6 text-secondary">{selected.recipient_name}<br />{selected.recipient_phone}<br />{selected.address_line}</p>
       </> : <p>Vui lòng thêm địa chỉ giao hàng trước khi đặt đơn.</p>}
       <PaymentMethodSection value={draft.method === 'COD' ? 'cod' : 'vietqr'} onChange={method => update({ ...draft, method: method === 'cod' ? 'COD' : 'SEPAY_VIETQR' })} />
     </fieldset>
-    <section className="grid gap-3 rounded-2xl border border-sand bg-white p-5" aria-label="Giá hiện tại">
-      <h2 className="text-lg font-semibold">Giá hiện tại</h2>
-      {prices?.items.map(item => <p key={item.cart_item_id}>{item.product_name} × {item.quantity} — {formatCurrency(item.line_total_vnd)}</p>)}
-      {prices && <p className="font-bold text-accent">Tổng tiền: {formatCurrency(prices.total_vnd)}</p>}
+    <section className="grid min-w-0 gap-4 rounded-xl border border-[#E3E2E2] bg-white p-5 sm:p-7 lg:sticky lg:top-28" aria-label="Giá hiện tại">
+      <h2 className="font-display text-2xl font-semibold">Giá hiện tại</h2>
+      {prices?.items.map(item => <div key={item.cart_item_id} className="flex justify-between gap-3 text-sm"><span className="min-w-0 break-words">{item.product_name} × {item.quantity}</span><span className="shrink-0 font-medium">{formatCurrency(item.line_total_vnd)}</span></div>)}
+      {prices && <p className="border-t border-[#E3E2E2] pt-4 font-bold text-accent">Tổng tiền: {formatCurrency(prices.total_vnd)}</p>}
       <Button variant="secondary" disabled={busy} onClick={() => setVersion(value => value + 1)}>Tải lại giá và địa chỉ</Button>
     </section>
     {draft.submitted && <p role="status">Thử lại sẽ dùng nguyên dữ liệu và mã checkout đã gửi để tránh tạo trùng đơn.</p>}
     {error && <p role="alert" className="rounded-xl bg-error-bg p-4 text-sm text-error">{error}</p>}
-    <Button loading={busy} disabled={Boolean(draft.orderId) || (!draft.submitted && (!prices?.items.length || !selected || !addressesReady))} onClick={() => void submit()}>{draft.submitted ? 'Thử lại đặt hàng' : 'Đặt hàng'}</Button>
+    <Button className="lg:col-span-2" loading={busy} disabled={Boolean(draft.orderId) || (!draft.submitted && (!prices?.items.length || !selected || !addressesReady))} onClick={() => void submit()}>{draft.submitted ? 'Thử lại đặt hàng' : 'Đặt hàng'}</Button>
     <Link to={ROUTES.cart} className="text-accent underline">Quay lại giỏ hàng</Link>
   </div>
 }

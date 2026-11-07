@@ -48,7 +48,7 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   PAYMENT_PENDING: { bg: "#FBF4E8", color: "#B67A32" },
   PAID: { bg: "#E8F3ED", color: "#48755A" },
   CONFIRMED: { bg: "#E8F3ED", color: "#48755A" },
-  PROCESSING: { bg: "#F4E7E8", color: "#684B5A" },
+  PROCESSING: { bg: "#E9E8E7", color: "#1C1B1B" },
   SHIPPED: { bg: "#E8ECF6", color: "#2B3A5C" },
   COMPLETED: { bg: "#E8F3ED", color: "#48755A" },
   CANCELLED: { bg: "#FBF0F0", color: "#A94B4B" },
@@ -57,7 +57,7 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   Synced: { bg: "#E8F3ED", color: "#48755A" },
   Approved: { bg: "#E8ECF6", color: "#2B3A5C" },
   "Pending Review": { bg: "#FBF4E8", color: "#B67A32" },
-  Draft: { bg: "#F5EFE8", color: "#6F6B67" },
+  Draft: { bg: "#F5EFE8", color: "#5E5F5D" },
 };
 
 const ADMIN_NAV = [
@@ -72,7 +72,7 @@ const ADMIN_NAV = [
 ];
 
 function StatusBadge({ status }: { status: string }) {
-  const cfg = STATUS_COLORS[status] ?? { bg: "#F5EFE8", color: "#6F6B67" };
+  const cfg = STATUS_COLORS[status] ?? { bg: "#F5EFE8", color: "#5E5F5D" };
   return (
     <span style={{ fontSize: 11, fontWeight: 500, padding: "3px 10px", borderRadius: 100, background: cfg.bg, color: cfg.color, whiteSpace: "nowrap" }}>
       {status}
@@ -131,12 +131,12 @@ export default function AdminScreen({ app }: { app: AppState }) {
       {/* Main content */}
       <div style={{ flex: 1, background: "#F5F4F2", overflowY: "auto" }}>
         {/* Header */}
-        <div style={{ background: "white", borderBottom: "1px solid #EEE8E1", padding: "16px 28px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ background: "white", borderBottom: "1px solid #EFEDED", padding: "16px 28px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, color: "#222222" }}>
             {ADMIN_NAV.find((n) => n.id === section)?.label ?? "Dashboard"}
           </h1>
           <div style={{ display: "flex", gap: 10 }}>
-            <span style={{ fontSize: 12, color: "#6F6B67", background: "#F5EFE8", border: "1px solid #D9C8D0", borderRadius: 8, padding: "6px 12px" }}>
+            <span style={{ fontSize: 12, color: "#5E5F5D", background: "#F5EFE8", border: "1px solid #D9C8D0", borderRadius: 8, padding: "6px 12px" }}>
               16 Sep 2024 · 14:30
             </span>
           </div>
@@ -149,8 +149,8 @@ export default function AdminScreen({ app }: { app: AppState }) {
               {/* Metrics grid */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 14, marginBottom: 28 }}>
                 {METRICS.map((m) => (
-                  <div key={m.label} style={{ background: "white", borderRadius: 12, padding: "16px 18px", border: "1px solid #EEE8E1" }}>
-                    <div style={{ fontSize: 11, color: "#6F6B67", marginBottom: 8, letterSpacing: "0.04em" }}>{m.label}</div>
+                  <div key={m.label} style={{ background: "white", borderRadius: 12, padding: "16px 18px", border: "1px solid #EFEDED" }}>
+                    <div style={{ fontSize: 11, color: "#5E5F5D", marginBottom: 8, letterSpacing: "0.04em" }}>{m.label}</div>
                     <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, color: "#222222", marginBottom: 4 }}>{m.value}</div>
                     {m.change && (
                       <div style={{ fontSize: 11, color: m.up ? "#48755A" : "#B67A32" }}>{m.up ? "↑" : "→"} {m.change}</div>
@@ -166,8 +166,8 @@ export default function AdminScreen({ app }: { app: AppState }) {
                   { label: "SePay Revenue", value: "8,250,000₫", note: "8 orders" },
                   { label: "Pending Confirmation", value: "2,800,000₫", note: "3 orders" },
                 ].map((item) => (
-                  <div key={item.label} style={{ background: "white", borderRadius: 12, padding: "16px 18px", border: "1px solid #EEE8E1" }}>
-                    <div style={{ fontSize: 11, color: "#6F6B67", marginBottom: 8 }}>{item.label}</div>
+                  <div key={item.label} style={{ background: "white", borderRadius: 12, padding: "16px 18px", border: "1px solid #EFEDED" }}>
+                    <div style={{ fontSize: 11, color: "#5E5F5D", marginBottom: 8 }}>{item.label}</div>
                     <div style={{ fontSize: 18, fontWeight: 600, color: "#222222", marginBottom: 4 }}>{item.value}</div>
                     <div style={{ fontSize: 12, color: "#A9A6A3" }}>{item.note}</div>
                   </div>
@@ -175,16 +175,16 @@ export default function AdminScreen({ app }: { app: AppState }) {
               </div>
 
               {/* Recent orders */}
-              <div style={{ background: "white", borderRadius: 14, border: "1px solid #EEE8E1", overflow: "hidden", marginBottom: 28 }}>
-                <div style={{ padding: "16px 20px", borderBottom: "1px solid #EEE8E1", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ background: "white", borderRadius: 14, border: "1px solid #EFEDED", overflow: "hidden", marginBottom: 28 }}>
+                <div style={{ padding: "16px 20px", borderBottom: "1px solid #EFEDED", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ fontSize: 14, fontWeight: 600, color: "#222222" }}>Recent Orders</div>
-                  <button onClick={() => setSection("orders")} style={{ background: "none", border: "none", color: "#684B5A", fontSize: 13, cursor: "pointer" }}>View all →</button>
+                  <button onClick={() => setSection("orders")} style={{ background: "none", border: "none", color: "#1C1B1B", fontSize: 13, cursor: "pointer" }}>View all →</button>
                 </div>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "#F5F4F2" }}>
                       {["Order ID", "Customer", "Total", "Payment", "Status", "Date", "Action"].map((h) => (
-                        <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: 11, color: "#6F6B67", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{h}</th>
+                        <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: 11, color: "#5E5F5D", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -194,11 +194,11 @@ export default function AdminScreen({ app }: { app: AppState }) {
                         <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 500, color: "#222222", fontFamily: "monospace" }}>{order.id}</td>
                         <td style={{ padding: "12px 16px", fontSize: 13, color: "#222222" }}>{order.customer}</td>
                         <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 500, color: "#222222" }}>{formatVND(order.total)}</td>
-                        <td style={{ padding: "12px 16px", fontSize: 12, color: "#6F6B67" }}>{order.payment}</td>
+                        <td style={{ padding: "12px 16px", fontSize: 12, color: "#5E5F5D" }}>{order.payment}</td>
                         <td style={{ padding: "12px 16px" }}><StatusBadge status={order.status} /></td>
                         <td style={{ padding: "12px 16px", fontSize: 12, color: "#A9A6A3" }}>{order.date}</td>
                         <td style={{ padding: "12px 16px" }}>
-                          <button style={{ fontSize: 12, color: "#684B5A", background: "none", border: "none", cursor: "pointer" }}>View</button>
+                          <button style={{ fontSize: 12, color: "#1C1B1B", background: "none", border: "none", cursor: "pointer" }}>View</button>
                         </td>
                       </tr>
                     ))}
@@ -212,12 +212,12 @@ export default function AdminScreen({ app }: { app: AppState }) {
                   { label: "AI Sessions Today", value: "47", sub: "Avg. 3.2 outfits per session" },
                   { label: "AI → Cart Conversions", value: "12", sub: "25.5% conversion rate today" },
                 ].map((stat) => (
-                  <div key={stat.label} style={{ background: "white", borderRadius: 12, padding: 20, border: "1px solid #EEE8E1" }}>
+                  <div key={stat.label} style={{ background: "white", borderRadius: 12, padding: 20, border: "1px solid #EFEDED" }}>
                     <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
                       <span style={{ color: "#B98791", fontSize: 16 }}>✦</span>
-                      <span style={{ fontSize: 13, color: "#6F6B67" }}>{stat.label}</span>
+                      <span style={{ fontSize: 13, color: "#5E5F5D" }}>{stat.label}</span>
                     </div>
-                    <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 28, color: "#684B5A", marginBottom: 4 }}>{stat.value}</div>
+                    <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 28, color: "#1C1B1B", marginBottom: 4 }}>{stat.value}</div>
                     <div style={{ fontSize: 12, color: "#A9A6A3" }}>{stat.sub}</div>
                   </div>
                 ))}
@@ -238,12 +238,12 @@ export default function AdminScreen({ app }: { app: AppState }) {
                 </select>
               </div>
 
-              <div style={{ background: "white", borderRadius: 14, border: "1px solid #EEE8E1", overflow: "hidden" }}>
+              <div style={{ background: "white", borderRadius: 14, border: "1px solid #EFEDED", overflow: "hidden" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "#F5F4F2" }}>
                       {["Order ID", "Customer", "Items", "Total", "Payment", "Status", "Date", "Actions"].map((h) => (
-                        <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, color: "#6F6B67", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, color: "#5E5F5D", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -252,14 +252,14 @@ export default function AdminScreen({ app }: { app: AppState }) {
                       <tr key={order.id} style={{ borderBottom: "1px solid #F5F4F2", transition: "background 0.1s" }}>
                         <td style={{ padding: "14px 16px", fontSize: 13, fontWeight: 500, color: "#222222", fontFamily: "monospace" }}>{order.id}</td>
                         <td style={{ padding: "14px 16px", fontSize: 13, color: "#222222" }}>{order.customer}</td>
-                        <td style={{ padding: "14px 16px", fontSize: 13, color: "#6F6B67" }}>2</td>
+                        <td style={{ padding: "14px 16px", fontSize: 13, color: "#5E5F5D" }}>2</td>
                         <td style={{ padding: "14px 16px", fontSize: 13, fontWeight: 500 }}>{formatVND(order.total)}</td>
-                        <td style={{ padding: "14px 16px", fontSize: 12, color: "#6F6B67" }}>{order.payment}</td>
+                        <td style={{ padding: "14px 16px", fontSize: 12, color: "#5E5F5D" }}>{order.payment}</td>
                         <td style={{ padding: "14px 16px" }}><StatusBadge status={order.status} /></td>
                         <td style={{ padding: "14px 16px", fontSize: 12, color: "#A9A6A3" }}>{order.date}</td>
                         <td style={{ padding: "14px 16px" }}>
                           <div style={{ display: "flex", gap: 8 }}>
-                            <button style={{ fontSize: 12, color: "#684B5A", background: "none", border: "none", cursor: "pointer" }}>View</button>
+                            <button style={{ fontSize: 12, color: "#1C1B1B", background: "none", border: "none", cursor: "pointer" }}>View</button>
                             {order.status === "PAID" && (
                               <button style={{ fontSize: 12, color: "#48755A", background: "#E8F3ED", border: "1px solid #C5DDD0", borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}>
                                 Confirm
@@ -288,12 +288,12 @@ export default function AdminScreen({ app }: { app: AppState }) {
                 <button className="btn-primary" onClick={() => setShowProductModal(true)} style={{ fontSize: 13 }}>+ Add Product</button>
               </div>
 
-              <div style={{ background: "white", borderRadius: 14, border: "1px solid #EEE8E1", overflow: "hidden" }}>
+              <div style={{ background: "white", borderRadius: 14, border: "1px solid #EFEDED", overflow: "hidden" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "#F5F4F2" }}>
                       {["Product", "Brand", "Category", "Price", "Stock", "Status", "AI Sync", "Actions"].map((h) => (
-                        <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, color: "#6F6B67", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, color: "#5E5F5D", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -301,8 +301,8 @@ export default function AdminScreen({ app }: { app: AppState }) {
                     {PRODUCTS.map((p) => (
                       <tr key={p.id} style={{ borderBottom: "1px solid #F5F4F2" }}>
                         <td style={{ padding: "14px 16px", fontSize: 13, fontWeight: 500, color: "#222222" }}>{p.name}</td>
-                        <td style={{ padding: "14px 16px", fontSize: 12, color: "#6F6B67" }}>{p.brand}</td>
-                        <td style={{ padding: "14px 16px", fontSize: 12, color: "#6F6B67" }}>{p.category}</td>
+                        <td style={{ padding: "14px 16px", fontSize: 12, color: "#5E5F5D" }}>{p.brand}</td>
+                        <td style={{ padding: "14px 16px", fontSize: 12, color: "#5E5F5D" }}>{p.category}</td>
                         <td style={{ padding: "14px 16px", fontSize: 13, fontWeight: 500 }}>{formatVND(p.price)}</td>
                         <td style={{ padding: "14px 16px", fontSize: 13, color: p.stock === 0 ? "#A94B4B" : p.stock <= 3 ? "#B67A32" : "#222222", fontWeight: p.stock <= 3 ? 600 : 400 }}>
                           {p.stock === 0 ? "Out of stock" : `${p.stock} left`}
@@ -314,7 +314,7 @@ export default function AdminScreen({ app }: { app: AppState }) {
                         </td>
                         <td style={{ padding: "14px 16px" }}>
                           <div style={{ display: "flex", gap: 8 }}>
-                            <button style={{ fontSize: 12, color: "#684B5A", background: "none", border: "none", cursor: "pointer" }}>Edit</button>
+                            <button style={{ fontSize: 12, color: "#1C1B1B", background: "none", border: "none", cursor: "pointer" }}>Edit</button>
                             <button style={{ fontSize: 12, color: "#A94B4B", background: "none", border: "none", cursor: "pointer" }}>×</button>
                           </div>
                         </td>
@@ -330,20 +330,20 @@ export default function AdminScreen({ app }: { app: AppState }) {
           {section === "returns" && (
             <div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 24 }}>
-                {[{ label: "Pending Review", value: 2, color: "#B67A32" }, { label: "Approved", value: 1, color: "#48755A" }, { label: "Refunds Pending", value: 1, color: "#684B5A" }].map((s) => (
-                  <div key={s.label} style={{ background: "white", borderRadius: 12, padding: 20, border: "1px solid #EEE8E1", textAlign: "center" }}>
+                {[{ label: "Pending Review", value: 2, color: "#B67A32" }, { label: "Approved", value: 1, color: "#48755A" }, { label: "Refunds Pending", value: 1, color: "#1C1B1B" }].map((s) => (
+                  <div key={s.label} style={{ background: "white", borderRadius: 12, padding: 20, border: "1px solid #EFEDED", textAlign: "center" }}>
                     <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 28, color: s.color, marginBottom: 6 }}>{s.value}</div>
-                    <div style={{ fontSize: 13, color: "#6F6B67" }}>{s.label}</div>
+                    <div style={{ fontSize: 13, color: "#5E5F5D" }}>{s.label}</div>
                   </div>
                 ))}
               </div>
 
-              <div style={{ background: "white", borderRadius: 14, border: "1px solid #EEE8E1", overflow: "hidden" }}>
+              <div style={{ background: "white", borderRadius: 14, border: "1px solid #EFEDED", overflow: "hidden" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "#F5F4F2" }}>
                       {["Return ID", "Customer", "Order", "Item", "Reason", "Status", "Date", "Actions"].map((h) => (
-                        <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, color: "#6F6B67", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, color: "#5E5F5D", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -355,9 +355,9 @@ export default function AdminScreen({ app }: { app: AppState }) {
                       <tr key={ret.id} style={{ borderBottom: "1px solid #F5F4F2" }}>
                         <td style={{ padding: "14px 16px", fontSize: 13, fontFamily: "monospace", color: "#222222" }}>{ret.id}</td>
                         <td style={{ padding: "14px 16px", fontSize: 13, color: "#222222" }}>{ret.customer}</td>
-                        <td style={{ padding: "14px 16px", fontSize: 12, color: "#6F6B67", fontFamily: "monospace" }}>{ret.order}</td>
+                        <td style={{ padding: "14px 16px", fontSize: 12, color: "#5E5F5D", fontFamily: "monospace" }}>{ret.order}</td>
                         <td style={{ padding: "14px 16px", fontSize: 13, color: "#222222" }}>{ret.item}</td>
-                        <td style={{ padding: "14px 16px", fontSize: 12, color: "#6F6B67" }}>{ret.reason}</td>
+                        <td style={{ padding: "14px 16px", fontSize: 12, color: "#5E5F5D" }}>{ret.reason}</td>
                         <td style={{ padding: "14px 16px" }}><StatusBadge status={ret.status} /></td>
                         <td style={{ padding: "14px 16px", fontSize: 12, color: "#A9A6A3" }}>{ret.date}</td>
                         <td style={{ padding: "14px 16px" }}>
@@ -378,7 +378,7 @@ export default function AdminScreen({ app }: { app: AppState }) {
           {section === "ai-knowledge" && (
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
-                <p style={{ color: "#6F6B67", fontSize: 14 }}>Manage the knowledge sources that inform StyleMind's AI stylist. New sources require review before becoming active.</p>
+                <p style={{ color: "#5E5F5D", fontSize: 14 }}>Manage the knowledge sources that inform StyleMind's AI stylist. New sources require review before becoming active.</p>
                 <button className="btn-primary" style={{ fontSize: 13, flexShrink: 0 }}>+ Add Source</button>
               </div>
 
@@ -386,25 +386,25 @@ export default function AdminScreen({ app }: { app: AppState }) {
                 {[
                   { label: "Approved Sources", value: 2, color: "#48755A" },
                   { label: "Pending Review", value: 1, color: "#B67A32" },
-                  { label: "Total Concepts", value: "142", color: "#684B5A" },
+                  { label: "Total Concepts", value: "142", color: "#1C1B1B" },
                   { label: "Active Rules", value: "38", color: "#2B3A5C" },
                 ].map((s) => (
-                  <div key={s.label} style={{ background: "white", borderRadius: 12, padding: 16, border: "1px solid #EEE8E1" }}>
+                  <div key={s.label} style={{ background: "white", borderRadius: 12, padding: 16, border: "1px solid #EFEDED" }}>
                     <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 24, color: s.color, marginBottom: 4 }}>{s.value}</div>
-                    <div style={{ fontSize: 12, color: "#6F6B67" }}>{s.label}</div>
+                    <div style={{ fontSize: 12, color: "#5E5F5D" }}>{s.label}</div>
                   </div>
                 ))}
               </div>
 
-              <div style={{ background: "white", borderRadius: 14, border: "1px solid #EEE8E1", overflow: "hidden" }}>
-                <div style={{ padding: "14px 20px", borderBottom: "1px solid #EEE8E1", fontSize: 13, fontWeight: 600, color: "#222222" }}>
+              <div style={{ background: "white", borderRadius: 14, border: "1px solid #EFEDED", overflow: "hidden" }}>
+                <div style={{ padding: "14px 20px", borderBottom: "1px solid #EFEDED", fontSize: 13, fontWeight: 600, color: "#222222" }}>
                   Knowledge Sources
                 </div>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "#F5F4F2" }}>
                       {["Name", "Type", "Items", "Status", "Last Sync", "Actions"].map((h) => (
-                        <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: 11, color: "#6F6B67", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{h}</th>
+                        <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: 11, color: "#5E5F5D", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -412,13 +412,13 @@ export default function AdminScreen({ app }: { app: AppState }) {
                     {KNOWLEDGE_SOURCES.map((k) => (
                       <tr key={k.id} style={{ borderBottom: "1px solid #F5F4F2" }}>
                         <td style={{ padding: "13px 16px", fontSize: 13, fontWeight: 500, color: "#222222" }}>{k.name}</td>
-                        <td style={{ padding: "13px 16px", fontSize: 12, color: "#6F6B67" }}>{k.type}</td>
+                        <td style={{ padding: "13px 16px", fontSize: 12, color: "#5E5F5D" }}>{k.type}</td>
                         <td style={{ padding: "13px 16px", fontSize: 13, color: "#222222" }}>{k.items}</td>
                         <td style={{ padding: "13px 16px" }}><StatusBadge status={k.status} /></td>
                         <td style={{ padding: "13px 16px", fontSize: 12, color: "#A9A6A3" }}>{k.lastSync}</td>
                         <td style={{ padding: "13px 16px" }}>
                           <div style={{ display: "flex", gap: 8 }}>
-                            <button style={{ fontSize: 12, color: "#684B5A", background: "none", border: "none", cursor: "pointer" }}>Review</button>
+                            <button style={{ fontSize: 12, color: "#1C1B1B", background: "none", border: "none", cursor: "pointer" }}>Review</button>
                             {k.status !== "Approved" && (
                               <button style={{ fontSize: 11, background: "#E8F3ED", color: "#48755A", border: "1px solid #C5DDD0", borderRadius: 6, padding: "3px 9px", cursor: "pointer" }}>
                                 Approve
@@ -430,7 +430,7 @@ export default function AdminScreen({ app }: { app: AppState }) {
                     ))}
                   </tbody>
                 </table>
-                <div style={{ padding: "12px 20px", background: "#FBF4E8", borderTop: "1px solid #EEE8E1", fontSize: 12, color: "#B67A32" }}>
+                <div style={{ padding: "12px 20px", background: "#FBF4E8", borderTop: "1px solid #EFEDED", fontSize: 12, color: "#B67A32" }}>
                   ⚠ New knowledge sources are not published automatically. Always review extracted concepts before approving.
                 </div>
               </div>
@@ -447,12 +447,12 @@ export default function AdminScreen({ app }: { app: AppState }) {
                 </select>
               </div>
 
-              <div style={{ background: "white", borderRadius: 14, border: "1px solid #EEE8E1", overflow: "hidden" }}>
+              <div style={{ background: "white", borderRadius: 14, border: "1px solid #EFEDED", overflow: "hidden" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "#F5F4F2" }}>
                       {["Time", "Actor", "Action", "Entity", "ID", "Summary", "Details"].map((h) => (
-                        <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, color: "#6F6B67", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, color: "#5E5F5D", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -460,13 +460,13 @@ export default function AdminScreen({ app }: { app: AppState }) {
                     {AUDIT_LOGS.map((log) => (
                       <tr key={log.id} style={{ borderBottom: "1px solid #F5F4F2" }}>
                         <td style={{ padding: "13px 16px", fontSize: 11, color: "#A9A6A3", fontFamily: "monospace", whiteSpace: "nowrap" }}>{log.time}</td>
-                        <td style={{ padding: "13px 16px", fontSize: 12, color: "#6F6B67" }}>{log.actor}</td>
+                        <td style={{ padding: "13px 16px", fontSize: 12, color: "#5E5F5D" }}>{log.actor}</td>
                         <td style={{ padding: "13px 16px", fontSize: 12, color: "#222222", fontWeight: 500 }}>{log.action}</td>
-                        <td style={{ padding: "13px 16px", fontSize: 12, color: "#6F6B67" }}>{log.entity}</td>
+                        <td style={{ padding: "13px 16px", fontSize: 12, color: "#5E5F5D" }}>{log.entity}</td>
                         <td style={{ padding: "13px 16px", fontSize: 11, color: "#A9A6A3", fontFamily: "monospace" }}>{log.entityId}</td>
                         <td style={{ padding: "13px 16px", fontSize: 12.5, color: "#222222" }}>{log.summary}</td>
                         <td style={{ padding: "13px 16px" }}>
-                          <button style={{ fontSize: 12, color: "#684B5A", background: "none", border: "none", cursor: "pointer" }}>View →</button>
+                          <button style={{ fontSize: 12, color: "#1C1B1B", background: "none", border: "none", cursor: "pointer" }}>View →</button>
                         </td>
                       </tr>
                     ))}
@@ -483,7 +483,7 @@ export default function AdminScreen({ app }: { app: AppState }) {
               <h3 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, color: "#222222", marginBottom: 8 }}>
                 {ADMIN_NAV.find((n) => n.id === section)?.label}
               </h3>
-              <p style={{ color: "#6F6B67", fontSize: 14 }}>This section is part of the full admin experience.</p>
+              <p style={{ color: "#5E5F5D", fontSize: 14 }}>This section is part of the full admin experience.</p>
             </div>
           )}
         </div>
@@ -495,7 +495,7 @@ export default function AdminScreen({ app }: { app: AppState }) {
           <div style={{ background: "white", borderRadius: 16, padding: 32, width: 560, maxHeight: "85vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
               <h3 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 20, color: "#222222" }}>Add Product</h3>
-              <button onClick={() => setShowProductModal(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#6F6B67" }}>×</button>
+              <button onClick={() => setShowProductModal(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#5E5F5D" }}>×</button>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>

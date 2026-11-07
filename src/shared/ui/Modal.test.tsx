@@ -31,4 +31,28 @@ describe('Modal', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Mở hộp thoại' })).toHaveFocus()
   })
+
+  it('keeps keyboard focus inside the open dialog', async () => {
+    const user = userEvent.setup()
+    render(<ModalHarness />)
+    await user.click(screen.getByRole('button', { name: 'Mở hộp thoại' }))
+    const close = screen.getByRole('button', { name: 'Đóng hộp thoại' })
+    close.focus()
+    await user.tab()
+    expect(close).toHaveFocus()
+    await user.tab({ shift: true })
+    expect(close).toHaveFocus()
+  })
+
+  it('wraps focus between the first and last controls', async () => {
+    const user = userEvent.setup()
+    render(<Modal open title="Kiểm tra" onClose={() => {}}><button type="button">Lưu</button></Modal>)
+    const close = screen.getByRole('button', { name: 'Đóng hộp thoại' })
+    const save = screen.getByRole('button', { name: 'Lưu' })
+    close.focus()
+    await user.tab({ shift: true })
+    expect(save).toHaveFocus()
+    await user.tab()
+    expect(close).toHaveFocus()
+  })
 })

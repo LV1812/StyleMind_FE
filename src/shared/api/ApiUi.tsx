@@ -6,8 +6,8 @@ export function ApiSection({ title, children }: { title: string; children: React
   return <section className="mx-auto max-w-[var(--container-wide)] px-5 py-8 md:px-8 md:py-12"><h1 className="font-display text-4xl font-semibold text-[#222222]">{title}</h1>{children}</section>
 }
 export function ApiState({ loading, error, retry }: { loading: boolean; error: string; retry: () => void }) {
-  if (loading) return <p role="status" className="my-6 text-sm text-[#6F6B67]">Đang tải dữ liệu…</p>
-  if (error) return <div className="my-6 rounded-lg border border-[#E3DAD0] bg-white p-5"><p role="alert" className="text-sm leading-6 text-[#A94B4B]">{error}</p><Button className="mt-4" variant="secondary" onClick={retry}>Tải lại</Button></div>
+  if (loading) return <p role="status" className="my-6 text-sm text-[#5E5F5D]">Đang tải dữ liệu…</p>
+  if (error) return <div className="my-6 rounded-lg border border-[#E3E2E2] bg-white p-5"><p role="alert" className="text-sm leading-6 text-[#A94B4B]">{error}</p><Button className="mt-4" variant="secondary" onClick={retry}>Tải lại</Button></div>
   return null
 }
 export function ApiPagination({ data, setPage }: { data: Page<unknown>; setPage: (index: number) => void }) {

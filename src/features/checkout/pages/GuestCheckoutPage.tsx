@@ -111,12 +111,13 @@ export default function GuestCheckoutPage() {
   }
 
   return (
-    <main className="mx-auto grid max-w-3xl gap-5 px-5 py-8">
-      <h1 className="font-display text-3xl font-semibold">
+    <main className="mx-auto grid max-w-[1440px] gap-8 px-5 py-10 sm:px-8 lg:px-16 lg:py-14">
+      <h1 className="font-display text-4xl font-semibold">
         Thanh toán không cần đăng nhập
       </h1>
+      {busy && <section role="status" className="rounded-2xl border border-[#E3E2E2] bg-white p-6 text-center"><p className="font-display text-2xl">Đang xử lý đơn hàng</p><p className="mt-2 text-sm text-secondary">Vui lòng chờ trong khi hệ thống xác nhận yêu cầu.</p></section>}
       <form
-        className="grid gap-5"
+        className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)] lg:gap-10"
         onSubmit={(event) => {
           event.preventDefault()
           void submit()
@@ -124,7 +125,7 @@ export default function GuestCheckoutPage() {
       >
         <fieldset
           disabled={busy || Boolean(draft.submitted)}
-          className="grid gap-4 rounded-lg bg-white p-5"
+          className="grid gap-4 rounded-2xl border border-[#E3E2E2] bg-white p-6"
         >
           <legend className="font-semibold">Thông tin giao hàng</legend>
           {([
@@ -154,7 +155,7 @@ export default function GuestCheckoutPage() {
           />
         </fieldset>
         <section
-          className="grid gap-3 rounded-lg bg-white p-5"
+          className="grid gap-3 rounded-2xl border border-[#E3E2E2] bg-white p-6"
           aria-label="Giá hiện tại"
         >
           <h2 className="font-semibold">Giá hiện tại</h2>
@@ -192,6 +193,7 @@ export default function GuestCheckoutPage() {
           </p>
         )}
         <Button
+          className="lg:col-span-2"
           type="submit"
           loading={busy}
           disabled={

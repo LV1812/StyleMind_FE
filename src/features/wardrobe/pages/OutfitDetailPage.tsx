@@ -34,13 +34,13 @@ function ReadOnlySharedOutfit({ detail }: { detail: OutfitDetail }) {
     <section className="mx-auto grid max-w-[var(--container-wide)] gap-8 px-5 py-8 md:px-8 md:py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="max-w-3xl">
-          <Link to={ROUTES.sharedWithMe} className="text-sm font-semibold text-[#684B5A] hover:underline">
+          <Link to={ROUTES.sharedWithMe} className="text-sm font-semibold text-[#1C1B1B] hover:underline">
             Được chia sẻ với tôi
           </Link>
           <h1 className="mt-2 font-display text-4xl font-semibold leading-tight text-[#222222]">{detail.outfit.name}</h1>
-          {detail.outfit.description && <p className="mt-3 text-sm leading-6 text-[#6F6B67]">{detail.outfit.description}</p>}
+          {detail.outfit.description && <p className="mt-3 text-sm leading-6 text-[#5E5F5D]">{detail.outfit.description}</p>}
         </div>
-        <div className="rounded-lg border border-[#E3DAD0] bg-white px-4 py-3 text-sm font-semibold text-[#3A3632] shadow-sm">
+        <div className="rounded-lg border border-[#E3E2E2] bg-white px-4 py-3 text-sm font-semibold text-[#3A3632] shadow-sm">
           Được chia sẻ
         </div>
       </div>
@@ -50,12 +50,12 @@ function ReadOnlySharedOutfit({ detail }: { detail: OutfitDetail }) {
           <Link
             key={item.item.id}
             to={`/products/${item.product.id}`}
-            className="overflow-hidden rounded-lg border border-[#E3DAD0] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+            className="overflow-hidden rounded-lg border border-[#E3E2E2] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
           >
             {item.image && <img src={item.image.url} alt={item.image.alt} className="aspect-[4/5] w-full object-cover" />}
             <div className="p-4">
               <h2 className="font-semibold text-[#222222]">{item.product.name}</h2>
-              <p className="mt-1 text-sm text-[#6F6B67]">
+              <p className="mt-1 text-sm text-[#5E5F5D]">
                 {item.variant.color} · {item.variant.size}
               </p>
               <p className="mt-3 font-semibold text-[#222222]">{formatCurrency(item.price)}</p>
@@ -69,10 +69,10 @@ function ReadOnlySharedOutfit({ detail }: { detail: OutfitDetail }) {
 
 function UnavailableOutfitItemRow({ item }: { item: UnavailableOutfitItemDetail }) {
   return (
-    <article className="rounded-lg border border-dashed border-[#D8D0C6] bg-white p-4 shadow-sm">
+    <article className="rounded-lg border border-dashed border-[#C4C7C7] bg-white p-4 shadow-sm">
       <h2 className="font-semibold text-[#222222]">{item.name}</h2>
       {item.variant && (
-        <p className="mt-1 text-sm text-[#6F6B67]">
+        <p className="mt-1 text-sm text-[#5E5F5D]">
           {item.variant.color} · {item.variant.size}
         </p>
       )}
@@ -80,7 +80,7 @@ function UnavailableOutfitItemRow({ item }: { item: UnavailableOutfitItemDetail 
       <button
         type="button"
         disabled
-        className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-[#EEE8E1] px-3 text-sm font-semibold text-[#6F6B67] opacity-70"
+        className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-[#EFEDED] px-3 text-sm font-semibold text-[#5E5F5D] opacity-70"
       >
         Không thể thêm vào giỏ
       </button>
@@ -111,11 +111,11 @@ export function OutfitDetailPage() {
   if (!detail || (!isOwner && !isSharedViewer)) {
     return (
       <section className="mx-auto max-w-[var(--container-wide)] px-5 py-10 md:px-8">
-        <Link to={ROUTES.wardrobes} className="text-sm font-semibold text-[#684B5A] hover:underline">
+        <Link to={ROUTES.wardrobes} className="text-sm font-semibold text-[#1C1B1B] hover:underline">
           Tủ đồ
         </Link>
         <h1 className="mt-4 font-display text-4xl font-semibold text-[#222222]">Không tìm thấy outfit</h1>
-        <p className="mt-3 max-w-xl text-sm leading-6 text-[#6F6B67]">
+        <p className="mt-3 max-w-xl text-sm leading-6 text-[#5E5F5D]">
           Outfit này không tồn tại hoặc bạn không có quyền xem.
         </p>
       </section>
@@ -187,20 +187,20 @@ export function OutfitDetailPage() {
     <section className="mx-auto grid max-w-[var(--container-wide)] gap-8 px-5 py-8 md:px-8 md:py-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="max-w-3xl">
-          <Link to={ROUTES.wardrobes} className="text-sm font-semibold text-[#684B5A] hover:underline">
+          <Link to={ROUTES.wardrobes} className="text-sm font-semibold text-[#1C1B1B] hover:underline">
             Tủ đồ
           </Link>
           <h1 className="mt-2 font-display text-4xl font-semibold leading-tight text-[#222222]">{detail.outfit.name}</h1>
-          {detail.outfit.description && <p className="mt-3 text-sm leading-6 text-[#6F6B67]">{detail.outfit.description}</p>}
+          {detail.outfit.description && <p className="mt-3 text-sm leading-6 text-[#5E5F5D]">{detail.outfit.description}</p>}
           <p className="mt-3 text-sm text-[#8A8179]">Cập nhật {formatDate(detail.outfit.updatedAt)}</p>
         </div>
-        <div className="rounded-lg border border-[#E3DAD0] bg-white px-4 py-3 text-sm font-semibold text-[#3A3632] shadow-sm">
+        <div className="rounded-lg border border-[#E3E2E2] bg-white px-4 py-3 text-sm font-semibold text-[#3A3632] shadow-sm">
           <OutfitSharingDialog outfit={detail.outfit} />
         </div>
       </div>
 
       {message && (
-        <p className="rounded-lg border border-[#E3DAD0] bg-white px-4 py-3 text-sm font-semibold text-[#2F7D4E]">
+        <p className="rounded-lg border border-[#E3E2E2] bg-white px-4 py-3 text-sm font-semibold text-[#2F7D4E]">
           {message}
         </p>
       )}
@@ -223,25 +223,25 @@ export function OutfitDetailPage() {
         </section>
 
         <aside className="grid h-fit gap-4">
-          <section className="rounded-lg border border-[#E3DAD0] bg-white p-5 shadow-sm">
+          <section className="rounded-lg border border-[#E3E2E2] bg-white p-5 shadow-sm">
             <h2 className="font-display text-2xl font-semibold text-[#222222]">Tóm tắt outfit</h2>
             <dl className="mt-5 grid gap-3 text-sm">
               <div className="flex items-center justify-between gap-4">
-                <dt className="text-[#6F6B67]">Số món</dt>
+                <dt className="text-[#5E5F5D]">Số món</dt>
                 <dd className="font-semibold text-[#222222]">{detail.outfit.items.length}</dd>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <dt className="text-[#6F6B67]">Nguồn</dt>
+                <dt className="text-[#5E5F5D]">Nguồn</dt>
                 <dd className="font-semibold text-[#222222]">{detail.outfit.source === 'ai' ? 'AI Stylist' : 'Thủ công'}</dd>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <dt className="text-[#6F6B67]">Tổng giá</dt>
+                <dt className="text-[#5E5F5D]">Tổng giá</dt>
                 <dd className="font-semibold text-[#222222]">{formatCurrency(detail.total)}</dd>
               </div>
             </dl>
             <button
               type="button"
-              className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[#684B5A] px-4 text-sm font-semibold text-white disabled:opacity-60"
+              className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1C1B1B] px-4 text-sm font-semibold text-white disabled:opacity-60"
               disabled={detail.items.length === 0 || cartBusy || commerce.busy}
               onClick={addOutfitToCart}
             >
@@ -249,19 +249,19 @@ export function OutfitDetailPage() {
             </button>
           </section>
 
-          <section className="rounded-lg border border-[#E3DAD0] bg-white p-5 shadow-sm">
+          <section className="rounded-lg border border-[#E3E2E2] bg-white p-5 shadow-sm">
             <h2 className="font-display text-2xl font-semibold text-[#222222]">Chỉnh tên</h2>
             <label className="mt-4 grid gap-2 text-sm font-semibold text-[#3A3632]">
               Tên outfit
               <input
                 value={nameDraft}
                 onChange={event => setNameDraft(event.target.value)}
-                className="min-h-11 rounded-lg border border-[#D8D0C6] bg-white px-3 text-sm font-medium text-[#222222] outline-none focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20"
+                className="min-h-11 rounded-lg border border-[#C4C7C7] bg-white px-3 text-sm font-medium text-[#222222] outline-none focus:border-[#1C1B1B] focus:ring-2 focus:ring-[#1C1B1B]/20"
               />
             </label>
             <button
               type="button"
-              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg bg-[#EEE8E1] px-4 text-sm font-semibold text-[#222222]"
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg bg-[#EFEDED] px-4 text-sm font-semibold text-[#222222]"
               onClick={saveName}
             >
               Lưu tên outfit

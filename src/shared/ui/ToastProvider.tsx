@@ -20,7 +20,7 @@ const ToastContext = createContext<ToastValue | null>(null)
 const toastClass: Record<ToastType, string> = {
   success: 'border-[#B7D3BF] bg-[#EAF2EC] text-[#294C36]',
   error: 'border-[#E7BBBB] bg-[#FCEAEA] text-[#7E3333]',
-  info: 'border-[#D8D0C6] bg-[#FDFCFA] text-[#3A3632]',
+  info: 'border-[#C4C7C7] bg-[#FFFFFF] text-[#3A3632]',
 }
 
 export function ToastProvider({ children }: PropsWithChildren) {
@@ -59,7 +59,7 @@ export function ToastProvider({ children }: PropsWithChildren) {
               type="button"
               aria-label="Đóng thông báo"
               onClick={() => removeToast(toast.id)}
-              className="inline-grid h-7 w-7 flex-none place-items-center rounded-md transition hover:bg-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+              className="inline-grid h-7 w-7 flex-none place-items-center rounded-md transition hover:bg-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
             >
               <X size={15} aria-hidden="true" />
             </button>

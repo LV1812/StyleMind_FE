@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '@/app/router/routes'
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
-import { Button, EmptyState, Modal } from '@/shared/ui'
+import { Button, Modal } from '@/shared/ui'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
 import { GUEST_LATEST_ORDER } from '@/features/checkout/model/guestCheckout'
 import { useActiveCommerce } from '../model/AccountCommerceProvider'
 import { CartLineItem } from '../components/CartLineItem'
 import type { GuestCartItem } from '../data/guestCartApi'
+import { ArrowRight, RefreshCw, ShoppingBag } from 'lucide-react'
 
 export default function GuestCartPage() {
   const guest = useActiveCommerce()
@@ -15,14 +16,15 @@ export default function GuestCartPage() {
   const [removing, setRemoving] = useState<GuestCartItem | null>(null)
   const latest = window.localStorage.getItem(GUEST_LATEST_ORDER)
   const legacyCart = state.cartLines.some(line => !/^[\da-f-]{36}$/i.test(line.variantId))
-  return <div className="mx-auto grid max-w-[var(--container-wide)] gap-5 px-5 py-8 md:px-8">
-    <h1 className="font-display text-4xl font-semibold">Giỏ hàng</h1>
-    {latest && <Link className="text-[#684B5A] underline" to={ROUTES.guestOrder.replace(':orderId', encodeURIComponent(latest))}>Xem đơn hàng khách gần nhất</Link>}
+  return <div className="mx-auto grid max-w-[var(--container-wide)] gap-6 px-6 py-10 md:px-16">
+    <div className="border-b border-[#E3E2E2] pb-6"><p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#735C00]">StyleMind</p><h1 className="font-display text-4xl font-semibold">Giỏ hàng</h1></div>
+    {latest && <Link className="text-[#1C1B1B] underline" to={ROUTES.guestOrder.replace(':orderId', encodeURIComponent(latest))}>Xem đơn hàng khách gần nhất</Link>}
     {legacyCart && <p className="rounded-lg bg-amber-50 p-3 text-amber-900">Giỏ hàng cũ chứa sản phẩm mẫu chưa được lưu trên hệ thống. Vui lòng chọn lại sản phẩm trong cửa hàng để mua hàng thật.</p>}
     {guest.cartError && <p role="alert" className="rounded-lg bg-red-50 p-3 text-red-800">{guest.cartError}</p>}
-    <Button variant="secondary" disabled={guest.busy || guest.cartLoading} onClick={() => void guest.refreshCart().catch(() => undefined)}>Tải lại giỏ hàng</Button>
-    {guest.cartLoading ? <p role="status">Đang tải giỏ hàng…</p> : guest.cart.items.length === 0 ? <EmptyState title="Giỏ hàng của bạn đang trống" description="Chọn sản phẩm từ cửa hàng để bắt đầu." action={<Link to={ROUTES.shop} className="text-[#684B5A] underline">Bắt đầu mua sắm</Link>} /> : <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+    <Button className="w-fit" variant="ghost" icon={<RefreshCw size={16} aria-hidden="true" />} disabled={guest.busy || guest.cartLoading} onClick={() => void guest.refreshCart().catch(() => undefined)}>Tải lại giỏ hàng</Button>
+    {guest.cartLoading ? <p role="status">Đang tải giỏ hàng…</p> : guest.cart.items.length === 0 ? <div className="mx-auto grid w-full max-w-xl justify-items-center gap-4 rounded-3xl border border-[#E3E2E2] bg-white px-6 py-12 text-center sm:py-16"><span className="grid h-16 w-16 place-items-center rounded-full bg-[#F5F3F3] text-[#5E5F5D]"><ShoppingBag size={28} aria-hidden="true" /></span><h2 className="font-display text-3xl font-semibold">Giỏ hàng của bạn đang trống</h2><p className="text-sm leading-6 text-[#5E5F5D]">Chọn sản phẩm từ cửa hàng để bắt đầu.</p><Link to={ROUTES.shop} className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#1C1B1B] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#444746] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] focus-visible:ring-offset-2">Bắt đầu mua sắm <ArrowRight size={16} aria-hidden="true" /></Link></div> : <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
       <fieldset disabled={guest.busy} className="grid gap-4">
+        <legend className="mb-4 font-display text-2xl font-semibold">Sản phẩm trong giỏ ({guest.cart.items.length})</legend>
         {guest.cart.items.map(item => {
           const product = guest.products.find(product => product.variants.some(variant => variant.id === item.variant_id))
           const variant = product?.variants.find(variant => variant.id === item.variant_id)
@@ -37,10 +39,10 @@ export default function GuestCartPage() {
           }} onQuantityChange={quantity => void guest.updateItem(item.cart_item_id, quantity).catch(() => undefined)} onRemove={() => setRemoving(item)} />
         })}
       </fieldset>
-      <aside className="grid content-start gap-5 rounded-lg bg-white p-5">
-        <h2 className="font-display text-2xl font-semibold">Tổng thanh toán</h2>
-        <p className="text-xl font-bold text-[#684B5A]">{formatCurrency(guest.cart.total_vnd)}</p>
-        {guest.busy || guest.cartError ? <Button disabled>Tiến hành thanh toán</Button> : <Link to={ROUTES.checkout} className="rounded-lg bg-[#684B5A] px-4 py-3 text-center font-semibold text-white">Tiến hành thanh toán</Link>}
+      <aside className="grid content-start gap-5 rounded-2xl border border-[#E3E2E2] bg-white p-6 shadow-sm lg:sticky lg:top-28">
+        <h2 className="font-display text-2xl font-semibold">Tóm tắt đơn hàng</h2>
+        <div className="flex items-center justify-between gap-4 border-t border-[#E3E2E2] pt-5"><span className="text-sm text-secondary">Tổng thanh toán</span><p className="text-xl font-bold text-[#1C1B1B]">{formatCurrency(guest.cart.total_vnd)}</p></div>
+        {guest.busy || guest.cartError ? <Button disabled>Tiến hành thanh toán</Button> : <Link to={ROUTES.checkout} className="rounded-lg bg-[#1C1B1B] px-4 py-3 text-center font-semibold text-white">Tiến hành thanh toán</Link>}
       </aside>
     </div>}
     <Modal open={Boolean(removing)} title="Xóa sản phẩm khỏi giỏ?" onClose={() => { if (!guest.busy) setRemoving(null) }} footer={<>

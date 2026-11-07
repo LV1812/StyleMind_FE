@@ -5,6 +5,7 @@ import { formatCurrency } from '@/shared/lib/formatCurrency'
 import { PaymentApiError } from '../api/paymentApi'
 import { isUuid, paymentApi, paymentErrorMessage } from '../api/paymentClient'
 import type { PaymentExceptionList } from '../api/types'
+import { ArrowLeft, Banknote, CircleAlert } from 'lucide-react'
 
 export default function AdminPaymentsPage() {
   const sending = useRef(false)
@@ -65,12 +66,14 @@ export default function AdminPaymentsPage() {
     }
   }
 
-  return <main className="mx-auto grid max-w-5xl gap-6 px-5 py-8">
-    <Link to="/admin" className="text-[#684B5A] underline">Về quản trị</Link>
-    <h1 className="font-display text-3xl font-semibold">Thanh toán Admin</h1>
-    <form className="grid gap-4 rounded-lg bg-white p-5" onSubmit={event => { event.preventDefault(); void collect() }}>
-      <h2 className="text-xl font-semibold">Ghi nhận thực thu COD</h2>
-      <p>Chỉ ghi nhận sau khi đã nhận tiền. Mã khoản thanh toán được lấy từ backend, không phải mã Order.</p>
+  return <main className="mx-auto grid max-w-6xl gap-7 px-5 py-10 md:px-8 md:py-12">
+    <header className="border-b border-[#E3E2E2] pb-7">
+      <Link to="/admin" className="inline-flex items-center gap-2 text-sm font-semibold text-[#1C1B1B] hover:underline"><ArrowLeft size={16} aria-hidden="true" /> Về quản trị</Link>
+      <h1 className="mt-5 font-display text-4xl font-semibold">Thanh toán Admin</h1>
+      <p className="mt-2 text-sm text-secondary">Ghi nhận thu COD và theo dõi các khoản thanh toán cần kiểm tra.</p>
+    </header>
+    <form className="grid gap-4 rounded-xl border border-[#E3E2E2] bg-white p-5 sm:p-7" onSubmit={event => { event.preventDefault(); void collect() }}>
+      <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#EFEDED]"><Banknote size={20} aria-hidden="true" /></span><div><h2 className="font-display text-2xl font-semibold">Ghi nhận thực thu COD</h2><p className="mt-2 text-sm leading-6 text-secondary">Chỉ ghi nhận sau khi đã nhận tiền. Mã khoản thanh toán được lấy từ backend, không phải mã Order.</p></div></div>
       <p className="text-sm text-secondary">Chưa có API tra cứu khoản COD theo đơn dành cho Admin. Cần cung cấp đúng mã khoản thanh toán để ghi nhận.</p>
       <TextField label="Mã khoản thanh toán COD" value={attemptId} disabled={saving} onChange={event => {
         setAttemptId(event.target.value); setAttested(false); setMessage(''); setError('')
@@ -82,8 +85,8 @@ export default function AdminPaymentsPage() {
       {message && <p role="status" className="text-green-800">{message}</p>}
       {error && <p role="alert" className="text-red-800">{error}</p>}
     </form>
-    <section className="grid gap-4 rounded-lg bg-white p-5">
-      <h2 className="text-xl font-semibold">Lỗi thanh toán cần kiểm tra</h2>
+    <section className="grid gap-4 rounded-xl border border-[#E3E2E2] bg-white p-5 sm:p-7">
+      <div className="flex items-center gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#EFEDED]"><CircleAlert size={20} aria-hidden="true" /></span><h2 className="font-display text-2xl font-semibold">Lỗi thanh toán cần kiểm tra</h2></div>
       <form className="flex flex-wrap items-end gap-3" onSubmit={event => {
         event.preventDefault()
         setQuery(current => ({ status: filter.trim(), offset: 0, version: current.version + 1 }))
@@ -93,7 +96,7 @@ export default function AdminPaymentsPage() {
       </form>
       {listError && <p role="alert">{listError}</p>}
       {result && <>
-        {result.items.length === 0 ? <p>Không có lỗi thanh toán.</p> : <div className="overflow-x-auto"><table className="w-full text-left text-sm">
+        {result.items.length === 0 ? <p className="rounded-lg bg-[#FBF9F9] px-4 py-6 text-center text-sm text-secondary">Không có lỗi thanh toán.</p> : <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm">
           <thead><tr><th className="p-2">Mã khoản thanh toán</th><th className="p-2">Số tiền nhận</th><th className="p-2">Lý do</th><th className="p-2">Trạng thái</th><th className="p-2">Thời điểm</th></tr></thead>
           <tbody>{result.items.map(item => <tr key={item.exception_id} className="border-t">
             <td className="p-2">{item.payment_attempt_id ?? 'Không xác định'}</td><td className="p-2">{formatCurrency(item.received_amount_vnd)}</td>
@@ -105,7 +108,7 @@ export default function AdminPaymentsPage() {
           <Button variant="secondary" disabled={loading || result.items.length < 20} onClick={() => setQuery(current => ({ ...current, offset: current.offset + 20 }))}>Trang sau</Button>
         </div>
       </>}
-      <p className="text-sm text-[#6F6B67]">Hiện chưa hỗ trợ xử lý đối soát hoặc hoàn tiền trên giao diện.</p>
+      <p className="text-sm text-[#5E5F5D]">Hiện chưa hỗ trợ xử lý đối soát hoặc hoàn tiền trên giao diện.</p>
     </section>
   </main>
 }

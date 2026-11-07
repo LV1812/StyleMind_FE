@@ -9,9 +9,10 @@ export interface ModalProps {
   onClose: () => void
   children: ReactNode
   footer?: ReactNode
+  layout?: 'center' | 'drawer'
 }
 
-export function Modal({ open, title, description, onClose, children, footer }: ModalProps) {
+export function Modal({ open, title, description, onClose, children, footer, layout = 'center' }: ModalProps) {
   const titleId = useId()
   const descriptionId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
@@ -23,9 +24,10 @@ export function Modal({ open, title, description, onClose, children, footer }: M
     previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     const originalOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    window.setTimeout(() => dialogRef.current?.focus(), 0)
+    const focusTimer = window.setTimeout(() => dialogRef.current?.focus(), 0)
 
     return () => {
+      window.clearTimeout(focusTimer)
       document.body.style.overflow = originalOverflow
       previousFocusRef.current?.focus()
     }
@@ -36,6 +38,24 @@ export function Modal({ open, title, description, onClose, children, footer }: M
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose()
+      if (event.key !== 'Tab' || !dialogRef.current) return
+
+      const dialog = dialogRef.current
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )).filter(element => !element.closest('[hidden], [inert], [aria-hidden="true"]') && getComputedStyle(element).visibility !== 'hidden' && getComputedStyle(element).display !== 'none')
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (!first || !last) {
+        event.preventDefault()
+        dialog.focus()
+      } else if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement) || document.activeElement === dialog)) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement) || document.activeElement === dialog)) {
+        event.preventDefault()
+        first.focus()
+      }
     }
 
     document.addEventListener('keydown', handleKeyDown)
@@ -45,7 +65,7 @@ export function Modal({ open, title, description, onClose, children, footer }: M
   if (!open) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[var(--z-modal)] grid place-items-center bg-[var(--color-overlay)] px-4 py-6">
+    <div className={`fixed inset-0 z-[var(--z-modal)] bg-[var(--color-overlay)] ${layout === 'drawer' ? 'flex justify-end' : 'grid place-items-center px-4 py-6'}`}>
       <div
         ref={dialogRef}
         role="dialog"
@@ -53,7 +73,7 @@ export function Modal({ open, title, description, onClose, children, footer }: M
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className="max-h-[min(720px,calc(100dvh-48px))] w-full max-w-lg overflow-auto rounded-lg bg-[#FDFCFA] p-5 text-[#222222] shadow-[0_24px_60px_rgba(58,54,50,0.22)] outline-none"
+        className={`w-full overflow-auto bg-white text-[#222222] shadow-[0_24px_60px_rgba(58,54,50,0.22)] outline-none ${layout === 'drawer' ? 'h-dvh max-w-[920px] p-5 sm:p-8' : 'max-h-[min(720px,calc(100dvh-48px))] max-w-lg rounded-lg p-5'}`}
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -61,7 +81,7 @@ export function Modal({ open, title, description, onClose, children, footer }: M
               {title}
             </h2>
             {description && (
-              <p id={descriptionId} className="mt-2 text-sm leading-6 text-[#6F6B67]">
+              <p id={descriptionId} className="mt-2 text-sm leading-6 text-[#5E5F5D]">
                 {description}
               </p>
             )}
@@ -70,7 +90,7 @@ export function Modal({ open, title, description, onClose, children, footer }: M
             type="button"
             aria-label="Đóng hộp thoại"
             onClick={onClose}
-            className="inline-grid h-9 w-9 flex-none place-items-center rounded-lg text-[#6F6B67] transition hover:bg-[#EEE8E1] hover:text-[#222222] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+            className="inline-grid h-9 w-9 flex-none place-items-center rounded-lg text-[#5E5F5D] transition hover:bg-[#EFEDED] hover:text-[#222222] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
           >
             <X size={18} aria-hidden="true" />
           </button>

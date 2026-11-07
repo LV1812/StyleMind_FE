@@ -10,7 +10,6 @@ import { useActiveCommerce } from '@/features/cart/model/AccountCommerceProvider
 import { apiMode } from '@/shared/api/http'
 
 const navItems = [
-  { to: ROUTES.payments, label: 'Thanh toán' },
   { to: ROUTES.home, label: 'Trang chủ' },
   { to: ROUTES.shop, label: 'Cửa hàng' },
   { to: ROUTES.wardrobes, label: 'Tủ đồ' },
@@ -34,21 +33,20 @@ export function CustomerHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-[var(--z-sticky)] border-b border-[#EEE8E1] bg-[#FAF8F5]/95 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-[var(--container-wide)] items-center gap-5 px-5 md:px-8">
-        <Link to={ROUTES.home} className="flex flex-none items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#684B5A] font-display text-sm font-semibold text-white">S</span>
-          <span className="font-display text-xl font-semibold text-[#222222]">StyleMind</span>
+    <header className="sticky top-0 z-[var(--z-sticky)] border-b border-[#EFEDED] bg-[#FBF9F9]/95 backdrop-blur-md">
+      <div className="mx-auto flex h-20 max-w-[var(--container-wide)] items-center gap-5 px-5 md:px-8 lg:px-12">
+        <Link to={ROUTES.home} className="flex flex-none items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]">
+          <span className="font-display text-3xl text-[#222222]">StyleMind</span>
         </Link>
-        <nav aria-label="Điều hướng chính" className="hidden items-center gap-1 md:flex">
+        <nav aria-label="Điều hướng chính" className="hidden items-center gap-1 lg:flex">
           {visibleNavItems.map(item => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === ROUTES.home}
               className={({ isActive }) =>
-                `rounded-lg px-3 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] ${
-                  isActive ? 'bg-[#F4E7E8] text-[#684B5A]' : 'text-[#6F6B67] hover:bg-[#EEE8E1] hover:text-[#222222]'
+                `border-b-2 px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] ${
+                  isActive ? 'border-[#1C1B1B] text-[#1C1B1B]' : 'border-transparent text-[#5E5F5D] hover:text-[#222222]'
                 }`
               }
             >
@@ -56,7 +54,7 @@ export function CustomerHeader() {
             </NavLink>
           ))}
         </nav>
-        <div className="ml-auto hidden items-center gap-2 lg:flex">
+        <div className="ml-auto hidden items-center gap-2 md:flex">
           <HeaderIconLink to={ROUTES.notifications} label={apiMode() ? 'Thông báo' : `Thông báo (${unreadCount} chưa đọc)`} count={apiMode() ? 0 : unreadCount}>
             <Bell size={18} aria-hidden="true" />
           </HeaderIconLink>
@@ -80,7 +78,7 @@ export function CustomerHeader() {
             to={ROUTES.admin}
             aria-label="Về trang quản trị"
             title="Về trang quản trị"
-            className="ml-auto inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#D8D0C6] px-3 text-sm font-semibold text-[#684B5A] transition hover:bg-[#F4E7E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] md:hidden"
+            className="ml-auto inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#C4C7C7] px-3 text-sm font-semibold text-[#1C1B1B] transition hover:bg-[#E9E8E7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] lg:hidden"
           >
             <LayoutDashboard size={17} aria-hidden="true" />
             <span>Quản trị</span>
@@ -89,7 +87,7 @@ export function CustomerHeader() {
         {currentUser && (
           <HeaderIconButton
             label="Đăng xuất khỏi tài khoản"
-            className={`${currentUser.role === 'admin' ? '' : 'ml-auto'} md:ml-auto lg:hidden`}
+            className={`${currentUser.role === 'admin' ? '' : 'ml-auto'} md:hidden`}
             onClick={handleLogout}
           >
             <LogOut size={18} aria-hidden="true" />
@@ -105,11 +103,11 @@ function HeaderIconLink({ to, label, count, children }: { to: string; label: str
     <Link
       to={to}
       aria-label={label}
-      className="relative inline-grid h-10 w-10 place-items-center rounded-lg text-[#3A3632] transition hover:bg-[#EEE8E1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+      className="relative inline-grid h-10 w-10 place-items-center rounded-lg text-[#3A3632] transition hover:bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
     >
       {children}
       {Boolean(count) && (
-        <span className="absolute right-1 top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#684B5A] px-1 text-[10px] font-bold leading-none text-white">
+        <span className="absolute right-1 top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#1C1B1B] px-1 text-[10px] font-bold leading-none text-white">
           {count}
         </span>
       )}
@@ -133,7 +131,7 @@ function HeaderIconButton({
       type="button"
       aria-label={label}
       title={label}
-      className={`relative inline-grid h-10 w-10 place-items-center rounded-lg text-[#3A3632] transition hover:bg-[#EEE8E1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] ${className}`}
+      className={`relative inline-grid h-10 w-10 place-items-center rounded-lg text-[#3A3632] transition hover:bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] ${className}`}
       onClick={onClick}
     >
       {children}

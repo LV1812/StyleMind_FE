@@ -15,6 +15,16 @@ function connectSocket() {
   }
   vi.stubGlobal('WebSocket', Socket)
 }
+it('offers a way to open Friends without showing a misleading connection status when there are no chats', async () => {
+  const actor = '10000000-0000-0000-0000-000000000001'
+  saveApiSession(`e30.${btoa(JSON.stringify({ sub: actor, roles: ['CUSTOMER'] }))}.sig`, Date.now() + 60000)
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => new Response(JSON.stringify(path === '/api/v1/me'
+    ? { account_id: actor, email: 'real@example.test', profile: null }
+    : { items: [], page: 0, size: 20, total_elements: 0, total_pages: 0 }), { status: 200 })))
+  render(<AppProviders><RouterProvider router={createMemoryRouter(appRoutes, { initialEntries: ['/messages'] })} /></AppProviders>)
+  expect(await screen.findByRole('link', { name: 'Đi đến Bạn bè' })).toHaveAttribute('href', '/friends')
+  expect(screen.queryByText(/Đang kết nối/)).not.toBeInTheDocument()
+})
 it('places the current user messages on the right and friend messages on the left', async () => {
   const actor = '10000000-0000-0000-0000-000000000001', peer = '30000000-0000-0000-0000-000000000003', chat = '20000000-0000-0000-0000-000000000002'
   vi.stubEnv('VITE_COMMUNITY_MODE', 'api')

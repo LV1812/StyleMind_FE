@@ -95,6 +95,7 @@ describe('Account flow', () => {
     const updatedAddress = screen.getByText(/Căn hộ Studio B/).closest('article') as HTMLElement
     await user.click(within(updatedAddress).getByRole('button', { name: /Đặt mặc định/ }))
     await user.click(screen.getByRole('button', { name: /Xóa địa chỉ .*18 Lê Thánh Tôn/ }))
+    await user.click(within(screen.getByRole('dialog', { name: 'Xóa địa chỉ' })).getByRole('button', { name: 'Xác nhận xóa' }))
 
     expect(await screen.findByText(/Đã xóa địa chỉ/)).toBeInTheDocument()
 
@@ -111,6 +112,11 @@ describe('Account flow', () => {
     renderAt('/account/addresses', database)
 
     await user.click(await screen.findByRole('button', { name: /Xóa địa chỉ .*72 Nguyễn Thị Minh Khai/ }))
+    const dialog = screen.getByRole('dialog', { name: 'Xóa địa chỉ' })
+    await user.click(within(dialog).getByRole('button', { name: 'Giữ địa chỉ' }))
+    expect(screen.getByText(/72 Nguyễn Thị Minh Khai/)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Xóa địa chỉ .*72 Nguyễn Thị Minh Khai/ }))
+    await user.click(within(screen.getByRole('dialog', { name: 'Xóa địa chỉ' })).getByRole('button', { name: 'Xác nhận xóa' }))
 
     expect(await screen.findByRole('heading', { name: 'Chưa có địa chỉ' })).toBeInTheDocument()
   })

@@ -93,8 +93,9 @@ export function VerifyOtpPage() {
       title={isPasswordReset ? 'Xác nhận đặt lại mật khẩu' : 'Xác thực email'}
       description={isPasswordReset ? 'Nhập mã sáu chữ số đã gửi đến email để tiếp tục.' : 'Nhập mã sáu chữ số đã gửi đến email để xác thực tài khoản.'}
     >
-      <h1 className="font-display text-3xl font-semibold">{isPasswordReset ? 'Xác nhận đặt lại mật khẩu' : 'Xác thực email'}</h1>
-      <p className="mt-2 text-sm leading-6 text-[#6F6B67]">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#5E5F5D]">Xác minh tài khoản</p>
+      <h1 className="font-display text-4xl font-semibold">{isPasswordReset ? 'Xác nhận đặt lại mật khẩu' : 'Xác thực email'}</h1>
+      <p className="mt-2 text-sm leading-6 text-[#5E5F5D]">
         Nhập mã gồm sáu chữ số đã gửi đến email của bạn. Mã có hiệu lực trong 5 phút.
       </p>
       <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
@@ -102,6 +103,7 @@ export function VerifyOtpPage() {
           label="Email"
           type="email"
           autoComplete="email"
+          className="!rounded-none !border-0 !border-b !border-[#C4C7C7] !bg-transparent !px-0"
           value={email}
           readOnly
           error={emailError}
@@ -138,13 +140,13 @@ export function VerifyOtpPage() {
                 setDigits(current => current.map((currentDigit, digitIndex) => digitIndex === index ? value.slice(0, 1) : currentDigit))
                 if (value && index < 5) digitInputs.current[index + 1]?.focus()
               }}
-              className="h-12 min-w-0 rounded-lg border border-[#D8D0C6] bg-white text-center text-lg font-semibold outline-none focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20"
+              className="h-12 min-w-0 rounded-lg border border-[#C4C7C7] bg-white text-center text-lg font-semibold outline-none focus:border-[#1C1B1B] focus:ring-2 focus:ring-[#1C1B1B]/20"
             />
           ))}
         </div>
         {notice && (
           <p
-            className={`rounded-lg px-3 py-2 text-sm font-semibold ${noticeKind === 'success' ? 'bg-[#EAF2EC] text-[#294C36]' : 'bg-[#F4E7E8] text-[#684B5A]'}`}
+            className={`rounded-lg px-3 py-2 text-sm font-semibold ${noticeKind === 'success' ? 'bg-[#EAF2EC] text-[#294C36]' : 'bg-[#E9E8E7] text-[#1C1B1B]'}`}
             role="status"
           >
             {notice}

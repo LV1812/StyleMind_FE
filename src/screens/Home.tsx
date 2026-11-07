@@ -29,7 +29,7 @@ const outfitOfTheDayPieces: OutfitPiece[] = [
     status: 'owned',
     image: 'https://images.unsplash.com/photo-1645996830718-127f7e4f74fc?w=300&h=400&fit=crop&auto=format',
     color: "Be cát",
-    colorHex: '#EEE8E1',
+    colorHex: '#EFEDED',
     size: 'S',
   },
   {
@@ -254,7 +254,7 @@ export default function Home({ onNavigate, app }: Props) {
               <div className="pt-4 border-t border-accent/15">
                 <p className="text-xs font-medium text-secondary mb-2">Tông màu chủ đạo:</p>
                 <div className="flex items-center gap-2">
-                  {['#F5EDD8', '#EEE8E1', '#E8DDD2', '#F2F0ED'].map((hex, i) => (
+                  {['#F5EDD8', '#EFEDED', '#E8DDD2', '#F2F0ED'].map((hex, i) => (
                     <div
                       key={i}
                       className="w-6 h-6 rounded-full border border-overlay/10 shadow-2xs"

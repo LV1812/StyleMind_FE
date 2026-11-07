@@ -94,7 +94,7 @@ export function WardrobeSharePanel({
                 type="email"
                 value={email}
                 onChange={event => setEmail(event.target.value)}
-                className="min-h-11 rounded-lg border border-[#D8D0C6] bg-white px-3 text-sm font-medium text-[#222222] outline-none transition focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20"
+                className="min-h-11 rounded-lg border border-[#C4C7C7] bg-white px-3 text-sm font-medium text-[#222222] outline-none transition focus:border-[#1C1B1B] focus:ring-2 focus:ring-[#1C1B1B]/20"
                 placeholder="banbe@example.com"
               />
             </label>
@@ -105,15 +105,15 @@ export function WardrobeSharePanel({
             </Button>
           </form>
 
-          <div className="rounded-lg bg-[#FAF8F5] p-3">
+          <div className="rounded-lg bg-[#FBF9F9] p-3">
             <p className="text-sm font-semibold text-[#222222]">Chế độ tủ đồ</p>
             <div className="mt-3 grid gap-2 sm:grid-cols-3">
               {(['private', 'protected', 'public'] as WardrobeVisibility[]).map(option => (
                 <button
                   key={option}
                   type="button"
-                  className={`min-h-10 rounded-lg px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] ${
-                    visibility === option ? 'bg-[#684B5A] text-white' : 'bg-white text-[#3A3632] hover:bg-[#EEE8E1]'
+                  className={`min-h-10 rounded-lg px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] ${
+                    visibility === option ? 'bg-[#1C1B1B] text-white' : 'bg-white text-[#3A3632] hover:bg-[#EFEDED]'
                   }`}
                   onClick={() => onVisibilityChange(option)}
                 >
@@ -122,7 +122,7 @@ export function WardrobeSharePanel({
               ))}
             </div>
             {visibility === 'private' && (
-              <p className="mt-3 text-sm leading-6 text-[#6F6B67]">
+              <p className="mt-3 text-sm leading-6 text-[#5E5F5D]">
                 Tủ đồ đang riêng tư. Danh sách email vẫn được lưu nhưng người được chia sẻ tạm thời không xem hoặc chat được.
               </p>
             )}
@@ -130,11 +130,11 @@ export function WardrobeSharePanel({
 
           <div>
             {recipients.length === 0 ? (
-              <p className="text-sm leading-6 text-[#6F6B67]">Chưa chia sẻ tủ đồ với email nào.</p>
+              <p className="text-sm leading-6 text-[#5E5F5D]">Chưa chia sẻ tủ đồ với email nào.</p>
             ) : (
               <ul className="grid gap-2">
                 {recipients.map(recipient => (
-                  <li key={recipient.email} className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#FAF8F5] px-3 py-2">
+                  <li key={recipient.email} className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#FBF9F9] px-3 py-2">
                     <span className="text-sm font-semibold text-[#222222]">
                       {recipient.email} · {recipient.count} outfit
                     </span>
@@ -152,11 +152,11 @@ export function WardrobeSharePanel({
           </div>
         </section>
 
-        <section aria-label="Chia sẻ public" className="mt-6 rounded-lg bg-[#FAF8F5] p-4">
+        <section aria-label="Chia sẻ public" className="mt-6 rounded-lg bg-[#FBF9F9] p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h3 className="font-semibold text-[#222222]">Link public</h3>
-              <p className="mt-1 text-sm leading-6 text-[#6F6B67]">
+              <p className="mt-1 text-sm leading-6 text-[#5E5F5D]">
                 Bất kỳ ai có link đều xem được toàn bộ outfit trong tủ đồ.
               </p>
             </div>
@@ -174,7 +174,7 @@ export function WardrobeSharePanel({
           {publicUrl && (
             <a
               href={publicUrl}
-              className="mt-3 block break-all rounded-lg border border-[#D8D0C6] bg-white px-3 py-2 text-sm font-semibold text-[#684B5A] transition hover:bg-[#F7F1F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+              className="mt-3 block break-all rounded-lg border border-[#C4C7C7] bg-white px-3 py-2 text-sm font-semibold text-[#1C1B1B] transition hover:bg-[#F7F1F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
             >
               {publicUrl}
             </a>
@@ -183,7 +183,7 @@ export function WardrobeSharePanel({
 
         <Link
           to={accessUrl}
-          className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-[#EEE8E1] px-4 text-sm font-semibold text-[#222222] transition hover:bg-[#E4DCD2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+          className="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-[#EFEDED] px-4 text-sm font-semibold text-[#222222] transition hover:bg-[#E3E2E2] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
         >
           Quản lý quyền truy cập
         </Link>

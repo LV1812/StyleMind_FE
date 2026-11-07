@@ -50,14 +50,14 @@ export default function CartScreen({ app }: { app: AppState }) {
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 32px 64px" }}>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 30, color: "#222222", marginBottom: 4 }}>My Cart</h1>
-        <p style={{ color: "#6F6B67", fontSize: 14 }}>{items.length} items · From your AI outfit recommendations</p>
+        <p style={{ color: "#5E5F5D", fontSize: 14 }}>{items.length} items · From your AI outfit recommendations</p>
       </div>
 
       {items.length === 0 ? (
         <div style={{ textAlign: "center", padding: "80px 0" }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>◻</div>
           <h3 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, color: "#222222", marginBottom: 10 }}>Your cart is empty</h3>
-          <p style={{ color: "#6F6B67", fontSize: 14, marginBottom: 24 }}>Explore the collection or ask StyleMind to build you an outfit.</p>
+          <p style={{ color: "#5E5F5D", fontSize: 14, marginBottom: 24 }}>Explore the collection or ask StyleMind to build you an outfit.</p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
             <button className="btn-primary" onClick={() => app.navigate("shop")}>Browse Collection</button>
             <button className="btn-ai" onClick={() => app.navigate("stylist")}>✦ Ask StyleMind</button>
@@ -69,9 +69,9 @@ export default function CartScreen({ app }: { app: AppState }) {
           <div>
             {/* Guest / merge notice */}
             {!app.isLoggedIn && (
-              <div style={{ background: "#F5EFE8", border: "1px solid #D8CFCA", borderRadius: 10, padding: "14px 16px", marginBottom: 20, fontSize: 13, color: "#6F6B67" }}>
+              <div style={{ background: "#F5EFE8", border: "1px solid #D8CFCA", borderRadius: 10, padding: "14px 16px", marginBottom: 20, fontSize: 13, color: "#5E5F5D" }}>
                 <strong style={{ color: "#222222" }}>Shopping as a guest</strong> — your items will be saved when you sign in or create an account.
-                <button onClick={() => app.navigate("auth")} style={{ background: "none", border: "none", color: "#684B5A", cursor: "pointer", marginLeft: 6, fontWeight: 500, fontSize: 13 }}>
+                <button onClick={() => app.navigate("auth")} style={{ background: "none", border: "none", color: "#1C1B1B", cursor: "pointer", marginLeft: 6, fontWeight: 500, fontSize: 13 }}>
                   Sign in →
                 </button>
               </div>
@@ -82,7 +82,7 @@ export default function CartScreen({ app }: { app: AppState }) {
                 key={item.id}
                 style={{
                   display: "grid", gridTemplateColumns: "100px 1fr auto",
-                  gap: 20, background: "white", border: "1px solid #EEE8E1",
+                  gap: 20, background: "white", border: "1px solid #EFEDED",
                   borderRadius: 14, padding: 20, marginBottom: 14,
                 }}
               >
@@ -91,11 +91,11 @@ export default function CartScreen({ app }: { app: AppState }) {
                 </div>
 
                 <div>
-                  <div style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#6F6B67", fontWeight: 500, marginBottom: 4 }}>{item.brand}</div>
+                  <div style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5E5F5D", fontWeight: 500, marginBottom: 4 }}>{item.brand}</div>
                   <div style={{ fontSize: 15, fontWeight: 500, color: "#222222", marginBottom: 8, lineHeight: 1.3 }}>{item.name}</div>
 
                   {/* Variant info */}
-                  <div style={{ display: "flex", gap: 10, marginBottom: 10, fontSize: 13, color: "#6F6B67" }}>
+                  <div style={{ display: "flex", gap: 10, marginBottom: 10, fontSize: 13, color: "#5E5F5D" }}>
                     <span>Size: <strong style={{ color: "#222222" }}>{item.size}</strong></span>
                     <span>·</span>
                     <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -124,7 +124,7 @@ export default function CartScreen({ app }: { app: AppState }) {
                       Remove
                     </button>
                     <button
-                      style={{ background: "none", border: "none", color: "#684B5A", fontSize: 12, cursor: "pointer", padding: 0 }}
+                      style={{ background: "none", border: "none", color: "#1C1B1B", fontSize: 12, cursor: "pointer", padding: 0 }}
                     >
                       Save for later
                     </button>
@@ -137,7 +137,7 @@ export default function CartScreen({ app }: { app: AppState }) {
                   <div style={{ display: "flex", alignItems: "center", gap: 0, border: "1.5px solid #D8CFCA", borderRadius: 8, overflow: "hidden" }}>
                     <button
                       onClick={() => updateQty(item.id, -1)}
-                      style={{ border: "none", background: "white", padding: "6px 12px", cursor: "pointer", fontSize: 16, color: "#6F6B67" }}
+                      style={{ border: "none", background: "white", padding: "6px 12px", cursor: "pointer", fontSize: 16, color: "#5E5F5D" }}
                     >
                       −
                     </button>
@@ -146,7 +146,7 @@ export default function CartScreen({ app }: { app: AppState }) {
                     </span>
                     <button
                       onClick={() => updateQty(item.id, 1)}
-                      style={{ border: "none", background: "white", padding: "6px 12px", cursor: "pointer", fontSize: 16, color: "#6F6B67" }}
+                      style={{ border: "none", background: "white", padding: "6px 12px", cursor: "pointer", fontSize: 16, color: "#5E5F5D" }}
                     >
                       +
                     </button>
@@ -168,10 +168,10 @@ export default function CartScreen({ app }: { app: AppState }) {
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 {SUGGESTED_ITEMS.map((item) => (
-                  <div key={item.id} style={{ background: "white", borderRadius: 10, overflow: "hidden", border: "1px solid #EEE8E1" }}>
+                  <div key={item.id} style={{ background: "white", borderRadius: 10, overflow: "hidden", border: "1px solid #EFEDED" }}>
                     <img src={item.image} alt={item.name} style={{ width: "100%", aspectRatio: "4/5", objectFit: "cover" }} />
                     <div style={{ padding: "10px 12px" }}>
-                      <div style={{ fontSize: 10, color: "#6F6B67", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 500, marginBottom: 3 }}>{item.brand}</div>
+                      <div style={{ fontSize: 10, color: "#5E5F5D", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 500, marginBottom: 3 }}>{item.brand}</div>
                       <div style={{ fontSize: 13, color: "#222222", marginBottom: 6 }}>{item.name}</div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <span style={{ fontSize: 13, fontWeight: 600, color: "#222222" }}>{formatVND(item.price)}</span>
@@ -186,30 +186,30 @@ export default function CartScreen({ app }: { app: AppState }) {
 
           {/* Order Summary */}
           <div style={{ position: "sticky", top: 88 }}>
-            <div style={{ background: "white", border: "1px solid #EEE8E1", borderRadius: 16, padding: 24 }}>
+            <div style={{ background: "white", border: "1px solid #EFEDED", borderRadius: 16, padding: 24 }}>
               <h3 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 18, color: "#222222", marginBottom: 20 }}>
                 Order Summary
               </h3>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
-                  <span style={{ color: "#6F6B67" }}>Subtotal ({items.reduce((s, i) => s + i.qty, 0)} items)</span>
+                  <span style={{ color: "#5E5F5D" }}>Subtotal ({items.reduce((s, i) => s + i.qty, 0)} items)</span>
                   <span style={{ color: "#222222" }}>{formatVND(subtotal)}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
-                  <span style={{ color: "#6F6B67" }}>Shipping</span>
+                  <span style={{ color: "#5E5F5D" }}>Shipping</span>
                   <span style={{ color: shipping === 0 ? "#48755A" : "#222222" }}>
                     {shipping === 0 ? "Free" : formatVND(shipping)}
                   </span>
                 </div>
                 {shipping > 0 && (
-                  <div style={{ fontSize: 12, color: "#B98791", background: "#F4E7E8", borderRadius: 8, padding: "8px 12px" }}>
+                  <div style={{ fontSize: 12, color: "#B98791", background: "#E9E8E7", borderRadius: 8, padding: "8px 12px" }}>
                     Add {formatVND(2000000 - subtotal)} more for free shipping
                   </div>
                 )}
               </div>
 
-              <div style={{ borderTop: "1.5px solid #EEE8E1", paddingTop: 16, marginBottom: 20 }}>
+              <div style={{ borderTop: "1.5px solid #EFEDED", paddingTop: 16, marginBottom: 20 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 17, fontWeight: 600 }}>
                   <span style={{ color: "#222222" }}>Total</span>
                   <span style={{ color: "#222222" }}>{formatVND(total)}</span>
@@ -228,11 +228,11 @@ export default function CartScreen({ app }: { app: AppState }) {
                 🔒 Secure checkout · Free returns within 30 days
               </div>
 
-              <div style={{ marginTop: 16, borderTop: "1px solid #EEE8E1", paddingTop: 16 }}>
-                <div style={{ fontSize: 12, color: "#6F6B67", fontWeight: 500, marginBottom: 8 }}>Payment Methods</div>
+              <div style={{ marginTop: 16, borderTop: "1px solid #EFEDED", paddingTop: 16 }}>
+                <div style={{ fontSize: 12, color: "#5E5F5D", fontWeight: 500, marginBottom: 8 }}>Payment Methods</div>
                 <div style={{ display: "flex", gap: 8 }}>
                   {["COD", "SePay / VietQR"].map((pm) => (
-                    <span key={pm} style={{ fontSize: 11, border: "1px solid #EEE8E1", borderRadius: 6, padding: "4px 10px", color: "#6F6B67" }}>
+                    <span key={pm} style={{ fontSize: 11, border: "1px solid #EFEDED", borderRadius: 6, padding: "4px 10px", color: "#5E5F5D" }}>
                       {pm}
                     </span>
                   ))}

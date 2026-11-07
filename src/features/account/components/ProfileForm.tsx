@@ -10,9 +10,9 @@ interface ProfileFormProps {
 
 export function ProfileForm({ value, errors, onChange }: ProfileFormProps) {
   return (
-    <section className="rounded-lg border border-[#E3DAD0] bg-white p-5 shadow-sm">
+    <section>
       <h2 className="font-display text-2xl font-semibold text-[#222222]">Hồ sơ cá nhân</h2>
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <div className="mt-5 max-w-xl">
         <TextField
           label="Tên hiển thị"
           value={value.displayName}

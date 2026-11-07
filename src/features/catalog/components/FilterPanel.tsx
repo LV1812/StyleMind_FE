@@ -77,7 +77,7 @@ export function FilterPanel({ filters, categories, styles, occasions, colors, si
                   type="checkbox"
                   checked={filters.sizes.includes(size)}
                   onChange={() => onChange({ ...filters, sizes: toggleSize(filters.sizes, size) })}
-                  className="h-4 w-4 accent-[#684B5A]"
+                  className="h-4 w-4 accent-[#1C1B1B]"
                 />
                 {size}
               </label>
@@ -110,8 +110,8 @@ export function FilterPanel({ filters, categories, styles, occasions, colors, si
         </FilterGroup>
       )}
       <FilterGroup title="Khoảng giá">
-        <div className="grid grid-cols-2 gap-2">
-          <label className="grid gap-1 text-xs font-semibold text-[#6F6B67]">
+        <div className="grid min-w-0 grid-cols-2 gap-2">
+          <label className="grid min-w-0 gap-1 text-xs font-semibold text-[#5E5F5D]">
             Từ
             <input
               type="number"
@@ -119,10 +119,10 @@ export function FilterPanel({ filters, categories, styles, occasions, colors, si
               value={filters.price.min || ''}
               onChange={event => updatePrice('min', event.target.value)}
               placeholder="0"
-              className="min-h-10 rounded-lg border border-[#D8D0C6] bg-white px-3 text-sm font-semibold text-[#222222] outline-none focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20"
+              className="min-h-10 min-w-0 w-full rounded-lg border border-[#C4C7C7] bg-white px-2 text-sm font-semibold text-[#222222] outline-none focus:border-[#1C1B1B] focus:ring-2 focus:ring-[#1C1B1B]/20"
             />
           </label>
-          <label className="grid gap-1 text-xs font-semibold text-[#6F6B67]">
+          <label className="grid min-w-0 gap-1 text-xs font-semibold text-[#5E5F5D]">
             Đến
             <input
               type="number"
@@ -130,7 +130,7 @@ export function FilterPanel({ filters, categories, styles, occasions, colors, si
               value={filters.price.max === Number.MAX_SAFE_INTEGER ? '' : filters.price.max}
               onChange={event => updatePrice('max', event.target.value)}
               placeholder="Không giới hạn"
-              className="min-h-10 rounded-lg border border-[#D8D0C6] bg-white px-3 text-sm font-semibold text-[#222222] outline-none focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20"
+              className="min-h-10 min-w-0 w-full rounded-lg border border-[#C4C7C7] bg-white px-2 text-sm font-semibold text-[#222222] outline-none focus:border-[#1C1B1B] focus:ring-2 focus:ring-[#1C1B1B]/20"
             />
           </label>
         </div>
@@ -151,7 +151,7 @@ function FilterGroup({ title, children }: { title: string; children: ReactNode }
 function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: () => void }) {
   return (
     <label className="inline-flex items-center gap-2 text-sm font-semibold text-[#3A3632]">
-      <input type="checkbox" checked={checked} onChange={onChange} className="h-4 w-4 accent-[#684B5A]" />
+      <input type="checkbox" checked={checked} onChange={onChange} className="h-4 w-4 accent-[#1C1B1B]" />
       {label}
     </label>
   )

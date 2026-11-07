@@ -83,10 +83,10 @@ export function WardrobePage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h1 className="font-display text-4xl font-semibold leading-tight text-[#222222]">Tủ đồ của tôi</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6F6B67]">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5E5F5D]">
             Lưu outfit thủ công, outfit AI và các bộ phối bạn muốn dùng lại khi mua sắm.
           </p>
-          <p className="mt-3 inline-flex rounded-md bg-[#F4E7E8] px-3 py-1 text-xs font-semibold text-[#684B5A]">
+          <p className="mt-3 inline-flex rounded-md bg-[#E9E8E7] px-3 py-1 text-xs font-semibold text-[#1C1B1B]">
             {getWardrobeVisibilityLabel(wardrobeSettings.visibility)}
           </p>
         </div>
@@ -101,13 +101,13 @@ export function WardrobePage() {
             onRevokeEmail={revokeWardrobeShare}
             onVisibilityChange={changeWardrobeVisibility}
           />
-          <Link to={ROUTES.wardrobeAccess} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#EEE8E1] px-4 text-sm font-semibold text-[#222222]">
+          <Link to={ROUTES.wardrobeAccess} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#EFEDED] px-4 text-sm font-semibold text-[#222222]">
             Quyền truy cập
           </Link>
-          <Link to={ROUTES.outfitNew} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#EEE8E1] px-4 text-sm font-semibold text-[#222222]">
+          <Link to={ROUTES.outfitNew} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#EFEDED] px-4 text-sm font-semibold text-[#222222]">
             Tạo tủ đồ
           </Link>
-          <Link to={ROUTES.outfitNewAi} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#684B5A] px-4 text-sm font-semibold text-white">
+          <Link to={ROUTES.outfitNewAi} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#1C1B1B] px-4 text-sm font-semibold text-white">
             Tạo với AI
           </Link>
         </div>
@@ -120,9 +120,9 @@ export function WardrobePage() {
           ))}
         </div>
       ) : (
-        <section className="rounded-lg border border-dashed border-[#D8D0C6] bg-white p-8">
+        <section className="rounded-lg border border-dashed border-[#C4C7C7] bg-white p-8">
           <h2 className="font-display text-2xl font-semibold text-[#222222]">Tủ đồ đang trống</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6F6B67]">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#5E5F5D]">
             Tạo outfit đầu tiên để lưu các món bạn muốn phối cùng nhau.
           </p>
         </section>

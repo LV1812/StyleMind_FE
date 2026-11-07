@@ -53,33 +53,35 @@ export function RegisterPage() {
 
   return (
     <AuthLayout title="Đăng ký" description="Tạo tài khoản khách hàng để lưu giỏ hàng, địa chỉ và đơn hàng của bạn.">
-      <h1 className="font-display text-3xl font-semibold">Đăng ký</h1>
-      <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
-        <TextField label="Email" type="email" value={input.email} error={errors.email} onChange={event => setInput(value => ({ ...value, email: event.target.value }))} />
-        <TextField label="Mật khẩu (ít nhất 12 ký tự)" type="password" autoComplete="new-password" value={input.password} error={errors.password} onChange={event => setInput(value => ({ ...value, password: event.target.value }))} />
+      <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[#5E5F5D]">Chào mừng đến với StyleMind</p>
+      <h1 className="font-display text-4xl font-semibold">Đăng ký</h1>
+      <form className="mt-8 grid gap-6" onSubmit={handleSubmit}>
+        <TextField label="Email" type="email" autoComplete="email" className="!rounded-none !border-0 !border-b !border-[#C4C7C7] !bg-transparent !px-0" value={input.email} error={errors.email} onChange={event => setInput(value => ({ ...value, email: event.target.value }))} />
+        <TextField label="Mật khẩu (ít nhất 12 ký tự)" type="password" autoComplete="new-password" className="!rounded-none !border-0 !border-b !border-[#C4C7C7] !bg-transparent !px-0" value={input.password} error={errors.password} onChange={event => setInput(value => ({ ...value, password: event.target.value }))} />
         <TextField
           label="Xác nhận mật khẩu"
           type="password"
           autoComplete="new-password"
+          className="!rounded-none !border-0 !border-b !border-[#C4C7C7] !bg-transparent !px-0"
           value={input.confirmPassword}
           error={errors.confirmPassword}
           onChange={event => setInput(value => ({ ...value, confirmPassword: event.target.value }))}
         />
-        {submitError && <p className="rounded-lg bg-[#FCEAEA] px-3 py-2 text-sm font-semibold text-[#A94B4B]">{submitError}</p>}
+        {submitError && <p role="alert" className="rounded-lg bg-[#FCEAEA] px-3 py-2 text-sm font-semibold text-[#A94B4B]">{submitError}</p>}
         <Button type="submit" loading={submitting}>Tạo tài khoản</Button>
       </form>
-      <p className="mt-4 text-sm text-[#6F6B67]">
+      <p className="mt-4 text-sm text-[#5E5F5D]">
         Đã nhận mã xác nhận?{' '}
         <Link
           to={ROUTES.verifyOtp}
           state={{ flow: 'registration', email: input.email.trim() }}
-          className="font-semibold text-[#684B5A] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+          className="font-semibold text-[#1C1B1B] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
         >
           Nhập mã tại đây
         </Link>
       </p>
-      <p className="mt-5 text-sm text-[#6F6B67]">
-        Đã có tài khoản? <Link to={ROUTES.login} className="font-semibold text-[#684B5A] hover:underline">Đăng nhập</Link>
+      <p className="mt-5 text-sm text-[#5E5F5D]">
+        Đã có tài khoản? <Link to={ROUTES.login} className="font-semibold text-[#1C1B1B] hover:underline">Đăng nhập</Link>
       </p>
     </AuthLayout>
   )

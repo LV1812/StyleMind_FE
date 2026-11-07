@@ -26,18 +26,18 @@ export function NotificationsPage() {
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h1 className="font-display text-4xl font-semibold leading-tight text-[#222222]">Thông báo</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6F6B67]">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5E5F5D]">
             Cập nhật về đơn hàng, tủ đồ, chia sẻ outfit và tài khoản của bạn.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <span className="w-fit rounded-full bg-[#F4E7E8] px-3 py-1 text-xs font-semibold text-[#684B5A]">
+          <span className="w-fit rounded-full bg-[#E9E8E7] px-3 py-1 text-xs font-semibold text-[#1C1B1B]">
             {unreadCount} chưa đọc
           </span>
           {unreadCount > 0 && (
             <button
               type="button"
-              className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#684B5A] px-3 text-sm font-semibold text-white"
+              className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1C1B1B] px-3 text-sm font-semibold text-white"
               onClick={markAllRead}
             >
               Đánh dấu tất cả đã đọc
@@ -53,9 +53,9 @@ export function NotificationsPage() {
           ))}
         </div>
       ) : (
-        <section className="rounded-lg border border-dashed border-[#D8D0C6] bg-white p-8">
+        <section className="rounded-lg border border-dashed border-[#C4C7C7] bg-white p-8">
           <h2 className="font-display text-2xl font-semibold text-[#222222]">Chưa có thông báo</h2>
-          <p className="mt-2 text-sm leading-6 text-[#6F6B67]">Khi có cập nhật mới, StyleMind sẽ hiển thị tại đây.</p>
+          <p className="mt-2 text-sm leading-6 text-[#5E5F5D]">Khi có cập nhật mới, StyleMind sẽ hiển thị tại đây.</p>
         </section>
       )}
     </section>

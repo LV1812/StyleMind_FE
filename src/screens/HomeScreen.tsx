@@ -17,7 +17,7 @@ function ProductCard({ p, onClick }: { p: (typeof mockProducts)[0]; onClick: () 
     <div
       className="product-card"
       onClick={onClick}
-      style={{ cursor: "pointer", background: "white", borderRadius: 12, overflow: "hidden", border: "1px solid #EEE8E1" }}
+      style={{ cursor: "pointer", background: "white", borderRadius: 12, overflow: "hidden", border: "1px solid #EFEDED" }}
     >
       <div style={{ position: "relative", overflow: "hidden", background: "#F5EFE8" }}>
         <img
@@ -32,7 +32,7 @@ function ProductCard({ p, onClick }: { p: (typeof mockProducts)[0]; onClick: () 
             position: "absolute", top: 12, right: 12, background: "white", border: "none",
             width: 32, height: 32, borderRadius: "50%", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 1px 6px rgba(0,0,0,0.12)", color: wished ? "#A94B4B" : "#6F6B67",
+            boxShadow: "0 1px 6px rgba(0,0,0,0.12)", color: wished ? "#A94B4B" : "#5E5F5D",
             fontSize: 14, transition: "all 0.15s ease",
           }}
         >
@@ -52,7 +52,7 @@ function ProductCard({ p, onClick }: { p: (typeof mockProducts)[0]; onClick: () 
         )}
       </div>
       <div style={{ padding: "14px 16px 16px" }}>
-        <div style={{ fontSize: 10, color: "#6F6B67", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4, fontWeight: 500 }}>
+        <div style={{ fontSize: 10, color: "#5E5F5D", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4, fontWeight: 500 }}>
           {p.brand}
         </div>
         <div style={{ fontSize: 14, color: "#222222", fontWeight: 400, marginBottom: 8, lineHeight: 1.3 }}>{p.name}</div>
@@ -75,7 +75,7 @@ function OutfitOfTheDayCard({ navigate }: { navigate: (s: "outfit-result") => vo
       style={{
         background: "white",
         borderRadius: 16,
-        border: "1px solid #EEE8E1",
+        border: "1px solid #EFEDED",
         overflow: "hidden",
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
@@ -86,9 +86,9 @@ function OutfitOfTheDayCard({ navigate }: { navigate: (s: "outfit-result") => vo
           ✦ AI Outfit of the Day
         </div>
         <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 20, color: "#222222", lineHeight: 1.3, marginBottom: 12 }}>
-          Work Meeting Ready,<br /><em style={{ color: "#684B5A" }}>Effortlessly.</em>
+          Work Meeting Ready,<br /><em style={{ color: "#1C1B1B" }}>Effortlessly.</em>
         </div>
-        <div style={{ fontSize: 13, color: "#6F6B67", lineHeight: 1.6, marginBottom: 16 }}>
+        <div style={{ fontSize: 13, color: "#5E5F5D", lineHeight: 1.6, marginBottom: 16 }}>
           Built around your white shirt and black jeans — with one new piece to complete the look.
         </div>
 
@@ -102,7 +102,7 @@ function OutfitOfTheDayCard({ navigate }: { navigate: (s: "outfit-result") => vo
               <span style={{
                 width: 18, height: 18, borderRadius: "50%",
                 background: item.owned ? "#E8F3ED" : "#F0E8EC",
-                color: item.owned ? "#48755A" : "#684B5A",
+                color: item.owned ? "#48755A" : "#1C1B1B",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 10, flexShrink: 0, fontWeight: 600,
               }}>
@@ -118,9 +118,9 @@ function OutfitOfTheDayCard({ navigate }: { navigate: (s: "outfit-result") => vo
 
         <div style={{ display: "flex", gap: 4, marginBottom: 16 }}>
           {["#F5F5F5", "#1A1A1A", "#E8DDD2"].map((c) => (
-            <div key={c} style={{ width: 22, height: 22, borderRadius: 4, background: c, border: "1px solid #EEE8E1" }} title={c} />
+            <div key={c} style={{ width: 22, height: 22, borderRadius: 4, background: c, border: "1px solid #EFEDED" }} title={c} />
           ))}
-          <span style={{ fontSize: 11, color: "#6F6B67", marginLeft: 6, alignSelf: "center" }}>White · Black · Oat</span>
+          <span style={{ fontSize: 11, color: "#5E5F5D", marginLeft: 6, alignSelf: "center" }}>White · Black · Oat</span>
         </div>
 
         <button className="btn-ai" onClick={() => navigate("outfit-result")} style={{ fontSize: 13, padding: "10px 18px" }}>
@@ -154,13 +154,13 @@ export default function HomeScreen({ app }: { app: AppState }) {
     : mockProducts;
 
   return (
-    <div style={{ background: "#FAF8F5" }}>
+    <div style={{ background: "#FBF9F9" }}>
       {/* Hero */}
       <section style={{ position: "relative", minHeight: "calc(100vh - 64px)", display: "flex", alignItems: "center", overflow: "hidden" }}>
         <div
           style={{
             position: "absolute", inset: 0,
-            background: "linear-gradient(105deg, #FAF8F5 0%, #FAF8F5 45%, transparent 70%)",
+            background: "linear-gradient(105deg, #FBF9F9 0%, #FBF9F9 45%, transparent 70%)",
             zIndex: 1,
           }}
         />
@@ -176,7 +176,7 @@ export default function HomeScreen({ app }: { app: AppState }) {
               background: "rgba(104,75,90,0.08)", border: "1px solid rgba(104,75,90,0.2)",
               borderRadius: 100, padding: "6px 14px", marginBottom: 24,
             }}>
-              <span style={{ fontSize: 12, color: "#684B5A", fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+              <span style={{ fontSize: 12, color: "#1C1B1B", fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase" }}>
                 ✦ AI Personal Stylist
               </span>
             </div>
@@ -184,10 +184,10 @@ export default function HomeScreen({ app }: { app: AppState }) {
             <h1 className="display-heading" style={{ marginBottom: 20 }}>
               Style what<br />
               you own.<br />
-              <em style={{ color: "#684B5A" }}>Discover what<br />completes you.</em>
+              <em style={{ color: "#1C1B1B" }}>Discover what<br />completes you.</em>
             </h1>
 
-            <p style={{ fontSize: 17, color: "#6F6B67", lineHeight: 1.7, marginBottom: 32, maxWidth: 440 }}>
+            <p style={{ fontSize: 17, color: "#5E5F5D", lineHeight: 1.7, marginBottom: 32, maxWidth: 440 }}>
               Your wardrobe. Your style. Your context. StyleMind brings it all together — building outfits you can actually wear and buy.
             </p>
 
@@ -206,7 +206,7 @@ export default function HomeScreen({ app }: { app: AppState }) {
         <div style={{
           position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)",
           zIndex: 2, display: "flex", gap: 32, background: "rgba(250,248,245,0.85)",
-          backdropFilter: "blur(12px)", border: "1px solid #EEE8E1",
+          backdropFilter: "blur(12px)", border: "1px solid #EFEDED",
           borderRadius: 16, padding: "16px 28px",
         }}>
           {[
@@ -216,7 +216,7 @@ export default function HomeScreen({ app }: { app: AppState }) {
           ].map((stat) => (
             <div key={stat.label} style={{ textAlign: "center" }}>
               <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 24, color: "#222222" }}>{stat.value}</div>
-              <div style={{ fontSize: 11, color: "#6F6B67", marginTop: 2 }}>{stat.label}</div>
+              <div style={{ fontSize: 11, color: "#5E5F5D", marginTop: 2 }}>{stat.label}</div>
             </div>
           ))}
         </div>
@@ -229,7 +229,7 @@ export default function HomeScreen({ app }: { app: AppState }) {
             ✦ AI Personalization
           </div>
           <h2 className="section-heading" style={{ marginBottom: 6 }}>What are you dressing for?</h2>
-          <p style={{ color: "#6F6B67", fontSize: 14 }}>Choose an occasion and StyleMind will tailor your experience.</p>
+          <p style={{ color: "#5E5F5D", fontSize: 14 }}>Choose an occasion and StyleMind will tailor your experience.</p>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
           {OCCASIONS.map((o) => (
@@ -285,7 +285,7 @@ export default function HomeScreen({ app }: { app: AppState }) {
         {displayProducts.length === 0 && (
           <div style={{ textAlign: "center", padding: "60px 0" }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>🌿</div>
-            <p style={{ color: "#6F6B67", fontSize: 15 }}>No items found for this occasion. Let the AI Stylist help you.</p>
+            <p style={{ color: "#5E5F5D", fontSize: 15 }}>No items found for this occasion. Let the AI Stylist help you.</p>
             <button className="btn-ai" onClick={() => app.navigate("stylist")} style={{ marginTop: 16, fontSize: 13 }}>
               ✦ Ask StyleMind
             </button>
@@ -294,7 +294,7 @@ export default function HomeScreen({ app }: { app: AppState }) {
       </section>
 
       {/* Wardrobe Insight Banner */}
-      <section style={{ background: "#F4E7E8", padding: "0 32px" }}>
+      <section style={{ background: "#E9E8E7", padding: "0 32px" }}>
         <div
           style={{
             maxWidth: 1400, margin: "0 auto",
@@ -303,13 +303,13 @@ export default function HomeScreen({ app }: { app: AppState }) {
           }}
         >
           <div style={{ padding: "52px 48px 52px 0", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <div style={{ fontSize: 11, color: "#684B5A", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, marginBottom: 12 }}>
+            <div style={{ fontSize: 11, color: "#1C1B1B", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, marginBottom: 12 }}>
               Smart Wardrobe
             </div>
             <h2 className="section-heading" style={{ marginBottom: 14 }}>
-              Your white shirt works<br />with <em style={{ color: "#684B5A" }}>8 outfit combinations.</em>
+              Your white shirt works<br />with <em style={{ color: "#1C1B1B" }}>8 outfit combinations.</em>
             </h2>
-            <p style={{ fontSize: 14, color: "#6F6B67", lineHeight: 1.7, marginBottom: 24 }}>
+            <p style={{ fontSize: 14, color: "#5E5F5D", lineHeight: 1.7, marginBottom: 24 }}>
               StyleMind analyzes what you already own and builds complete looks — showing you exactly which one missing piece unlocks a new outfit.
             </p>
             <div style={{ display: "flex", gap: 12 }}>
@@ -388,7 +388,7 @@ export default function HomeScreen({ app }: { app: AppState }) {
       <section style={{ padding: "0 32px 64px", maxWidth: 1400, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <h2 className="section-heading" style={{ marginBottom: 6 }}>Featured Brands</h2>
-          <p style={{ color: "#6F6B67", fontSize: 14 }}>Curated collections from brands that share our commitment to quality.</p>
+          <p style={{ color: "#5E5F5D", fontSize: 14 }}>Curated collections from brands that share our commitment to quality.</p>
         </div>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           {["TOTÊME", "COS", "Arket", "A.P.C.", "Uniqlo", "Mango", "Massimo Dutti"].map((brand) => (

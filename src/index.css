@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Noto+Serif:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&display=swap&subset=vietnamese');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 /* CẤU HÌNH GIAO DIỆN CHUNG
@@ -8,18 +8,18 @@
  */
 @theme static {
   /* Font chữ: nếu đổi font, cập nhật cả đường dẫn @import phía trên. */
-  --font-display: 'Noto Serif', 'Times New Roman', serif;
-  --font-serif: 'Noto Serif', 'Times New Roman', serif;
-  --font-sans: 'Noto Sans', Arial, sans-serif;
+  --font-display: 'Playfair Display', 'Times New Roman', serif;
+  --font-serif: 'Playfair Display', 'Times New Roman', serif;
+  --font-sans: 'Inter', Arial, sans-serif;
 
   /* Nền trang, bề mặt và đường viền */
-  --color-ivory: #FAF8F5;
+  --color-ivory: #FBF9F9;
   --color-surface: #FFFFFF;
-  --color-surface-soft: #FDFCFA;
-  --color-canvas: #F5F3F0;
-  --color-sand: #EEE8E1;
-  --color-sand-dark: #D8D0C6;
-  --color-divider: #E8E4DF;
+  --color-surface-soft: #FFFFFF;
+  --color-canvas: #F5F3F3;
+  --color-sand: #EFEDED;
+  --color-sand-dark: #C4C7C7;
+  --color-divider: #E3E2E2;
   --color-disabled-bg: #F2EFEA;
   --color-disabled-border: #E0D9CF;
   --color-unavailable-bg: #E8E2D9;
@@ -28,18 +28,18 @@
   /* Chữ: chính, nội dung, phụ, chú thích và chữ trên nền đậm */
   --color-charcoal: #222222;
   --color-ink: #3A3632;
-  --color-secondary: #6F6B67;
+  --color-secondary: #5E5F5D;
   --color-muted: #9D9894;
   --color-on-accent: #FFFFFF;
   --color-overlay: #000000;
 
   /* Màu thương hiệu: nút chính, liên kết, trạng thái đang chọn */
-  --color-accent: #684B5A;
-  --color-accent-mid: #8B6475;
-  --color-accent-light: #C4A5B0;
-  --color-rose: #B98791;
-  --color-blush: #F4E7E8;
-  --color-blush-dark: #E8D0D2;
+  --color-accent: #1C1B1B;
+  --color-accent-mid: #735C00;
+  --color-accent-light: #CCA730;
+  --color-rose: #735C00;
+  --color-blush: #E9E8E7;
+  --color-blush-dark: #E3E2E2;
 
   /* Trạng thái: thành công, cảnh báo, lỗi và tư vấn AI */
   --color-success: #48755A;
@@ -99,7 +99,7 @@ body {
 }
 
 :root {
-  --container-wide: 1280px;
+  --container-wide: 1440px;
   --color-overlay: rgba(34, 34, 34, 0.42);
   --z-sticky: 40;
   --z-modal: 80;

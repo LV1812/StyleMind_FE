@@ -62,7 +62,7 @@ export function ProductDetailPage() {
           action={
             <Link
               to={ROUTES.shop}
-              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#684B5A] px-4 text-sm font-semibold text-white transition hover:bg-[#593f4d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] focus-visible:ring-offset-2"
+              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#1C1B1B] px-4 text-sm font-semibold text-white transition hover:bg-[#444746] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] focus-visible:ring-offset-2"
             >
               Về cửa hàng
             </Link>
@@ -113,21 +113,22 @@ export function ProductDetailPage() {
   }
 
   return (
-    <div className="mx-auto grid max-w-[var(--container-wide)] gap-10 px-5 py-8 md:px-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.75fr)]">
+    <div className="mx-auto grid max-w-[1440px] gap-10 px-5 py-8 md:px-8 lg:grid-cols-2 lg:gap-14 lg:px-16">
       <ProductGallery images={selection.images} productName={product.name} />
 
-      <section className="grid content-start gap-7">
-        <div>
-          <Link to={ROUTES.shop} className="text-sm font-semibold text-[#684B5A] hover:underline">
+      <section className="grid content-start gap-7 lg:pt-4">
+        <div className="border-b border-[#E3E2E2] pb-6">
+          <Link to={ROUTES.shop} className="text-sm font-semibold text-[#1C1B1B] hover:underline">
             Cửa hàng
           </Link>
           <p className="mt-5 text-sm font-semibold text-[#9D9894]">{product.brand}</p>
           <h1 className="mt-2 font-display text-4xl font-semibold leading-tight text-[#222222] md:text-5xl">
             {product.name}
           </h1>
-          <p className="mt-4 text-2xl font-semibold text-[#684B5A]">{formatCurrency(selection.price)}</p>
-          <p className="mt-5 max-w-prose text-base leading-7 text-[#5D5853]">{product.description}</p>
+          <p className="mt-4 text-2xl font-semibold text-[#1C1B1B]">{formatCurrency(selection.price)}</p>
         </div>
+
+        <p className="max-w-prose text-base leading-7 text-[#5D5853]">{product.description}</p>
 
         <ColorSelector options={selection.colorOptions} selectedColor={selection.selectedColor} onChange={handleColorChange} />
         <SizeSelector options={selection.sizeOptions} selectedSize={selectedSize} onChange={handleSizeChange} />
@@ -135,27 +136,27 @@ export function ProductDetailPage() {
         <div className="grid gap-3">
           <div className="flex items-center justify-between gap-4">
             <span className="text-sm font-bold text-[#222222]">Số lượng</span>
-            <span className="text-sm font-semibold text-[#6F6B67]">
+            <span className="text-sm font-semibold text-[#5E5F5D]">
               {selection.canPurchase ? 'Sẵn sàng thêm vào giỏ' : 'Chọn kích thước để tiếp tục'}
             </span>
           </div>
-          <div className="inline-flex w-fit items-center rounded-lg border border-[#D8D0C6] bg-white">
+          <div className="inline-flex w-fit items-center rounded-lg border border-[#C4C7C7] bg-white">
             <button
               type="button"
               aria-label="Giảm số lượng"
               onClick={() => setQuantity(current => normalizeQuantity(current - 1))}
-              className="grid h-11 w-11 place-items-center text-[#3A3632] transition hover:bg-[#EEE8E1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+              className="grid h-11 w-11 place-items-center text-[#3A3632] transition hover:bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
             >
               <Minus size={16} aria-hidden="true" />
             </button>
-            <output className="grid h-11 min-w-12 place-items-center border-x border-[#D8D0C6] px-3 text-sm font-bold text-[#222222]">
+            <output className="grid h-11 min-w-12 place-items-center border-x border-[#C4C7C7] px-3 text-sm font-bold text-[#222222]">
               {quantity}
             </output>
             <button
               type="button"
               aria-label="Tăng số lượng"
               onClick={() => setQuantity(current => normalizeQuantity(current + 1))}
-              className="grid h-11 w-11 place-items-center text-[#3A3632] transition hover:bg-[#EEE8E1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+              className="grid h-11 w-11 place-items-center text-[#3A3632] transition hover:bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
             >
               <Plus size={16} aria-hidden="true" />
             </button>
@@ -172,7 +173,7 @@ export function ProductDetailPage() {
           </Button>
         </div>
 
-        <dl className="grid gap-3 border-t border-[#EEE8E1] pt-6 text-sm">
+        <dl className="grid gap-3 border-t border-[#EFEDED] pt-6 text-sm">
           <DetailRow label="Chất liệu" value={product.material} />
           <DetailRow label="Phom dáng" value={product.fit} />
           <DetailRow label="Họa tiết" value={product.pattern} />
@@ -187,7 +188,7 @@ export function ProductDetailPage() {
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-4">
-      <dt className="font-semibold text-[#6F6B67]">{label}</dt>
+      <dt className="font-semibold text-[#5E5F5D]">{label}</dt>
       <dd className="font-semibold text-[#222222]">{value}</dd>
     </div>
   )

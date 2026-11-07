@@ -9,6 +9,7 @@ import { commerceProductToEntity } from '@/features/commerce/data/commerceEntity
 import type { Product } from '@/entities/product/model/types'
 import { communityApi } from '@/shared/api/communityApi'
 import { apiMode } from '@/shared/api/http'
+import { ArrowLeft, Sparkles } from 'lucide-react'
 
 import { BuilderCatalogPanel } from '../components/BuilderCatalogPanel'
 import { BuilderDraftPanel } from '../components/BuilderDraftPanel'
@@ -116,24 +117,24 @@ export function ManualOutfitBuilderPage() {
   }
 
   return (
-    <section className="mx-auto grid max-w-[var(--container-wide)] gap-8 px-5 py-8 md:px-8 md:py-12">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <section className="mx-auto grid max-w-[1440px] gap-8 px-5 py-8 md:px-8 md:py-12 lg:px-16">
+      <div className="flex flex-col gap-4 border-b border-[#E3E2E2] pb-7 md:flex-row md:items-end md:justify-between">
         <div>
-          <Link to={ROUTES.wardrobes} className="text-sm font-semibold text-[#684B5A] hover:underline">
-            Tủ đồ
+          <Link to={ROUTES.wardrobes} className="inline-flex items-center gap-2 text-sm font-semibold text-[#1C1B1B] hover:underline">
+            <ArrowLeft size={16} aria-hidden="true" /> Tủ đồ
           </Link>
           <h1 className="mt-2 font-display text-4xl font-semibold leading-tight text-[#222222]">
             Tạo outfit thủ công
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#6F6B67]">
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5E5F5D]">
             Chọn sản phẩm thật trong catalog, đổi phiên bản theo màu hoặc size rồi lưu vào tủ đồ cá nhân.
           </p>
         </div>
         <Link
           to={ROUTES.outfitNewAi}
-          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#684B5A] px-4 text-sm font-semibold text-white transition hover:bg-[#563E4A] active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]/30"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#1C1B1B] px-4 text-sm font-semibold text-[#1C1B1B] transition hover:bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]/30"
         >
-          Chuyển sang AI Stylist
+          <Sparkles size={16} aria-hidden="true" /> Chuyển sang AI Stylist
         </Link>
       </div>
 
@@ -144,7 +145,7 @@ export function ManualOutfitBuilderPage() {
           onSearchChange={setSearch}
           onAddVariant={addVariant}
         />}
-        <div>
+        <div className="min-w-0 lg:sticky lg:top-28 lg:self-start">
         {saveError && <p role="alert" className="mb-3 text-sm text-[#A94B4B]">{saveError}</p>}
         <BuilderDraftPanel
           draft={draft}

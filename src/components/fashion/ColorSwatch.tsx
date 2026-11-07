@@ -54,7 +54,7 @@ export default function ColorSwatch({
               {isSelected && (
                 <span
                   className="text-[10px] leading-none"
-                  style={{ color: ['#FAF8F5', '#F5EFE8', '#FFFFFF', '#E8DDD2', '#F5EDD8', '#EEE8E1'].includes(hex.toUpperCase()) ? "var(--color-charcoal)" : "var(--color-on-accent)" }}
+                  style={{ color: ['#FBF9F9', '#F5EFE8', '#FFFFFF', '#E8DDD2', '#F5EDD8', '#EFEDED'].includes(hex.toUpperCase()) ? "var(--color-charcoal)" : "var(--color-on-accent)" }}
                   aria-hidden="true"
                 >
                   ✓

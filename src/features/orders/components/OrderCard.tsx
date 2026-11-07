@@ -19,14 +19,14 @@ export function OrderCard({ order }: { order: Order }) {
   return (
     <Link
       to={`/orders/${order.id}`}
-      className="rounded-lg border border-[#E3DAD0] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A]"
+      className="rounded-lg border border-[#E3E2E2] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-[#222222]">Đơn {order.id}</h2>
-          <p className="mt-1 text-sm text-[#6F6B67]">{formatDate(order.createdAt)}</p>
+          <p className="mt-1 text-sm text-[#5E5F5D]">{formatDate(order.createdAt)}</p>
         </div>
-        <span className="w-fit rounded-full bg-[#F4E7E8] px-3 py-1 text-xs font-semibold text-[#684B5A]">
+        <span className="w-fit rounded-full bg-[#E9E8E7] px-3 py-1 text-xs font-semibold text-[#1C1B1B]">
           {orderStatusLabel[order.status] ?? order.status}
         </span>
       </div>

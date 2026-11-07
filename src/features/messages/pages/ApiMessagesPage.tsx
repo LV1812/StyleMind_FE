@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { friendLabel } from '@/features/friends/model/friendLabel'
 import { useAuth } from '@/features/auth'
 import { useApiQuery } from '@/shared/api/useApiQuery'
@@ -83,7 +83,39 @@ export default function ApiMessagesPage() {
     catch (e) { if (!sessionToken || accessToken() !== sessionToken) return; setError(e instanceof Error ? e.message : 'Không gửi được tin nhắn.') }
     finally { setBusy(false) }
   }
-  return <ApiSection title="Tin nhắn"><p className="mt-3 text-sm text-[#6F6B67]">{connected ? 'Đã kết nối' : 'Đang kết nối; bản nháp được giữ lại cho đến khi kết nối trở lại.'}</p><ApiState {...chats} retry={chats.refresh} />{chats.data && <><div className="mt-6 grid gap-4 md:grid-cols-[260px_1fr]"><aside className="grid content-start gap-2">{chats.data.items.map(chat => <Button key={chat.chat_session_id} disabled={busy} variant={id === chat.chat_session_id ? 'primary' : 'secondary'} onClick={() => { setError(''); setParams({ conversation: chat.chat_session_id }) }}>{(() => { const friend = friendNames.data?.items.find(item => item.friend_account_id === chat.friend_account_id); return friend ? friendLabel(friend) : 'Bạn bè' })()}</Button>)}{!chats.data.items.length && <p className="text-sm">Chưa có cuộc trò chuyện. Mở từ danh sách Bạn bè.</p>}</aside>{id && <div className="rounded-lg border border-[#E3DAD0] bg-white p-5">{session.data && <h2 className="mb-4 font-semibold">{activeFriend ? friendLabel(activeFriend) : 'Bạn bè'}</h2>}<ApiState {...history} retry={history.refresh} />{history.data && <div className="grid gap-3">{(cursor !== -1 && (cursor !== null || history.data.has_more)) && <Button variant="ghost" loading={loadingOlder} onClick={() => void loadOlder()}>Xem tin cũ hơn</Button>}{combined.map(message => <div key={message.chat_message_id} className={`flex ${message.sender_account_id === currentUser?.id ? 'justify-end' : 'justify-start'}`}><div aria-label={message.sender_account_id === currentUser?.id ? 'Tin nhắn của bạn' : 'Tin nhắn của bạn bè'} className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm sm:max-w-[70%] ${message.sender_account_id === currentUser?.id ? 'rounded-br-sm bg-[#684B5A] text-white' : 'rounded-bl-sm bg-[#EEE8E1] text-[#222222]'}`}><p className="whitespace-pre-wrap break-words">{message.content}</p>{message.attachments?.map(attachment => <ChatImage key={attachment.chat_attachment_id} chatId={id} attachmentId={attachment.chat_attachment_id} />)}</div></div>)}</div>}{error && <p role="alert" className="mt-3 text-sm text-[#A94B4B]">{error}</p>}{showComposer && <><div className="mt-4 flex flex-wrap gap-2">{images.map((file, index) => <DraftImage key={`${file.name}-${index}`} file={file} remove={() => setImageDrafts(old => ({ ...old, [id]: images.filter((_, i) => i !== index) }))} />)}</div><label className="mt-3 inline-block cursor-pointer text-sm text-[#684B5A]">Chọn ảnh<input type="file" className="sr-only" accept="image/jpeg,image/png,image/webp" multiple disabled={busy} onChange={async event => { const files = [...(event.target.files || [])]; event.target.value = ""; const selected = [...images, ...files]; const invalid = await validateImages(selected); if (invalid) { setError(invalid); return } setError(""); setImageDrafts(old => ({ ...old, [id]: selected })) }} /></label><form className="mt-5 flex gap-3" onSubmit={e => { e.preventDefault(); void send() }}><label className="sr-only" htmlFor="api-message">Tin nhắn</label><input id="api-message" disabled={busy} className="min-w-0 flex-1 rounded-lg border p-3" value={draft} onChange={e => { const value = e.target.value; setDrafts(old => ({ ...old, [id]: value })) }} /><Button type="submit" loading={busy} disabled={!connected || (!draft.trim() && !images.length)}>Gửi</Button></form></>}</div>}</div><ApiPagination data={chats.data} setPage={setPage} /></>}</ApiSection>
+  return <ApiSection title="Tin nhắn">
+    {id && <p role="status" className="mt-3 text-sm text-[#5E5F5D]">{connected ? 'Đã kết nối' : 'Đang kết nối; bản nháp được giữ lại cho đến khi kết nối trở lại.'}</p>}
+    <ApiState {...chats} retry={chats.refresh} />
+    {chats.data && <>
+      <div className="mt-8 grid overflow-hidden rounded-2xl border border-[#E3E2E2] bg-white md:min-h-[540px] md:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="min-w-0 border-b border-[#E3E2E2] bg-[#FBF9F9] p-4 md:border-b-0 md:border-r" aria-label="Danh sách hội thoại">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#5E5F5D]">Hội thoại</h2>
+          <div className="flex gap-2 overflow-x-auto pb-2 md:grid md:content-start md:overflow-visible md:pb-0">
+            {chats.data.items.map(chat => {
+              const friend = friendNames.data?.items.find(item => item.friend_account_id === chat.friend_account_id)
+              return <Button className="max-w-[240px] break-all md:max-w-full" key={chat.chat_session_id} disabled={busy} variant={id === chat.chat_session_id ? 'primary' : 'secondary'} onClick={() => { setError(''); setParams({ conversation: chat.chat_session_id }) }}>{friend ? friendLabel(friend) : 'Bạn bè'}</Button>
+            })}
+            {!chats.data.items.length && <div className="text-sm leading-6 text-[#5E5F5D]"><p>Chưa có cuộc trò chuyện. Mở từ danh sách Bạn bè.</p><Link to="/friends" className="mt-3 inline-block font-semibold text-[#1C1B1B] underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]">Đi đến Bạn bè</Link></div>}
+          </div>
+        </aside>
+        {id ? <div className="min-w-0 bg-white p-5 sm:p-6">
+          {session.data && <h2 className="mb-5 break-words border-b border-[#E3E2E2] pb-4 font-display text-2xl">{activeFriend ? friendLabel(activeFriend) : 'Bạn bè'}</h2>}
+          <ApiState {...history} retry={history.refresh} />
+          {history.data && <div className="grid gap-3">
+            {(cursor !== -1 && (cursor !== null || history.data.has_more)) && <Button variant="ghost" loading={loadingOlder} onClick={() => void loadOlder()}>Xem tin cũ hơn</Button>}
+            {combined.length === 0 && <p className="py-8 text-center text-sm text-[#5E5F5D]">Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện.</p>}
+            {combined.map(message => <div key={message.chat_message_id} className={`flex ${message.sender_account_id === currentUser?.id ? 'justify-end' : 'justify-start'}`}><div aria-label={message.sender_account_id === currentUser?.id ? 'Tin nhắn của bạn' : 'Tin nhắn của bạn bè'} className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm sm:max-w-[70%] ${message.sender_account_id === currentUser?.id ? 'rounded-br-sm bg-[#1C1B1B] text-white' : 'rounded-bl-sm bg-[#EFEDED] text-[#222222]'}`}><p className="whitespace-pre-wrap break-words">{message.content}</p>{message.attachments?.map(attachment => <ChatImage key={attachment.chat_attachment_id} chatId={id} attachmentId={attachment.chat_attachment_id} />)}</div></div>)}
+          </div>}
+          {error && <p role="alert" className="mt-3 text-sm text-[#A94B4B]">{error}</p>}
+          {showComposer && <><div className="mt-4 flex flex-wrap gap-2">{images.map((file, index) => <DraftImage key={`${file.name}-${index}`} file={file} remove={() => setImageDrafts(old => ({ ...old, [id]: images.filter((_, i) => i !== index) }))} />)}</div>
+            <label className="mt-3 inline-block cursor-pointer text-sm font-semibold text-[#1C1B1B] underline underline-offset-4">Chọn ảnh<input type="file" className="sr-only" accept="image/jpeg,image/png,image/webp" multiple disabled={busy} onChange={async event => { const files = [...(event.target.files || [])]; event.target.value = ''; const selected = [...images, ...files]; const invalid = await validateImages(selected); if (invalid) { setError(invalid); return } setError(''); setImageDrafts(old => ({ ...old, [id]: selected })) }} /></label>
+            <form className="mt-5 flex gap-3" onSubmit={event => { event.preventDefault(); void send() }}><label className="sr-only" htmlFor="api-message">Tin nhắn</label><input id="api-message" disabled={busy} placeholder="Nhập tin nhắn..." className="min-w-0 flex-1 rounded-lg border border-[#C4C7C7] p-3" value={draft} onChange={event => { const value = event.target.value; setDrafts(old => ({ ...old, [id]: value })) }} /><Button type="submit" loading={busy} disabled={!connected || (!draft.trim() && !images.length)}>Gửi</Button></form>
+          </>}
+        </div> : <div className="grid min-h-48 place-items-center p-6 text-center text-sm text-[#5E5F5D]">Chọn một cuộc trò chuyện để bắt đầu.</div>}
+      </div>
+      <ApiPagination data={chats.data} setPage={setPage} />
+    </>}
+  </ApiSection>
 }
 
 

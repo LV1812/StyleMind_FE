@@ -62,7 +62,7 @@ export default function AIStylistScreen({ app }: { app: AppState }) {
       <aside
         className="hide-mobile"
         style={{
-          width: 240, background: "white", borderRight: "1px solid #EEE8E1",
+          width: 240, background: "white", borderRight: "1px solid #EFEDED",
           display: "flex", flexDirection: "column", flexShrink: 0,
         }}
       >
@@ -85,21 +85,21 @@ export default function AIStylistScreen({ app }: { app: AppState }) {
               onClick={() => setSelectedSession(s.id)}
               style={{
                 padding: "10px 10px", borderRadius: 8, cursor: "pointer", marginBottom: 2,
-                background: selectedSession === s.id ? "#F4E7E8" : "transparent",
+                background: selectedSession === s.id ? "#E9E8E7" : "transparent",
                 transition: "background 0.15s",
               }}
             >
-              <div style={{ fontSize: 13, color: selectedSession === s.id ? "#684B5A" : "#222222", fontWeight: selectedSession === s.id ? 500 : 400, marginBottom: 2 }}>
+              <div style={{ fontSize: 13, color: selectedSession === s.id ? "#1C1B1B" : "#222222", fontWeight: selectedSession === s.id ? 500 : 400, marginBottom: 2 }}>
                 {s.label}
               </div>
               <div style={{ fontSize: 11, color: "#A9A6A3" }}>{s.date}</div>
             </div>
           ))}
         </div>
-        <div style={{ padding: "12px 16px", borderTop: "1px solid #EEE8E1", fontSize: 12, color: "#6F6B67" }}>
+        <div style={{ padding: "12px 16px", borderTop: "1px solid #EFEDED", fontSize: 12, color: "#5E5F5D" }}>
           <button
             onClick={() => app.navigate("wardrobe")}
-            style={{ background: "none", border: "none", color: "#684B5A", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}
+            style={{ background: "none", border: "none", color: "#1C1B1B", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}
           >
             ◈ Wardrobe context: 8 items
           </button>
@@ -109,7 +109,7 @@ export default function AIStylistScreen({ app }: { app: AppState }) {
       {/* Chat area */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         {/* Chat header */}
-        <div style={{ padding: "16px 24px", borderBottom: "1px solid #EEE8E1", display: "flex", alignItems: "center", justifyContent: "space-between", background: "white" }}>
+        <div style={{ padding: "16px 24px", borderBottom: "1px solid #EFEDED", display: "flex", alignItems: "center", justifyContent: "space-between", background: "white" }}>
           <div>
             <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 18, color: "#222222", marginBottom: 2 }}>
               AI Stylist
@@ -138,7 +138,7 @@ export default function AIStylistScreen({ app }: { app: AppState }) {
               <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 26, color: "#222222", marginBottom: 10 }}>
                 What are we dressing for today?
               </h2>
-              <p style={{ color: "#6F6B67", fontSize: 14, lineHeight: 1.7, marginBottom: 28 }}>
+              <p style={{ color: "#5E5F5D", fontSize: 14, lineHeight: 1.7, marginBottom: 28 }}>
                 Tell me your occasion, destination, style preferences, or just describe what you're feeling. I'll build an outfit using your wardrobe and StyleMind's catalog.
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
@@ -153,7 +153,7 @@ export default function AIStylistScreen({ app }: { app: AppState }) {
                 ))}
               </div>
               <div style={{ marginTop: 28, padding: 16, background: "#F5EFE8", borderRadius: 12, textAlign: "left" }}>
-                <div style={{ fontSize: 12, color: "#6F6B67", lineHeight: 1.7 }}>
+                <div style={{ fontSize: 12, color: "#5E5F5D", lineHeight: 1.7 }}>
                   <strong style={{ color: "#222222" }}>Try:</strong> "I'm going to Da Lat for 4 days. I want a feminine minimalist style and I want to use mostly clothes I already own."
                 </div>
               </div>
@@ -172,7 +172,7 @@ export default function AIStylistScreen({ app }: { app: AppState }) {
               {msg.role === "ai" && (
                 <div style={{
                   width: 32, height: 32, borderRadius: "50%",
-                  background: "linear-gradient(135deg, #684B5A, #B98791)",
+                  background: "linear-gradient(135deg, #1C1B1B, #B98791)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   color: "white", fontSize: 14, marginRight: 10, flexShrink: 0, marginTop: 2,
                 }}>
@@ -182,9 +182,9 @@ export default function AIStylistScreen({ app }: { app: AppState }) {
               <div
                 style={{
                   maxWidth: "75%",
-                  background: msg.role === "user" ? "#684B5A" : "white",
+                  background: msg.role === "user" ? "#1C1B1B" : "white",
                   color: msg.role === "user" ? "white" : "#222222",
-                  border: msg.role === "ai" ? "1px solid #EEE8E1" : "none",
+                  border: msg.role === "ai" ? "1px solid #EFEDED" : "none",
                   borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "4px 16px 16px 16px",
                   padding: "12px 16px",
                   fontSize: 14,
@@ -218,13 +218,13 @@ export default function AIStylistScreen({ app }: { app: AppState }) {
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: "50%",
-                background: "linear-gradient(135deg, #684B5A, #B98791)",
+                background: "linear-gradient(135deg, #1C1B1B, #B98791)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: "white", fontSize: 14, flexShrink: 0,
               }}>
                 ✦
               </div>
-              <div style={{ background: "white", border: "1px solid #EEE8E1", borderRadius: "4px 16px 16px 16px", padding: "2px 4px" }}>
+              <div style={{ background: "white", border: "1px solid #EFEDED", borderRadius: "4px 16px 16px 16px", padding: "2px 4px" }}>
                 <div className="ai-thinking">
                   <div className="ai-dot" />
                   <div className="ai-dot" />
@@ -237,7 +237,7 @@ export default function AIStylistScreen({ app }: { app: AppState }) {
         </div>
 
         {/* Input area */}
-        <div style={{ padding: "16px 24px", borderTop: "1px solid #EEE8E1", background: "white" }}>
+        <div style={{ padding: "16px 24px", borderTop: "1px solid #EFEDED", background: "white" }}>
           <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
             <div style={{ flex: 1, position: "relative" }}>
               <textarea
@@ -275,15 +275,15 @@ export default function AIStylistScreen({ app }: { app: AppState }) {
         <aside
           className="hide-mobile"
           style={{
-            width: 300, background: "white", borderLeft: "1px solid #EEE8E1",
+            width: 300, background: "white", borderLeft: "1px solid #EFEDED",
             display: "flex", flexDirection: "column", overflowY: "auto",
           }}
         >
-          <div style={{ padding: "16px 20px", borderBottom: "1px solid #EEE8E1" }}>
+          <div style={{ padding: "16px 20px", borderBottom: "1px solid #EFEDED" }}>
             <div style={{ fontSize: 11, color: "#B98791", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
               ✦ Outfit Preview
             </div>
-            <div style={{ fontSize: 13, color: "#6F6B67" }}>Da Lat · Day 2 · Sightseeing</div>
+            <div style={{ fontSize: 13, color: "#5E5F5D" }}>Da Lat · Day 2 · Sightseeing</div>
           </div>
 
           <div style={{ padding: "16px 20px", flex: 1 }}>
@@ -293,7 +293,7 @@ export default function AIStylistScreen({ app }: { app: AppState }) {
                 <div key={c} title={c} style={{ flex: 1, height: 8, background: c, borderRadius: 4 }} />
               ))}
             </div>
-            <div style={{ fontSize: 11, color: "#6F6B67", marginBottom: 16 }}>Warm neutrals — cream, beige, camel</div>
+            <div style={{ fontSize: 11, color: "#5E5F5D", marginBottom: 16 }}>Warm neutrals — cream, beige, camel</div>
 
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 11, color: "#48755A", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>
@@ -312,7 +312,7 @@ export default function AIStylistScreen({ app }: { app: AppState }) {
             </div>
 
             <div>
-              <div style={{ fontSize: 11, color: "#684B5A", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>
+              <div style={{ fontSize: 11, color: "#1C1B1B", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>
                 + Recommended to Buy
               </div>
               {OUTFIT_PIECES.filter((p) => !p.owned).map((piece) => (
@@ -321,15 +321,15 @@ export default function AIStylistScreen({ app }: { app: AppState }) {
                   <div>
                     <div style={{ fontSize: 11, color: "#A9A6A3", textTransform: "uppercase", letterSpacing: "0.06em" }}>{piece.slot}</div>
                     <div style={{ fontSize: 13, color: "#222222", fontWeight: 500 }}>{piece.name}</div>
-                    <div style={{ fontSize: 11, color: "#684B5A" }}>{piece.brand} · {formatVND(piece.price!)}</div>
+                    <div style={{ fontSize: 11, color: "#1C1B1B" }}>{piece.brand} · {formatVND(piece.price!)}</div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div style={{ borderTop: "1px solid #EEE8E1", paddingTop: 14, marginTop: 14 }}>
+            <div style={{ borderTop: "1px solid #EFEDED", paddingTop: 14, marginTop: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 14 }}>
-                <span style={{ color: "#6F6B67" }}>New items total</span>
+                <span style={{ color: "#5E5F5D" }}>New items total</span>
                 <span style={{ fontWeight: 600, color: "#222222" }}>
                   {formatVND(OUTFIT_PIECES.filter((p) => !p.owned).reduce((sum, p) => sum + (p.price ?? 0), 0))}
                 </span>

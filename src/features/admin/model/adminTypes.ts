@@ -2,7 +2,7 @@ import type { PaymentMethod, PaymentStatus, OrderStatus } from '@/entities/order
 import type { ProductSize } from '@/entities/product/model/types'
 import type { UserRole, UserStatus } from '@/entities/user/model/types'
 
-export type AdminSection = 'overview' | 'products' | 'categories' | 'orders' | 'requests' | 'customers' | 'ai'
+export type AdminSection = 'overview' | 'products' | 'categories' | 'orders' | 'requests' | 'customers' | 'notifications' | 'settings' | 'ai'
 
 export interface AdminDashboardSummary {
   totalUsers: number

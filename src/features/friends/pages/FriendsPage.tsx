@@ -58,27 +58,27 @@ export default function FriendsPage() {
         <div>
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#B98791]">Kết nối từ những điều yêu thích</p>
           <h1 className="font-display text-4xl font-semibold text-[#222222] md:text-5xl">Bạn bè</h1>
-          <p className="mt-3 max-w-xl text-sm leading-7 text-[#6F6B67]">Gu riêng, cảm hứng chung. Một góc nhỏ dành cho những người bạn muốn kết nối.</p>
+          <p className="mt-3 max-w-xl text-sm leading-7 text-[#5E5F5D]">Gu riêng, cảm hứng chung. Một góc nhỏ dành cho những người bạn muốn kết nối.</p>
         </div>
         <Button icon={<UserPlus size={18} aria-hidden="true" />} onClick={() => setInviteOpen(true)}>Mời bạn bè</Button>
       </div>
-      <p className="mt-6 rounded-lg border border-[#E3DAD0] bg-[#F4E7E8]/40 px-4 py-3 text-xs leading-6 text-[#684B5A]">Bản tương tác demo · lời mời được lưu trên trình duyệt này, chưa gửi email thật.</p>
-      <div className="mb-7 mt-7 flex gap-2 overflow-x-auto border-b border-[#E3DAD0] pb-3" role="group" aria-label="Danh sách kết nối">
-        {tabs.map(tab => <button key={tab.id} aria-pressed={section === tab.id} className={`min-h-11 shrink-0 rounded-lg px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] ${section === tab.id ? 'bg-[#684B5A] text-white' : 'text-[#6F6B67] hover:bg-[#EEE8E1]'}`} onClick={() => setSection(tab.id)}>{tab.label} ({tab.count})</button>)}
+      <p className="mt-6 rounded-lg border border-[#E3E2E2] bg-[#E9E8E7]/40 px-4 py-3 text-xs leading-6 text-[#1C1B1B]">Bản tương tác demo · lời mời được lưu trên trình duyệt này, chưa gửi email thật.</p>
+      <div className="mb-7 mt-7 flex gap-2 overflow-x-auto border-b border-[#E3E2E2] pb-3" role="group" aria-label="Danh sách kết nối">
+        {tabs.map(tab => <button key={tab.id} aria-pressed={section === tab.id} className={`min-h-11 shrink-0 rounded-lg px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] ${section === tab.id ? 'bg-[#1C1B1B] text-white' : 'text-[#5E5F5D] hover:bg-[#EFEDED]'}`} onClick={() => setSection(tab.id)}>{tab.label} ({tab.count})</button>)}
       </div>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
         <div>
           {section === 'friends' ? <>
-            <label className="mb-5 flex min-h-11 items-center gap-3 rounded-lg border border-[#E3DAD0] bg-white px-4 text-[#8A8179]">
+            <label className="mb-5 flex min-h-11 items-center gap-3 rounded-lg border border-[#E3E2E2] bg-white px-4 text-[#8A8179]">
               <Search size={17} aria-hidden="true" /><span className="sr-only">Tìm bạn bè theo tên</span>
               <input className="min-w-0 flex-1 bg-transparent py-3 text-sm text-[#3A3632] outline-none" value={search} onChange={event => setSearch(event.target.value)} placeholder="Tìm trong danh sách bạn bè…" />
             </label>
             <div className="grid gap-4 sm:grid-cols-2">
-              {filtered.map(friend => <article key={friend.id} className="rounded-lg border border-[#E3DAD0] bg-[#FDFCFA] p-6 shadow-sm">
-                <span className="mb-5 grid h-14 w-14 place-items-center rounded-full bg-[#F4E7E8] font-display text-xl text-[#684B5A]">{friend.avatarInitials || friend.fullName[0]}</span>
+              {filtered.map(friend => <article key={friend.id} className="rounded-lg border border-[#E3E2E2] bg-[#FFFFFF] p-6 shadow-sm">
+                <span className="mb-5 grid h-14 w-14 place-items-center rounded-full bg-[#E9E8E7] font-display text-xl text-[#1C1B1B]">{friend.avatarInitials || friend.fullName[0]}</span>
                 <h2 className="font-display text-2xl text-[#222222]">{friend.fullName}</h2>
                 <p className="mt-2 text-xs text-[#8A8179]">Một người bạn trong vòng kết nối của bạn</p>
-                <Link aria-label={`Xem Outfit của ${friend.fullName}`} to={`/shared-with-me/${friend.id}`} className="mt-5 inline-flex min-h-11 items-center rounded-lg bg-[#684B5A] px-4 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] focus-visible:ring-offset-2">Xem Outfit</Link>
+                <Link aria-label={`Xem Outfit của ${friend.fullName}`} to={`/shared-with-me/${friend.id}`} className="mt-5 inline-flex min-h-11 items-center rounded-lg bg-[#1C1B1B] px-4 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] focus-visible:ring-offset-2">Xem Outfit</Link>
                 <Button className="mt-6" variant="ghost" icon={<UserRoundMinus size={16} aria-hidden="true" />} aria-label={`Hủy kết bạn với ${friend.fullName}`} onClick={() => setRemoveId(friend.id)}>Hủy kết bạn</Button>
               </article>)}
             </div>
@@ -89,21 +89,21 @@ export default function FriendsPage() {
               const expired = invitation.status === 'PENDING' && invitation.expiresAt <= now
               const retry = retrySeconds(invitation, now)
               const label = invitation.status === 'ACCEPTED' ? 'Đã chấp nhận' : invitation.status === 'INVALIDATED' ? 'Đã vô hiệu hóa' : expired ? 'Đã hết hạn' : invitation.delivery === 'FAILED' ? 'Gửi không thành công' : invitation.delivery === 'UNKNOWN' ? 'Chưa rõ kết quả gửi' : 'Đang chờ chấp nhận'
-              return <article key={invitation.id} className="flex flex-wrap items-center gap-4 rounded-lg border border-[#E3DAD0] bg-[#FDFCFA] p-5 shadow-sm">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#F4E7E8] font-display text-lg text-[#684B5A]">{section === 'received' ? sender?.avatarInitials ?? '?' : invitation.recipientEmail[0].toUpperCase()}</span>
+              return <article key={invitation.id} className="flex flex-wrap items-center gap-4 rounded-lg border border-[#E3E2E2] bg-[#FFFFFF] p-5 shadow-sm">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#E9E8E7] font-display text-lg text-[#1C1B1B]">{section === 'received' ? sender?.avatarInitials ?? '?' : invitation.recipientEmail[0].toUpperCase()}</span>
                 <div className="min-w-0 flex-1"><h2 className="break-words text-sm font-semibold text-[#3A3632]">{section === 'received' ? sender?.fullName ?? 'Một người bạn' : invitation.recipientEmail}</h2><p className="mt-1 text-xs leading-6 text-[#8A8179]">{section === 'received' ? 'Muốn kết nối cùng bạn' : label}</p>{invitation.status === 'PENDING' && !expired && <p className="text-xs text-[#8A8179]">Hết hạn sau {Math.ceil((invitation.expiresAt - now) / 86400000)} ngày</p>}</div>
                 {section === 'received' ? <Button onClick={() => {
                   if (invitation.expiresAt <= Date.now()) { toast.error('Lời mời đã hết hạn.'); return }
                   dispatch({ type: 'friends/accept', payload: { id: invitation.id, now: Date.now() } }); toast.info('Đã thêm bạn trong bản demo.')
-                }}>Chấp nhận</Button> : retry !== null ? <Button variant="secondary" disabled={retry > 0} onClick={() => { const invalid = validateRetry(state, invitation.id, Date.now()); if (invalid) { toast.error(invalid); return }; dispatch({ type: 'friends/retry', payload: { id: invitation.id, now: Date.now() } }); toast.info('Đã làm mới lời mời demo, chưa gửi email thật.') }}>{retry > 0 ? `Thử lại sau ${retry}s` : 'Gửi lại'}</Button> : <span className="rounded-full bg-[#EEE8E1] px-3 py-1 text-xs text-[#6F6B67]">{label}</span>}
+                }}>Chấp nhận</Button> : retry !== null ? <Button variant="secondary" disabled={retry > 0} onClick={() => { const invalid = validateRetry(state, invitation.id, Date.now()); if (invalid) { toast.error(invalid); return }; dispatch({ type: 'friends/retry', payload: { id: invitation.id, now: Date.now() } }); toast.info('Đã làm mới lời mời demo, chưa gửi email thật.') }}>{retry > 0 ? `Thử lại sau ${retry}s` : 'Gửi lại'}</Button> : <span className="rounded-full bg-[#EFEDED] px-3 py-1 text-xs text-[#5E5F5D]">{label}</span>}
               </article>
             })}
             {!(section === 'received' ? incoming : outgoing).length && <EmptyCircle title="Chưa có lời mời" description={section === 'received' ? 'Lời mời hợp lệ gửi đến bạn sẽ xuất hiện ở đây.' : 'Mời người bạn muốn kết nối bằng địa chỉ email.'} />}
           </div>}
         </div>
-        <aside className="h-fit rounded-lg bg-[#EEE8E1]/70 p-6">
+        <aside className="h-fit rounded-lg bg-[#EFEDED]/70 p-6">
           <span className="font-display text-4xl italic leading-tight text-[#927383]">Một chút<br />gần nhau hơn.</span>
-          <p className="mt-6 text-sm leading-7 text-[#6F6B67]">Lời mời có hiệu lực 7 ngày. Người nhận chỉ cần chấp nhận để trở thành bạn bè.</p>
+          <p className="mt-6 text-sm leading-7 text-[#5E5F5D]">Lời mời có hiệu lực 7 ngày. Người nhận chỉ cần chấp nhận để trở thành bạn bè.</p>
           <p className="mt-3 text-xs leading-6 text-[#8A8179]">Gửi hoặc nhận lời mời không tự đổi chế độ riêng tư của Outfit.</p>
         </aside>
       </div>
@@ -113,7 +113,7 @@ export default function FriendsPage() {
           if (invalid) { setError(invalid); return }
           dispatch({ type: 'friends/invite', payload: { id: crypto.randomUUID(), email, now: Date.now() } }); closeInvite(); toast.info('Đã thêm lời mời demo, chưa gửi email thật.')
         }}>
-          <label className="grid gap-2 text-sm font-semibold text-[#3A3632]">Email người nhận<input type="email" required autoComplete="email" value={email} onChange={event => { setEmail(event.target.value); setError('') }} placeholder="banbe@example.com" aria-invalid={!!error} aria-describedby={error ? 'friends-invite-error' : undefined} className="min-h-11 rounded-lg border border-[#D8D0C6] bg-white px-3 text-sm font-normal outline-none focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20" /></label>
+          <label className="grid gap-2 text-sm font-semibold text-[#3A3632]">Email người nhận<input type="email" required autoComplete="email" value={email} onChange={event => { setEmail(event.target.value); setError('') }} placeholder="banbe@example.com" aria-invalid={!!error} aria-describedby={error ? 'friends-invite-error' : undefined} className="min-h-11 rounded-lg border border-[#C4C7C7] bg-white px-3 text-sm font-normal outline-none focus:border-[#1C1B1B] focus:ring-2 focus:ring-[#1C1B1B]/20" /></label>
           {error && <p id="friends-invite-error" className="mt-3 text-sm text-[#A94B4B]" role="alert">{error}</p>}
           <div className="mt-6 flex justify-end gap-3"><Button variant="ghost" onClick={closeInvite}>Hủy</Button><Button type="submit">Thêm lời mời</Button></div>
         </form>
@@ -126,5 +126,5 @@ export default function FriendsPage() {
 }
 
 function EmptyCircle({ title, description }: { title: string; description: string }) {
-  return <div className="rounded-lg border border-dashed border-[#D8D0C6] px-6 py-12 text-center"><UsersRound className="mx-auto mb-5 text-[#B98791]" size={32} aria-hidden="true" /><h2 className="font-display text-2xl text-[#3A3632]">{title}</h2><p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[#8A8179]">{description}</p></div>
+  return <div className="rounded-lg border border-dashed border-[#C4C7C7] px-6 py-12 text-center"><UsersRound className="mx-auto mb-5 text-[#B98791]" size={32} aria-hidden="true" /><h2 className="font-display text-2xl text-[#3A3632]">{title}</h2><p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[#8A8179]">{description}</p></div>
 }

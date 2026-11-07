@@ -16,10 +16,10 @@ const mobileItems = [
 export function MobileNavigation() {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-[var(--z-sticky)] border-t border-[#EEE8E1] bg-[#FAF8F5]/95 pb-[var(--safe-bottom)] backdrop-blur-md md:hidden"
+      className="fixed inset-x-0 bottom-0 z-[var(--z-sticky)] border-t border-[#EFEDED] bg-[#FBF9F9]/95 pb-[var(--safe-bottom)] backdrop-blur-md lg:hidden"
       aria-label="Điều hướng di động"
     >
-      <div className="grid grid-cols-7">
+      <div className="grid auto-cols-[minmax(64px,1fr)] grid-flow-col overflow-x-auto overscroll-x-contain">
         {mobileItems.map(item => {
           const Icon = item.icon
           return (
@@ -28,8 +28,8 @@ export function MobileNavigation() {
               to={item.to}
               end={item.to === ROUTES.home}
               className={({ isActive }) =>
-                `grid min-h-14 place-items-center gap-0.5 px-1 py-2 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#684B5A] ${
-                  isActive ? 'text-[#684B5A]' : 'text-[#6F6B67]'
+                `grid min-h-14 place-items-center gap-0.5 whitespace-nowrap px-1 py-2 text-[11px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1C1B1B] ${
+                  isActive ? 'text-[#1C1B1B]' : 'text-[#5E5F5D]'
                 }`
               }
             >

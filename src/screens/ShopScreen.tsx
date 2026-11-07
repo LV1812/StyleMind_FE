@@ -13,7 +13,7 @@ function ProductCard({ p, onClick }: { p: (typeof mockProducts)[0]; onClick: () 
     <div
       className="product-card"
       onClick={onClick}
-      style={{ cursor: "pointer", background: "white", borderRadius: 12, overflow: "hidden", border: "1px solid #EEE8E1" }}
+      style={{ cursor: "pointer", background: "white", borderRadius: 12, overflow: "hidden", border: "1px solid #EFEDED" }}
     >
       <div style={{ position: "relative", overflow: "hidden", background: "#F5EFE8" }}>
         <img
@@ -29,7 +29,7 @@ function ProductCard({ p, onClick }: { p: (typeof mockProducts)[0]; onClick: () 
             width: 32, height: 32, borderRadius: "50%", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: "0 1px 6px rgba(0,0,0,0.12)",
-            color: wished ? "#A94B4B" : "#6F6B67", fontSize: 14,
+            color: wished ? "#A94B4B" : "#5E5F5D", fontSize: 14,
           }}
         >
           {wished ? "♥" : "♡"}
@@ -46,13 +46,13 @@ function ProductCard({ p, onClick }: { p: (typeof mockProducts)[0]; onClick: () 
         )}
       </div>
       <div style={{ padding: "14px 16px 16px" }}>
-        <div style={{ fontSize: 10, color: "#6F6B67", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4, fontWeight: 500 }}>
+        <div style={{ fontSize: 10, color: "#5E5F5D", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4, fontWeight: 500 }}>
           {p.brand}
         </div>
         <div style={{ fontSize: 14, color: "#222222", marginBottom: 10, lineHeight: 1.3 }}>{p.name}</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <div style={{ fontSize: 15, fontWeight: 600, color: "#222222" }}>{formatVND(p.price)}</div>
-          <div style={{ fontSize: 11, color: "#6F6B67", border: "1px solid #EEE8E1", borderRadius: 4, padding: "2px 7px" }}>
+          <div style={{ fontSize: 11, color: "#5E5F5D", border: "1px solid #EFEDED", borderRadius: 4, padding: "2px 7px" }}>
             {p.fit}
           </div>
         </div>
@@ -88,12 +88,12 @@ export default function ShopScreen({ app }: { app: AppState }) {
       {/* Page header */}
       <div style={{ marginBottom: 24 }}>
         <h1 className="section-heading" style={{ marginBottom: 4 }}>Shop</h1>
-        <p style={{ color: "#6F6B67", fontSize: 14 }}>{filteredProducts.length} items · curated for your style</p>
+        <p style={{ color: "#5E5F5D", fontSize: 14 }}>{filteredProducts.length} items · curated for your style</p>
       </div>
 
       {/* Category tabs */}
       <div style={{ overflowX: "auto", marginBottom: 24 }}>
-        <div style={{ display: "flex", gap: 0, borderBottom: "1.5px solid #EEE8E1", minWidth: "max-content" }}>
+        <div style={{ display: "flex", gap: 0, borderBottom: "1.5px solid #EFEDED", minWidth: "max-content" }}>
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
@@ -111,12 +111,12 @@ export default function ShopScreen({ app }: { app: AppState }) {
         {/* Filter sidebar */}
         {showFilters && (
           <aside>
-            <div className="card" style={{ padding: 20, border: "1px solid #EEE8E1" }}>
+            <div className="card" style={{ padding: 20, border: "1px solid #EFEDED" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                 <span style={{ fontWeight: 600, fontSize: 14 }}>Filters</span>
                 <button
                   onClick={() => { setSelectedBrands([]); setSelectedPrices([]); }}
-                  style={{ background: "none", border: "none", color: "#684B5A", fontSize: 12, cursor: "pointer" }}
+                  style={{ background: "none", border: "none", color: "#1C1B1B", fontSize: 12, cursor: "pointer" }}
                 >
                   Clear all
                 </button>
@@ -124,7 +124,7 @@ export default function ShopScreen({ app }: { app: AppState }) {
 
               {/* Brand filter */}
               <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6F6B67", marginBottom: 12 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#5E5F5D", marginBottom: 12 }}>
                   Brand
                 </div>
                 {BRANDS.map((b) => (
@@ -133,7 +133,7 @@ export default function ShopScreen({ app }: { app: AppState }) {
                       type="checkbox"
                       checked={selectedBrands.includes(b)}
                       onChange={() => toggleBrand(b)}
-                      style={{ accentColor: "#684B5A" }}
+                      style={{ accentColor: "#1C1B1B" }}
                     />
                     {b}
                   </label>
@@ -142,7 +142,7 @@ export default function ShopScreen({ app }: { app: AppState }) {
 
               {/* Price filter */}
               <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6F6B67", marginBottom: 12 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#5E5F5D", marginBottom: 12 }}>
                   Price
                 </div>
                 {PRICE_RANGES.map((pr) => (
@@ -151,7 +151,7 @@ export default function ShopScreen({ app }: { app: AppState }) {
                       type="checkbox"
                       checked={selectedPrices.includes(pr)}
                       onChange={() => setSelectedPrices((prev) => prev.includes(pr) ? prev.filter((x) => x !== pr) : [...prev, pr])}
-                      style={{ accentColor: "#684B5A" }}
+                      style={{ accentColor: "#1C1B1B" }}
                     />
                     {pr}
                   </label>
@@ -160,7 +160,7 @@ export default function ShopScreen({ app }: { app: AppState }) {
 
               {/* Size filter */}
               <div style={{ marginBottom: 24 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6F6B67", marginBottom: 12 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#5E5F5D", marginBottom: 12 }}>
                   Size
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -172,12 +172,12 @@ export default function ShopScreen({ app }: { app: AppState }) {
 
               {/* AI Fit filter */}
               <div>
-                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6F6B67", marginBottom: 12 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#5E5F5D", marginBottom: 12 }}>
                   Fit
                 </div>
                 {["Slim", "Regular", "Relaxed", "Oversized"].map((f) => (
                   <label key={f} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, cursor: "pointer", fontSize: 13.5, color: "#222222" }}>
-                    <input type="checkbox" style={{ accentColor: "#684B5A" }} />
+                    <input type="checkbox" style={{ accentColor: "#1C1B1B" }} />
                     {f}
                   </label>
                 ))}
@@ -196,7 +196,7 @@ export default function ShopScreen({ app }: { app: AppState }) {
                 style={{
                   display: "flex", alignItems: "center", gap: 6,
                   border: "1.5px solid #D8CFCA", borderRadius: 8, padding: "8px 14px",
-                  fontSize: 13.5, cursor: "pointer", background: showFilters ? "#684B5A" : "white",
+                  fontSize: 13.5, cursor: "pointer", background: showFilters ? "#1C1B1B" : "white",
                   color: showFilters ? "white" : "#222222", transition: "all 0.15s",
                 }}
               >
@@ -215,7 +215,7 @@ export default function ShopScreen({ app }: { app: AppState }) {
                       key={b}
                       onClick={() => toggleBrand(b)}
                       style={{
-                        border: "1px solid #684B5A", background: "#F4E7E8", color: "#684B5A",
+                        border: "1px solid #1C1B1B", background: "#E9E8E7", color: "#1C1B1B",
                         borderRadius: 100, padding: "4px 10px", fontSize: 12, cursor: "pointer",
                       }}
                     >
@@ -246,8 +246,8 @@ export default function ShopScreen({ app }: { app: AppState }) {
                     onClick={() => setViewMode(m)}
                     style={{
                       border: "none", padding: "8px 12px", cursor: "pointer",
-                      background: viewMode === m ? "#684B5A" : "white",
-                      color: viewMode === m ? "white" : "#6F6B67",
+                      background: viewMode === m ? "#1C1B1B" : "white",
+                      color: viewMode === m ? "white" : "#5E5F5D",
                       fontSize: 12,
                     }}
                   >
@@ -279,14 +279,14 @@ export default function ShopScreen({ app }: { app: AppState }) {
                     style={{
                       display: "grid", gridTemplateColumns: "100px 1fr auto",
                       gap: 16, alignItems: "center", background: "white",
-                      border: "1px solid #EEE8E1", borderRadius: 12, padding: 16, cursor: "pointer",
+                      border: "1px solid #EFEDED", borderRadius: 12, padding: 16, cursor: "pointer",
                     }}
                   >
                     <img src={p.image} alt={p.name} style={{ width: 100, height: 120, objectFit: "cover", borderRadius: 8 }} />
                     <div>
-                      <div style={{ fontSize: 10, color: "#6F6B67", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4, fontWeight: 500 }}>{p.brand}</div>
+                      <div style={{ fontSize: 10, color: "#5E5F5D", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4, fontWeight: 500 }}>{p.brand}</div>
                       <div style={{ fontSize: 15, color: "#222222", marginBottom: 6 }}>{p.name}</div>
-                      <div style={{ fontSize: 12, color: "#6F6B67", marginBottom: 8 }}>{p.material} · {p.fit}</div>
+                      <div style={{ fontSize: 12, color: "#5E5F5D", marginBottom: 8 }}>{p.material} · {p.fit}</div>
                       {p.wardrobeMatches > 0 && (
                         <span style={{ fontSize: 11, color: "#48755A", background: "#E8F3ED", padding: "3px 8px", borderRadius: 100 }}>
                           ✓ {p.wardrobeMatches} wardrobe matches
@@ -310,7 +310,7 @@ export default function ShopScreen({ app }: { app: AppState }) {
             <div style={{ textAlign: "center", padding: "80px 0" }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>✦</div>
               <h3 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 20, color: "#222222", marginBottom: 8 }}>No items found</h3>
-              <p style={{ color: "#6F6B67", fontSize: 14, marginBottom: 20 }}>Try adjusting your filters or ask StyleMind for a recommendation.</p>
+              <p style={{ color: "#5E5F5D", fontSize: 14, marginBottom: 20 }}>Try adjusting your filters or ask StyleMind for a recommendation.</p>
               <button className="btn-ai" onClick={() => app.navigate("stylist")}>✦ Ask StyleMind</button>
             </div>
           )}

@@ -9,7 +9,7 @@ import { useCommerceDisplay } from '@/features/cart/model/GuestCommerceProvider'
 import type { ProductSize } from '@/entities/product/model/types'
 import type { Product } from '@/entities/product/model/types'
 import { commerceProductToEntity } from '@/features/commerce/data/commerceEntityAdapters'
-import { Button, EmptyState } from '@/shared/ui'
+import { Button, EmptyState, useToast } from '@/shared/ui'
 
 import { FilterPanel } from '../components/FilterPanel'
 import { MobileFilterSheet } from '../components/MobileFilterSheet'
@@ -75,6 +75,7 @@ function pageFromSearchParams(searchParams: URLSearchParams) {
 }
 
 export function ShopPage() {
+  const toast = useToast()
   const { state, loading, error, retry } = useCommerceDisplay()
   const [searchParams, setSearchParams] = useSearchParams()
   const [filters, setFilters] = useState(() => filtersFromSearchParams(searchParams))
@@ -84,6 +85,7 @@ export function ShopPage() {
   const [catalogLoading, setCatalogLoading] = useState(true)
   const [catalogError, setCatalogError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [pageInput, setPageInput] = useState('')
 
   useEffect(() => {
     setFilters(filtersFromSearchParams(searchParams))
@@ -102,6 +104,7 @@ export function ShopPage() {
   const appliedFilters = useMemo(() => filtersFromSearchParams(searchParams), [searchParams])
   const emptyFilters = useMemo(() => createEmptyFilters(), [])
   const appliedCount = activeFilterCount(appliedFilters)
+  const activeCategory = categories.find(category => category.id === appliedFilters.categoryIds[0])
 
   useEffect(() => {
     let ignore = false
@@ -191,16 +194,16 @@ export function ShopPage() {
   }
 
   return (
-    <div className="bg-[#FAF8F5]">
-      <section className="border-b border-[#EEE8E1] bg-[#FDFCFA]">
-        <div className="mx-auto grid max-w-[var(--container-wide)] gap-8 px-5 py-10 md:px-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.55fr)] lg:items-end">
+    <div className="bg-[#FBF9F9]">
+      <section className="border-b border-[#EFEDED] bg-[#FFFFFF]">
+        <div className="mx-auto grid max-w-[var(--container-wide)] gap-8 px-5 py-10 md:px-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.55fr)] lg:items-end lg:px-16">
           <div>
-            <p className="text-sm font-semibold text-[#684B5A]">Cửa hàng StyleMind</p>
-            <h1 className="mt-3 max-w-3xl break-words font-display text-3xl font-semibold leading-tight text-[#222222] sm:text-4xl md:text-6xl">
-              Chọn món dễ mặc cho tủ đồ hằng ngày
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#735C00]">Cửa hàng StyleMind</p>
+            <h1 className="mt-3 max-w-3xl break-words font-display text-4xl font-semibold leading-tight text-[#222222] md:text-5xl">
+              {activeCategory?.label ?? 'Cửa hàng'}
             </h1>
           </div>
-          <form onSubmit={handleSearch} className="rounded-lg bg-[#FAF8F5] p-3 shadow-[0_16px_38px_rgba(58,54,50,0.08)]">
+          <form onSubmit={handleSearch} className="rounded-lg border border-[#E3E2E2] bg-[#FBF9F9] p-3">
             <label htmlFor="shop-search" className="sr-only">
               Tìm trong cửa hàng
             </label>
@@ -212,7 +215,7 @@ export function ShopPage() {
                   value={filters.query}
                   onChange={event => setFilters({ ...filters, query: event.target.value })}
                   placeholder="Tìm áo, đầm, blazer"
-                  className="h-11 w-full rounded-lg border border-[#D8D0C6] bg-white pl-10 pr-3 text-sm font-semibold text-[#222222] outline-none transition focus:border-[#684B5A] focus:ring-2 focus:ring-[#684B5A]/20"
+                  className="h-11 w-full rounded-lg border border-[#C4C7C7] bg-white pl-10 pr-3 text-sm font-semibold text-[#222222] outline-none transition focus:border-[#1C1B1B] focus:ring-2 focus:ring-[#1C1B1B]/20"
                 />
               </div>
               <Button type="submit">Tìm</Button>
@@ -221,9 +224,14 @@ export function ShopPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-[var(--container-wide)] gap-8 px-5 py-8 md:px-8 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <nav className="mx-auto flex max-w-[var(--container-wide)] gap-2 overflow-x-auto px-5 py-5 md:px-8 lg:hidden" aria-label="Danh mục sản phẩm">
+        <button type="button" onClick={() => updateFilters({ ...filters, categoryIds: [] })} aria-pressed={filters.categoryIds.length === 0} className={`min-h-11 shrink-0 rounded-lg border px-4 py-2 text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] motion-reduce:transition-none ${filters.categoryIds.length === 0 ? 'border-black bg-black text-white' : 'border-[#C4C7C7] bg-white text-black hover:bg-[#EFEDED]'}`}>Tất cả</button>
+        {categories.map(category => <button key={category.id} type="button" onClick={() => updateFilters({ ...filters, categoryIds: [category.id] })} aria-pressed={filters.categoryIds.includes(category.id)} className={`min-h-11 shrink-0 rounded-lg border px-4 py-2 text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] motion-reduce:transition-none ${filters.categoryIds.includes(category.id) ? 'border-black bg-black text-white' : 'border-[#C4C7C7] bg-white text-black hover:bg-[#EFEDED]'}`}>{category.label}</button>)}
+      </nav>
+
+      <section className="mx-auto grid max-w-[var(--container-wide)] gap-8 px-5 pb-12 md:px-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:px-16 lg:pt-8">
         <div className="hidden lg:block">
-          <div className="sticky top-24 rounded-lg bg-[#FDFCFA] p-5 shadow-[0_18px_36px_rgba(58,54,50,0.08)]">
+          <div className="sticky top-24 rounded-lg border border-[#E3E2E2] bg-white p-5">
             <FilterPanel
               filters={filters}
               categories={categories}
@@ -238,21 +246,21 @@ export function ShopPage() {
         </div>
 
         <div className="min-w-0">
-          {catalogLoading && <p role="status" className="mb-4 rounded-lg bg-white p-4 text-sm text-[#6F6B67]">Đang tải sản phẩm từ Commerce…</p>}
+          {catalogLoading && <p role="status" className="mb-4 rounded-lg bg-white p-4 text-sm text-[#5E5F5D]">Đang tải sản phẩm…</p>}
           {catalogError && !catalogLoading && (
             <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#FCEAEA] p-4 text-sm font-semibold text-[#A94B4B]">
               <span>{catalogError}</span>
               <Button size="sm" variant="secondary" onClick={() => setReloadKey(value => value + 1)}>Thử lại</Button>
             </div>
           )}
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-[#E3E2E2] pb-4">
             <div>
-              <p className="text-sm font-semibold text-[#684B5A]">{totalElements} sản phẩm phù hợp</p>
-              <p className="mt-1 text-sm text-[#6F6B67]">
+              {!catalogLoading && !catalogError && <p className="text-base font-semibold text-[#1C1B1B]">{totalElements} sản phẩm phù hợp</p>}
+              <p className="mt-1 text-sm text-[#5E5F5D]">
                 {appliedCount ? `${appliedCount} bộ lọc đang áp dụng` : 'Tất cả sản phẩm đang có sẵn'}
               </p>
             </div>
-            <MobileFilterSheet
+            <div className="flex flex-wrap items-center gap-3"><label className="text-sm text-[#5E5F5D]">Sắp xếp sản phẩm<select aria-label="Sắp xếp sản phẩm" value="" onChange={() => toast.info('Chức năng chưa hỗ trợ.')} className="ml-2 min-h-11 rounded-lg border border-[#C4C7C7] bg-white px-3 text-sm text-[#222222]"><option value="">Mặc định</option><option value="newest">Mới nhất</option><option value="price_asc">Giá tăng dần</option><option value="price_desc">Giá giảm dần</option></select></label><MobileFilterSheet
               filters={filters}
               emptyFilters={emptyFilters}
               categories={categories}
@@ -262,9 +270,10 @@ export function ShopPage() {
               sizes={[]}
               onApply={updateFilters}
               onClear={clearFilters}
-            />
+            /></div>
           </div>
 
+          {catalogLoading && <div data-testid="shop-loading-grid" aria-hidden="true" className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index} className="overflow-hidden rounded-[24px] bg-white"><div className="aspect-[4/5] animate-pulse bg-[#EFEDED] motion-reduce:animate-none" /><div className="space-y-3 p-4"><div className="h-3 w-1/3 rounded bg-[#EFEDED]" /><div className="h-4 w-3/4 rounded bg-[#EFEDED]" /><div className="h-4 w-1/2 rounded bg-[#EFEDED]" /></div></div>)}</div>}
           {!catalogLoading && !catalogError && products.length > 0 ? (
             <>
               <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
@@ -274,7 +283,7 @@ export function ShopPage() {
               </div>
 
               {totalPages > 1 && (
-                <nav aria-label="Phân trang sản phẩm" className="mt-8 flex items-center justify-center gap-3">
+                <nav aria-label="Phân trang sản phẩm" className="mt-8 flex flex-wrap items-center justify-center gap-3">
                   <Button
                     variant="secondary"
                     disabled={requestedPage === 1}
@@ -282,7 +291,7 @@ export function ShopPage() {
                   >
                     Trang trước
                   </Button>
-                  <span className="min-w-24 text-center text-sm font-semibold text-[#684B5A]">
+                  <span className="min-w-24 text-center text-sm font-semibold text-[#1C1B1B]">
                     Trang {requestedPage} / {totalPages}
                   </span>
                   <Button
@@ -292,6 +301,11 @@ export function ShopPage() {
                   >
                     Trang sau
                   </Button>
+                  <form className="flex items-center gap-2" onSubmit={event => { event.preventDefault(); const target = Number(pageInput); if (Number.isInteger(target) && target >= 1 && target <= totalPages) { goToPage(target); setPageInput('') } }}>
+                    <label htmlFor="shop-page-number" className="text-sm text-[#5E5F5D]">Đi đến trang</label>
+                    <input id="shop-page-number" type="number" inputMode="numeric" min={1} max={totalPages} required value={pageInput} onChange={event => setPageInput(event.target.value)} className="min-h-11 w-20 rounded-lg border border-[#C4C7C7] bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]" />
+                    <Button type="submit" variant="secondary">Đi</Button>
+                  </form>
                 </nav>
               )}
             </>

@@ -26,7 +26,7 @@ function TravelForm({ onGenerate }: { onGenerate: () => void }) {
         <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 34, color: "#222222", marginBottom: 10 }}>
           Plan my trip wardrobe
         </h1>
-        <p style={{ color: "#6F6B67", fontSize: 15, lineHeight: 1.7 }}>
+        <p style={{ color: "#5E5F5D", fontSize: 15, lineHeight: 1.7 }}>
           Tell StyleMind where you're going and I'll build a complete day-by-day outfit plan — using your wardrobe first.
         </p>
       </div>
@@ -46,7 +46,7 @@ function TravelForm({ onGenerate }: { onGenerate: () => void }) {
         {/* Duration */}
         <div>
           <label style={{ fontSize: 13, fontWeight: 600, color: "#222222", display: "block", marginBottom: 8 }}>
-            Trip Duration: <span style={{ color: "#684B5A", fontWeight: 700 }}>{days} days</span>
+            Trip Duration: <span style={{ color: "#1C1B1B", fontWeight: 700 }}>{days} days</span>
           </label>
           <div style={{ display: "flex", gap: 8 }}>
             {[2, 3, 4, 5, 7, 10, 14].map((d) => (
@@ -118,9 +118,9 @@ function TravelForm({ onGenerate }: { onGenerate: () => void }) {
                 key={opt.id}
                 style={{
                   display: "flex", alignItems: "flex-start", gap: 12,
-                  border: `1.5px solid ${wardrobePref === opt.id ? "#684B5A" : "#D8CFCA"}`,
+                  border: `1.5px solid ${wardrobePref === opt.id ? "#1C1B1B" : "#D8CFCA"}`,
                   borderRadius: 10, padding: "14px 16px", cursor: "pointer",
-                  background: wardrobePref === opt.id ? "#F4E7E8" : "white",
+                  background: wardrobePref === opt.id ? "#E9E8E7" : "white",
                   transition: "all 0.15s",
                 }}
               >
@@ -130,11 +130,11 @@ function TravelForm({ onGenerate }: { onGenerate: () => void }) {
                   value={opt.id}
                   checked={wardrobePref === opt.id}
                   onChange={() => setWardrobePref(opt.id)}
-                  style={{ accentColor: "#684B5A", marginTop: 2 }}
+                  style={{ accentColor: "#1C1B1B", marginTop: 2 }}
                 />
                 <div>
                   <div style={{ fontSize: 13.5, fontWeight: 500, color: "#222222", marginBottom: 3 }}>{opt.label}</div>
-                  <div style={{ fontSize: 12, color: "#6F6B67" }}>{opt.sub}</div>
+                  <div style={{ fontSize: 12, color: "#5E5F5D" }}>{opt.sub}</div>
                 </div>
               </label>
             ))}
@@ -143,8 +143,8 @@ function TravelForm({ onGenerate }: { onGenerate: () => void }) {
 
         {/* Optional context */}
         <div style={{ padding: 16, background: "#F5EFE8", borderRadius: 10 }}>
-          <div style={{ fontSize: 12, color: "#684B5A", fontWeight: 600, marginBottom: 6 }}>Wardrobe context</div>
-          <div style={{ fontSize: 13, color: "#6F6B67", lineHeight: 1.6 }}>
+          <div style={{ fontSize: 12, color: "#1C1B1B", fontWeight: 600, marginBottom: 6 }}>Wardrobe context</div>
+          <div style={{ fontSize: 13, color: "#5E5F5D", lineHeight: 1.6 }}>
             StyleMind will use your <strong style={{ color: "#222222" }}>8 saved wardrobe items</strong>, your <strong style={{ color: "#222222" }}>Feminine Minimalist</strong> style profile, and your <strong style={{ color: "#222222" }}>neutral color preferences</strong> to build this plan.
           </div>
         </div>
@@ -161,10 +161,10 @@ function DayPlan({ day, active, onClick }: { day: typeof travelDayOutfits[0]; ac
   const hasShopItems = day.shopItems.length > 0;
   return (
     <div className={`day-card ${active ? "active" : ""}`} onClick={onClick}>
-      <div style={{ padding: "14px 16px", borderBottom: "1px solid #EEE8E1" }}>
+      <div style={{ padding: "14px 16px", borderBottom: "1px solid #EFEDED" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <div style={{ fontSize: 10, color: "#684B5A", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>
+            <div style={{ fontSize: 10, color: "#1C1B1B", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>
               DAY {day.day}
             </div>
             <div style={{ fontSize: 14, fontWeight: 500, color: "#222222", lineHeight: 1.3 }}>{day.label}</div>
@@ -226,8 +226,8 @@ export default function TravelPlannerScreen({ app }: { app: AppState }) {
         <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 24, color: "#222222" }}>
           Building your travel plan…
         </h2>
-        <p style={{ color: "#6F6B67", fontSize: 14 }}>Analyzing your wardrobe, your style preferences, and Da Lat's context.</p>
-        <div className="ai-thinking" style={{ background: "#F4E7E8", borderRadius: 100, padding: "12px 24px" }}>
+        <p style={{ color: "#5E5F5D", fontSize: 14 }}>Analyzing your wardrobe, your style preferences, and Da Lat's context.</p>
+        <div className="ai-thinking" style={{ background: "#E9E8E7", borderRadius: 100, padding: "12px 24px" }}>
           <div className="ai-dot" />
           <div className="ai-dot" />
           <div className="ai-dot" />
@@ -251,7 +251,7 @@ export default function TravelPlannerScreen({ app }: { app: AppState }) {
               <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 30, color: "#222222", marginBottom: 6 }}>
                 Da Lat · 4 Days · Feminine Minimalist
               </h1>
-              <p style={{ color: "#6F6B67", fontSize: 14 }}>
+              <p style={{ color: "#5E5F5D", fontSize: 14 }}>
                 StyleMind maximized your wardrobe — {ownedCount} owned items across all 4 days, only {uniqueShopItems} new pieces suggested.
               </p>
             </div>
@@ -275,9 +275,9 @@ export default function TravelPlannerScreen({ app }: { app: AppState }) {
               { label: "Outfits", value: "4", sub: "Complete daily looks" },
             ].map((stat) => (
               <div key={stat.label} style={{ textAlign: "center" }}>
-                <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, color: "#684B5A", marginBottom: 4 }}>{stat.value}</div>
+                <div style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, color: "#1C1B1B", marginBottom: 4 }}>{stat.value}</div>
                 <div style={{ fontSize: 13, fontWeight: 500, color: "#222222", marginBottom: 2 }}>{stat.label}</div>
-                <div style={{ fontSize: 11, color: "#6F6B67" }}>{stat.sub}</div>
+                <div style={{ fontSize: 11, color: "#5E5F5D" }}>{stat.sub}</div>
               </div>
             ))}
           </div>
@@ -304,11 +304,11 @@ export default function TravelPlannerScreen({ app }: { app: AppState }) {
                   <h2 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, color: "#222222" }}>
                     Day {currentDay.day}: {currentDay.label}
                   </h2>
-                  <span style={{ fontSize: 12, color: "#6F6B67", border: "1px solid #EEE8E1", borderRadius: 100, padding: "3px 10px" }}>
+                  <span style={{ fontSize: 12, color: "#5E5F5D", border: "1px solid #EFEDED", borderRadius: 100, padding: "3px 10px" }}>
                     {currentDay.weather}
                   </span>
                 </div>
-                <div style={{ fontSize: 12, color: "#6F6B67", fontStyle: "italic" }}>{currentDay.note}</div>
+                <div style={{ fontSize: 12, color: "#5E5F5D", fontStyle: "italic" }}>{currentDay.note}</div>
               </div>
 
               {/* Color story */}
@@ -322,11 +322,11 @@ export default function TravelPlannerScreen({ app }: { app: AppState }) {
               {/* Owned items */}
               {currentDay.ownedItems.length > 0 && (
                 <div style={{ marginBottom: 24 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, paddingBottom: 8, borderBottom: "1.5px solid #EEE8E1" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, paddingBottom: 8, borderBottom: "1.5px solid #EFEDED" }}>
                     <div style={{ background: "#48755A", color: "white", fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 100 }}>
                       ✓ YOU ALREADY OWN
                     </div>
-                    <span style={{ fontSize: 12, color: "#6F6B67" }}>{currentDay.ownedItems.length} pieces</span>
+                    <span style={{ fontSize: 12, color: "#5E5F5D" }}>{currentDay.ownedItems.length} pieces</span>
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12 }}>
                     {currentDay.ownedItems.map((item) => (
@@ -349,11 +349,11 @@ export default function TravelPlannerScreen({ app }: { app: AppState }) {
               {/* Shop items */}
               {currentDay.shopItems.length > 0 && (
                 <div style={{ marginBottom: 24 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, paddingBottom: 8, borderBottom: "1.5px solid #EEE8E1" }}>
-                    <div style={{ background: "#684B5A", color: "white", fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 100 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, paddingBottom: 8, borderBottom: "1.5px solid #EFEDED" }}>
+                    <div style={{ background: "#1C1B1B", color: "white", fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 100 }}>
                       + RECOMMENDED TO BUY
                     </div>
-                    <span style={{ fontSize: 12, color: "#6F6B67" }}>{currentDay.shopItems.length} new pieces</span>
+                    <span style={{ fontSize: 12, color: "#5E5F5D" }}>{currentDay.shopItems.length} new pieces</span>
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12 }}>
                     {currentDay.shopItems.map((item) => (
@@ -363,15 +363,15 @@ export default function TravelPlannerScreen({ app }: { app: AppState }) {
                         onClick={() => app.navigate("product", { productId: item.id })}
                       >
                         <div style={{ position: "relative", background: "#F5EFE8" }}>
-                          <div style={{ position: "absolute", top: 8, left: 8, zIndex: 1, background: "#684B5A", color: "white", fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 100 }}>
+                          <div style={{ position: "absolute", top: 8, left: 8, zIndex: 1, background: "#1C1B1B", color: "white", fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 100 }}>
                             + SHOP
                           </div>
                           <img src={item.image} alt={item.name} style={{ width: "100%", aspectRatio: "3/4", objectFit: "cover" }} />
                         </div>
                         <div style={{ padding: "8px 10px" }}>
                           <div style={{ fontSize: 12.5, color: "#222222", fontWeight: 500, lineHeight: 1.3, marginBottom: 3 }}>{item.name}</div>
-                          <div style={{ fontSize: 11, color: "#6F6B67", marginBottom: 3 }}>{item.brand}</div>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: "#684B5A" }}>{formatVND(item.price)}</div>
+                          <div style={{ fontSize: 11, color: "#5E5F5D", marginBottom: 3 }}>{item.brand}</div>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: "#1C1B1B" }}>{formatVND(item.price)}</div>
                         </div>
                       </div>
                     ))}
@@ -404,15 +404,15 @@ export default function TravelPlannerScreen({ app }: { app: AppState }) {
           </div>
 
           {/* Packing Summary */}
-          <div style={{ marginTop: 40, paddingTop: 32, borderTop: "1.5px solid #EEE8E1" }}>
+          <div style={{ marginTop: 40, paddingTop: 32, borderTop: "1.5px solid #EFEDED" }}>
             <h3 className="section-heading" style={{ marginBottom: 20 }}>Packing Summary</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14 }}>
               {["Tops", "Bottoms", "Outerwear", "Shoes", "Bags", "Accessories"].map((cat) => (
                 <div key={cat} className="packing-category">
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "#6F6B67", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>{cat}</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#5E5F5D", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>{cat}</div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                     <span style={{ fontSize: 13, color: "#48755A" }}>✓ Own: {cat === "Tops" ? 2 : cat === "Shoes" ? 1 : cat === "Bags" ? 1 : cat === "Accessories" ? 1 : cat === "Bottoms" ? 1 : 1}</span>
-                    <span style={{ fontSize: 13, color: "#684B5A" }}>+ Buy: {cat === "Bottoms" ? 2 : cat === "Outerwear" ? 1 : cat === "Tops" ? 1 : 0}</span>
+                    <span style={{ fontSize: 13, color: "#1C1B1B" }}>+ Buy: {cat === "Bottoms" ? 2 : cat === "Outerwear" ? 1 : cat === "Tops" ? 1 : 0}</span>
                   </div>
                 </div>
               ))}

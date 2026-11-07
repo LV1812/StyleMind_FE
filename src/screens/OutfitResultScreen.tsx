@@ -43,7 +43,7 @@ export default function OutfitResultScreen({ app }: { app: AppState }) {
           <h1 style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 28, color: "#222222", marginBottom: 6 }}>
             Da Lat · Day 2 · Sightseeing
           </h1>
-          <p style={{ color: "#6F6B67", fontSize: 14 }}>Feminine minimalist · Cool day · Café culture</p>
+          <p style={{ color: "#5E5F5D", fontSize: 14 }}>Feminine minimalist · Cool day · Café culture</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button
@@ -67,7 +67,7 @@ export default function OutfitResultScreen({ app }: { app: AppState }) {
             {COLOR_PALETTE.map((c) => (
               <div key={c.name} title={c.name} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <div style={{ width: 24, height: 24, borderRadius: 6, background: c.hex, border: "1.5px solid rgba(0,0,0,0.08)" }} />
-                <span style={{ fontSize: 11, color: "#6F6B67" }}>{c.name}</span>
+                <span style={{ fontSize: 11, color: "#5E5F5D" }}>{c.name}</span>
                 {c !== COLOR_PALETTE[COLOR_PALETTE.length - 1] && <span style={{ color: "#D8CFCA", marginLeft: 4 }}>·</span>}
               </div>
             ))}
@@ -78,12 +78,12 @@ export default function OutfitResultScreen({ app }: { app: AppState }) {
           <div style={{ marginBottom: 28 }}>
             <div style={{
               display: "flex", alignItems: "center", gap: 10, marginBottom: 16,
-              paddingBottom: 10, borderBottom: "1.5px solid #EEE8E1",
+              paddingBottom: 10, borderBottom: "1.5px solid #EFEDED",
             }}>
               <div style={{ background: "#48755A", color: "white", borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em" }}>
                 ✓ YOU ALREADY OWN
               </div>
-              <span style={{ fontSize: 13, color: "#6F6B67" }}>3 of 5 pieces — no purchase needed</span>
+              <span style={{ fontSize: 13, color: "#5E5F5D" }}>3 of 5 pieces — no purchase needed</span>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
@@ -103,8 +103,8 @@ export default function OutfitResultScreen({ app }: { app: AppState }) {
                       onClick={() => setSwappingSlot(swappingSlot === item.slot ? null : item.slot)}
                       style={{
                         position: "absolute", bottom: 10, right: 10,
-                        background: "rgba(250,248,245,0.9)", border: "1px solid #EEE8E1",
-                        borderRadius: 6, padding: "5px 10px", fontSize: 11, cursor: "pointer", color: "#6F6B67",
+                        background: "rgba(250,248,245,0.9)", border: "1px solid #EFEDED",
+                        borderRadius: 6, padding: "5px 10px", fontSize: 11, cursor: "pointer", color: "#5E5F5D",
                       }}
                     >
                       Swap
@@ -114,15 +114,15 @@ export default function OutfitResultScreen({ app }: { app: AppState }) {
                     {item.slot}
                   </div>
                   <div style={{ fontSize: 13.5, color: "#222222", fontWeight: 500, marginBottom: 2 }}>{item.name}</div>
-                  <div style={{ fontSize: 12, color: "#6F6B67", marginBottom: 4 }}>{item.brand}</div>
+                  <div style={{ fontSize: 12, color: "#5E5F5D", marginBottom: 4 }}>{item.brand}</div>
                   <div style={{ fontSize: 11.5, color: "#A9A6A3", lineHeight: 1.5 }}>{item.notes}</div>
                   {swappingSlot === item.slot && (
                     <div style={{
                       position: "absolute", bottom: -80, left: 0, right: 0, zIndex: 10,
-                      background: "white", border: "1px solid #EEE8E1", borderRadius: 10, padding: 12,
+                      background: "white", border: "1px solid #EFEDED", borderRadius: 10, padding: 12,
                       boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
                     }}>
-                      <div style={{ fontSize: 12, color: "#6F6B67", marginBottom: 8 }}>Replace with:</div>
+                      <div style={{ fontSize: 12, color: "#5E5F5D", marginBottom: 8 }}>Replace with:</div>
                       <button className="btn-secondary" style={{ fontSize: 11, padding: "6px 12px", width: "100%", marginBottom: 4 }}>Use another wardrobe item</button>
                       <button className="btn-secondary" style={{ fontSize: 11, padding: "6px 12px", width: "100%" }} onClick={() => app.navigate("shop")}>Find from catalog</button>
                     </div>
@@ -136,12 +136,12 @@ export default function OutfitResultScreen({ app }: { app: AppState }) {
           <div style={{ marginBottom: 28 }}>
             <div style={{
               display: "flex", alignItems: "center", gap: 10, marginBottom: 16,
-              paddingBottom: 10, borderBottom: "1.5px solid #EEE8E1",
+              paddingBottom: 10, borderBottom: "1.5px solid #EFEDED",
             }}>
-              <div style={{ background: "#684B5A", color: "white", borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em" }}>
+              <div style={{ background: "#1C1B1B", color: "white", borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 600, letterSpacing: "0.06em" }}>
                 + RECOMMENDED TO BUY
               </div>
-              <span style={{ fontSize: 13, color: "#6F6B67" }}>2 new pieces · {formatVND(totalNewSpend)} total</span>
+              <span style={{ fontSize: 13, color: "#5E5F5D" }}>2 new pieces · {formatVND(totalNewSpend)} total</span>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14 }}>
@@ -150,7 +150,7 @@ export default function OutfitResultScreen({ app }: { app: AppState }) {
                   <div style={{ background: "#F5EFE8", borderRadius: 12, overflow: "hidden", marginBottom: 10, position: "relative" }}>
                     <div style={{
                       position: "absolute", top: 10, left: 10, zIndex: 1,
-                      background: "#684B5A", color: "white",
+                      background: "#1C1B1B", color: "white",
                       fontSize: 10, fontWeight: 600, padding: "3px 10px", borderRadius: 100,
                     }}>
                       + SHOP
@@ -160,19 +160,19 @@ export default function OutfitResultScreen({ app }: { app: AppState }) {
                       onClick={() => app.navigate("product", { productId: item.id })}
                       style={{
                         position: "absolute", bottom: 10, right: 10,
-                        background: "#684B5A", border: "none",
+                        background: "#1C1B1B", border: "none",
                         borderRadius: 6, padding: "6px 12px", fontSize: 11, cursor: "pointer", color: "white",
                       }}
                     >
                       View →
                     </button>
                   </div>
-                  <div style={{ fontSize: 10, color: "#684B5A", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>
+                  <div style={{ fontSize: 10, color: "#1C1B1B", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>
                     {item.slot}
                   </div>
                   <div style={{ fontSize: 13.5, color: "#222222", fontWeight: 500, marginBottom: 2 }}>{item.name}</div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                    <div style={{ fontSize: 12, color: "#6F6B67" }}>{item.brand}</div>
+                    <div style={{ fontSize: 12, color: "#5E5F5D" }}>{item.brand}</div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: "#222222" }}>{formatVND(item.price)}</div>
                   </div>
                   <div style={{ fontSize: 11.5, color: "#A9A6A3", lineHeight: 1.5 }}>{item.notes}</div>
@@ -183,14 +183,14 @@ export default function OutfitResultScreen({ app }: { app: AppState }) {
 
           {/* Add to cart CTA */}
           <div style={{
-            background: "#F4E7E8", border: "1px solid #D9C8D0", borderRadius: 14,
+            background: "#E9E8E7", border: "1px solid #D9C8D0", borderRadius: 14,
             padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between",
           }}>
             <div>
               <div style={{ fontSize: 14, fontWeight: 600, color: "#222222", marginBottom: 4 }}>
                 Complete this outfit
               </div>
-              <div style={{ fontSize: 13, color: "#6F6B67" }}>
+              <div style={{ fontSize: 13, color: "#5E5F5D" }}>
                 2 items · {formatVND(totalNewSpend)} · You already own 3 of 5 pieces
               </div>
             </div>
@@ -213,14 +213,14 @@ export default function OutfitResultScreen({ app }: { app: AppState }) {
         <div>
           <div style={{ position: "sticky", top: 88 }}>
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6F6B67", fontWeight: 600, marginBottom: 14 }}>
+              <div style={{ fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: "#5E5F5D", fontWeight: 600, marginBottom: 14 }}>
                 Why this works
               </div>
               {WHY_CARDS.map((card) => (
                 <div
                   key={card.label}
                   style={{
-                    background: "white", border: "1px solid #EEE8E1", borderRadius: 10,
+                    background: "white", border: "1px solid #EFEDED", borderRadius: 10,
                     padding: "14px 16px", marginBottom: 10,
                   }}
                 >
@@ -228,13 +228,13 @@ export default function OutfitResultScreen({ app }: { app: AppState }) {
                     <span style={{ color: "#B98791", fontSize: 14 }}>{card.icon}</span>
                     <span style={{ fontSize: 13, fontWeight: 600, color: "#222222" }}>{card.label}</span>
                   </div>
-                  <p style={{ fontSize: 12.5, color: "#6F6B67", lineHeight: 1.7, margin: 0 }}>{card.text}</p>
+                  <p style={{ fontSize: 12.5, color: "#5E5F5D", lineHeight: 1.7, margin: 0 }}>{card.text}</p>
                 </div>
               ))}
             </div>
 
             {/* Outfit Actions */}
-            <div style={{ background: "white", border: "1px solid #EEE8E1", borderRadius: 12, padding: 16 }}>
+            <div style={{ background: "white", border: "1px solid #EFEDED", borderRadius: 12, padding: 16 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#222222", marginBottom: 12 }}>Outfit Actions</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <button className="btn-primary" style={{ fontSize: 13, padding: "10px" }} onClick={() => app.navigate("studio")}>
@@ -254,10 +254,10 @@ export default function OutfitResultScreen({ app }: { app: AppState }) {
 
             {/* Similar outfits prompt */}
             <div style={{ background: "#F5EFE8", borderRadius: 12, padding: "14px 16px", marginTop: 12 }}>
-              <div style={{ fontSize: 12, color: "#684B5A", fontWeight: 600, marginBottom: 6 }}>
+              <div style={{ fontSize: 12, color: "#1C1B1B", fontWeight: 600, marginBottom: 6 }}>
                 ✦ Want alternatives?
               </div>
-              <div style={{ fontSize: 12.5, color: "#6F6B67", lineHeight: 1.6, marginBottom: 10 }}>
+              <div style={{ fontSize: 12.5, color: "#5E5F5D", lineHeight: 1.6, marginBottom: 10 }}>
                 Ask StyleMind to generate different options — different colors, items, or occasions.
               </div>
               <button className="btn-ai" style={{ width: "100%", fontSize: 12, padding: "9px" }} onClick={() => app.navigate("stylist")}>

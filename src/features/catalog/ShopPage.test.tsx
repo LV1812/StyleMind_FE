@@ -77,6 +77,16 @@ describe('ShopPage', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.unstubAllEnvs()
+  })
+
+  it('reports unsupported sorting without pretending to apply it', async () => {
+    const user = userEvent.setup()
+    renderShop()
+    const sort = await screen.findByLabelText('Sắp xếp sản phẩm')
+    await user.selectOptions(sort, 'price_asc')
+    expect(await screen.findByText('Chức năng chưa hỗ trợ.')).toBeInTheDocument()
+    expect(sort).toHaveValue('')
   })
 
   it('clears all active filters and restores the catalog', async () => {
@@ -95,11 +105,31 @@ describe('ShopPage', () => {
     expect(await screen.findByText('Không tìm thấy sản phẩm phù hợp')).toBeInTheDocument()
   })
 
+  it('does not show a product count when the catalog request fails', async () => {
+    vi.stubEnv('MODE', 'development')
+    vi.mocked(commerceApi.products.list).mockRejectedValue(new Error('Không tải được sản phẩm'))
+    renderShop()
+    expect(await screen.findByText('Không tải được sản phẩm')).toBeInTheDocument()
+    expect(screen.queryByText(/\d+ sản phẩm phù hợp/)).not.toBeInTheDocument()
+  })
+
   it('requests the selected page from the Commerce API', async () => {
     renderShop('/shop?page=2')
 
     await waitFor(() => {
       expect(commerceApi.products.list).toHaveBeenCalledWith(expect.objectContaining({ page: 1, size: 12 }))
     })
+  })
+
+  it('opens a chosen page using the existing catalog pagination API', async () => {
+    const user = userEvent.setup()
+    vi.mocked(commerceApi.products.list).mockImplementation(async query => ({ ...productPage({ ...query, page: 0 }), page: query?.page ?? 0, total_pages: 32, total_elements: 381 }))
+    renderShop()
+    const input = await screen.findByLabelText('Đi đến trang')
+    await user.clear(input)
+    await user.type(input, '12')
+    await user.click(screen.getByRole('button', { name: 'Đi' }))
+    await waitFor(() => expect(commerceApi.products.list).toHaveBeenCalledWith(expect.objectContaining({ page: 11, size: 12 })))
+    expect(await screen.findByText('Trang 12 / 32')).toBeInTheDocument()
   })
 })

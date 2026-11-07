@@ -15,3 +15,14 @@ it('does not offer simulated return and refund decisions', async () => {
   expect(screen.queryByText('demo-return')).not.toBeInTheDocument()
   expect(dispatch).not.toHaveBeenCalled()
 })
+
+it('keeps the reference return filter visible and reports it is unavailable', async () => {
+  const database = { cancellationRequests: [], returnRequests: [], users: [] } as unknown as DemoDatabase
+  render(<MemoryRouter><ToastProvider><AdminRequestsPanel database={database} dispatch={vi.fn()} reviewerId="admin" /></ToastProvider></MemoryRouter>)
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('button', { name: 'Đổi/trả' }))
+  await user.selectOptions(screen.getByLabelText('Lọc trạng thái trả hàng'), 'REQUESTED')
+  expect(await screen.findByText('Chức năng chưa hỗ trợ.')).toBeInTheDocument()
+  expect(screen.getByLabelText('Lọc trạng thái trả hàng')).toHaveValue('')
+  expect(screen.queryByText('Không có yêu cầu trả hàng nào.')).not.toBeInTheDocument()
+})
