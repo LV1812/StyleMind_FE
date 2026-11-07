@@ -43,11 +43,12 @@ export class CommerceApiError extends Error {
 type RequestOptions = Omit<RequestInit, 'body'> & {
   body?: unknown
   responseType?: 'json' | 'blob'
+  auth?: boolean
 }
 
 export async function commerceRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const headers = new Headers(options.headers)
-  const token = getCommerceAccessToken()
+  const token = options.auth === false ? null : getCommerceAccessToken()
   const isFormData = options.body instanceof FormData
   const requestBody: BodyInit | undefined =
     options.body === undefined

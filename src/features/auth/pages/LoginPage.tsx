@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { ROUTES } from '@/app/router/routes'
 import { identityErrorMessage } from '@/shared/api/identityApi'
-import { Button, TextField, useToast } from '@/shared/ui'
+import { Button, TextField } from '@/shared/ui'
 
 import { AuthLayout } from '../components/AuthLayout'
 import type { LoginInput } from '../data/authRepository'
@@ -15,7 +15,6 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const auth = useAuth()
-  const toast = useToast()
   const verifiedEmail = (location.state as { verifiedEmail?: string } | null)?.verifiedEmail
   const [input, setInput] = useState<LoginInput>({ email: verifiedEmail ?? '', password: '', remember: true })
   const [showPassword, setShowPassword] = useState(false)
@@ -50,14 +49,15 @@ export function LoginPage() {
   return (
     <AuthLayout title="Đăng nhập" description="Một tài khoản dùng chung cho khách hàng và quản trị viên StyleMind.">
       <h1 className="font-display text-4xl font-semibold">Đăng nhập</h1>
-      <form className="mt-10 grid gap-6" onSubmit={handleSubmit}>
+      <form className="mt-8 grid gap-5" onSubmit={handleSubmit}>
         <TextField
           label="Email"
           type="email"
           autoComplete="email"
           value={input.email}
           error={errors.email}
-          className="!rounded-none !border-0 !border-b !bg-transparent !px-0"
+          placeholder="ten@email.com"
+          className="auth-login-input min-h-12 !rounded-xl !border-[#D9D7D5] !bg-white !px-4 placeholder:font-normal placeholder:text-[#969391]"
           onChange={event => setInput(value => ({ ...value, email: event.target.value }))}
         />
         <div className="relative">
@@ -68,18 +68,19 @@ export function LoginPage() {
             value={input.password}
             error={errors.password}
             onChange={event => setInput(value => ({ ...value, password: event.target.value }))}
-            className="!rounded-none !border-0 !border-b !bg-transparent !pl-0 pr-11"
+            placeholder="Nhập mật khẩu"
+            className="auth-login-input min-h-12 !rounded-xl !border-[#D9D7D5] !bg-white !pl-4 !pr-12 placeholder:font-normal placeholder:text-[#969391]"
           />
           <button
             type="button"
             aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
             onClick={() => setShowPassword(value => !value)}
-            className="absolute right-2 top-8 grid h-8 w-8 place-items-center rounded-md text-[#5E5F5D] transition hover:bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
+            className="absolute right-2 top-8 grid h-10 w-10 place-items-center rounded-lg text-[#5E5F5D] transition hover:bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
           >
             {showPassword ? <EyeOff size={17} aria-hidden="true" /> : <Eye size={17} aria-hidden="true" />}
           </button>
         </div>
-        <div className="flex items-center justify-between gap-3 text-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
           <label className="inline-flex items-center gap-2 font-semibold text-[#3A3632]">
             <input
               type="checkbox"
@@ -93,14 +94,12 @@ export function LoginPage() {
             Quên mật khẩu?
           </Link>
         </div>
-        {submitError && <p className="rounded-lg bg-[#FCEAEA] px-3 py-2 text-sm font-semibold text-[#A94B4B]">{submitError}</p>}
-        <Button type="submit" loading={submitting}>
+        {submitError && <p role="alert" className="rounded-lg bg-[#FCEAEA] px-3 py-2 text-sm font-semibold text-[#A94B4B]">{submitError}</p>}
+        <Button type="submit" loading={submitting} className="min-h-12 rounded-xl">
           Đăng nhập
         </Button>
       </form>
-      <div className="my-7 flex items-center gap-3 text-xs text-secondary"><span className="h-px flex-1 bg-[#E3E2E2]" />HOẶC<span className="h-px flex-1 bg-[#E3E2E2]" /></div>
-      <button type="button" onClick={() => toast.info('Chức năng chưa hỗ trợ.')} className="min-h-11 w-full rounded-lg border border-[#C4C7C7] bg-transparent text-sm font-medium hover:bg-[#EFEDED]"><span aria-hidden="true" className="mr-3 font-bold text-[#4285F4]">G</span>Tiếp tục với Google</button>
-      <p className="mt-5 text-sm text-[#5E5F5D]">
+      <p className="mt-7 text-center text-sm text-[#5E5F5D]">
         Chưa có tài khoản?{' '}
         <Link to={ROUTES.register} className="font-semibold text-[#1C1B1B] hover:underline">
           Đăng ký

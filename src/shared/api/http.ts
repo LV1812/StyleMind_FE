@@ -17,6 +17,9 @@ const messages: Record<string, string> = {
   INVITATION_EXPIRED: 'Lời mời đã hết hạn.',
   INVITATION_ALREADY_USED: 'Lời mời đã được sử dụng.',
   INVITATION_INVALIDATED: 'Lời mời này không còn hiệu lực.',
+  CHAT_IMAGE_TOO_LARGE: 'Ảnh hoặc tổng dung lượng ảnh vượt giới hạn cho phép.',
+  CHAT_IMAGE_STORAGE_UNAVAILABLE: 'Chưa thể lưu ảnh. Vui lòng thử lại sau.',
+  CHAT_IMAGE_PROCESSOR_BUSY: 'Hệ thống xử lý ảnh đang bận. Vui lòng thử lại sau.',
 }
 function failure(status: number, body: Record<string, unknown>, retryHeader: string | null) {
   const code = typeof body.code === 'string' && /^[A-Z0-9_]{1,80}$/.test(body.code) ? body.code : 'REQUEST_FAILED'

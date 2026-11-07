@@ -43,6 +43,8 @@ it('places the current user messages on the right and friend messages on the lef
   render(<AppProviders><RouterProvider router={createMemoryRouter(appRoutes, { initialEntries: ['/messages'] })} /></AppProviders>)
   expect((await screen.findByLabelText('Tin nhắn của bạn')).parentElement).toHaveClass('justify-end')
   expect(screen.getByLabelText('Tin nhắn của bạn bè').parentElement).toHaveClass('justify-start')
+  expect(screen.getByLabelText('Lịch sử tin nhắn')).toHaveClass('overflow-y-auto')
+  expect(screen.getByTestId('chat-viewport')).toHaveClass('overflow-hidden')
 })
 it('loads a server conversation and submits the entered text', async () => {
   const actor = '10000000-0000-0000-0000-000000000001', chat = '20000000-0000-0000-0000-000000000002'
@@ -61,6 +63,58 @@ it('loads a server conversation and submits the entered text', async () => {
   await waitFor(() => expect(screen.getByRole('button', { name: 'Gửi' })).toBeEnabled())
   await user.click(screen.getByRole('button', { name: 'Gửi' }))
   await waitFor(() => expect(fetcher.mock.calls.filter(([, options]) => options.method === 'POST').map(([path, options]) => ({ path, content: JSON.parse(options.body as string).content }))).toEqual([{ path: `/wardrobe-community/api/v1/chats/${chat}/messages`, content: 'Xin chào' }]))
+})
+it('keeps the conversation and composer mounted while a sent message refreshes', async () => {
+  const actor = '10000000-0000-0000-0000-000000000001', chat = '20000000-0000-0000-0000-000000000002'
+  connectSocket()
+  saveApiSession(`e30.${btoa(JSON.stringify({ sub: actor, roles: ['CUSTOMER'] }))}.sig`, Date.now() + 60000)
+  let sent = false
+  vi.stubGlobal('fetch', vi.fn(async (path: string, options: RequestInit = {}) => {
+    if (options.method === 'POST' && path.includes('/messages')) { sent = true; return new Response(JSON.stringify({ chat_message_id: actor }), { status: 200 }) }
+    if (sent && (path.includes('/me/chats?') || path.includes('/messages?'))) return new Promise<Response>(() => {})
+    const page = { items: [], page: 0, size: 20, total_elements: 0, total_pages: 0 }
+    const body = path === '/api/v1/me' ? { account_id: actor, email: 'real@example.test', profile: null }
+      : path.includes('/me/chats?') ? { ...page, items: [{ chat_session_id: chat, friend_account_id: actor }], total_elements: 1, total_pages: 1 }
+      : path.includes('/messages?') ? { items: [{ chat_message_id: 'm1', sender_account_id: actor, sequence_number: 1, content: 'Tin trước đó', attachments: [] }], has_more: false, next_before_sequence: null }
+      : page
+    return new Response(JSON.stringify(body), { status: 200 })
+  }))
+  render(<AppProviders><RouterProvider router={createMemoryRouter(appRoutes, { initialEntries: ['/messages'] })} /></AppProviders>)
+  const user = userEvent.setup()
+  const input = await screen.findByRole('textbox', { name: 'Tin nhắn' })
+  expect(await screen.findByText('Tin trước đó')).toBeInTheDocument()
+  await user.type(input, 'Xin chào')
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Gửi' })).toBeEnabled())
+  await user.click(screen.getByRole('button', { name: 'Gửi' }))
+  await waitFor(() => expect(sent).toBe(true))
+  expect(screen.getByText('Tin trước đó')).toBeInTheDocument()
+  expect(screen.getByRole('textbox', { name: 'Tin nhắn' })).toBe(input)
+})
+it('previews and sends a selected image as multipart data', async () => {
+  const actor = '10000000-0000-0000-0000-000000000001', chat = '20000000-0000-0000-0000-000000000002'
+  connectSocket()
+  saveApiSession(`e30.${btoa(JSON.stringify({ sub: actor, roles: ['CUSTOMER'] }))}.sig`, Date.now() + 60000)
+  vi.stubGlobal('createImageBitmap', vi.fn(async () => ({ width: 100, height: 100, close() {} })))
+  class TestURL extends URL { static createObjectURL = vi.fn(() => 'blob:test'); static revokeObjectURL = vi.fn() }
+  vi.stubGlobal('URL', TestURL)
+  const fetcher = vi.fn(async (path: string, options: RequestInit = {}) => {
+    const body = path === '/api/v1/me' ? { account_id: actor, email: 'real@example.test', profile: null }
+      : options.method === 'POST' ? { chat_message_id: actor }
+      : path.includes('/me/chats?') ? { items: [{ chat_session_id: chat, friend_account_id: actor }], page: 0, size: 20, total_elements: 1, total_pages: 1 }
+      : { items: [], has_more: false, next_before_sequence: null }
+    return new Response(JSON.stringify(body), { status: 200 })
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<AppProviders><RouterProvider router={createMemoryRouter(appRoutes, { initialEntries: ['/messages'] })} /></AppProviders>)
+  const user = userEvent.setup()
+  const file = new File(['image'], 'anh.png', { type: 'image/png' })
+  await user.upload(await screen.findByLabelText('Chọn ảnh'), file)
+  expect(await screen.findByAltText('Ảnh chờ gửi anh.png')).toBeInTheDocument()
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Gửi' })).toBeEnabled())
+  await user.click(screen.getByRole('button', { name: 'Gửi' }))
+  await waitFor(() => expect(fetcher.mock.calls.some(([path, options]) => path.includes('/messages') && options?.method === 'POST' && options?.body instanceof FormData)).toBe(true))
+  const post = fetcher.mock.calls.find(([path, options]) => path.includes('/messages') && options?.method === 'POST')
+  expect((post?.[1]?.body as FormData).getAll('images')).toHaveLength(1)
 })
 it('hides the composer when chat history is no longer accessible', async () => {
   const actor = '10000000-0000-0000-0000-000000000001', chat = '20000000-0000-0000-0000-000000000002'

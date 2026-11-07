@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ImageOff, X } from 'lucide-react'
 import { chatApi } from '../model/chatApi'
 
 export function ChatImage({ chatId, attachmentId }: { chatId: string; attachmentId: string }) {
@@ -12,12 +13,12 @@ export function ChatImage({ chatId, attachmentId }: { chatId: string; attachment
     }).catch(() => { if (!controller.signal.aborted) setError(true) })
     return () => { controller.abort(); if (url) URL.revokeObjectURL(url) }
   }, [chatId, attachmentId])
-  return error ? <p>Không tải được ảnh.</p> : src ? <img src={src} alt="Ảnh trong cuộc trò chuyện" className="mt-2 max-h-80 max-w-full rounded-lg" /> : <p>Đang tải ảnh…</p>
+  return error ? <p className="mt-1 flex items-center gap-2 text-sm"><ImageOff size={16} aria-hidden="true" /> Không tải được ảnh.</p> : src ? <img src={src} alt="Ảnh trong cuộc trò chuyện" className="mt-1 h-auto max-h-48 w-auto max-w-[min(100%,280px)] rounded-xl object-contain" /> : <p className="mt-1 text-sm">Đang tải ảnh…</p>
 }
 export function DraftImage({ file, remove }: { file: File; remove: () => void }) {
   const [url, setUrl] = useState('')
   useEffect(() => { const objectUrl = URL.createObjectURL(file); setUrl(objectUrl); return () => URL.revokeObjectURL(objectUrl) }, [file])
-  return <div className="relative"><img src={url} alt={`Ảnh chờ gửi ${file.name}`} className="h-20 w-20 rounded-lg object-cover" /><button type="button" onClick={remove} aria-label={`Gỡ ${file.name}`} className="absolute right-0 top-0 rounded-full bg-white px-2">×</button></div>
+  return <div className="relative"><img src={url} alt={`Ảnh chờ gửi ${file.name}`} className="h-20 w-20 rounded-xl border border-[#E3E2E2] object-cover" /><button type="button" onClick={remove} aria-label={`Gỡ ${file.name}`} className="absolute -right-1.5 -top-1.5 grid h-7 w-7 place-items-center rounded-full border border-[#E3E2E2] bg-white text-[#222222] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"><X size={15} aria-hidden="true" /></button></div>
 }
 export async function validateImages(files: File[]): Promise<string | null> {
   if (files.length > 5) return 'Mỗi tin nhắn tối đa 5 ảnh.'

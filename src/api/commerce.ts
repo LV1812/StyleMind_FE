@@ -26,6 +26,7 @@ import type {
 } from './commerce.types'
 
 const get = <T>(path: string) => commerceRequest<T>(path)
+const publicGet = <T>(path: string) => commerceRequest<T>(path, { auth: false })
 const post = <T>(path: string, body?: unknown) => commerceRequest<T>(path, { method: 'POST', body })
 const put = <T>(path: string, body: unknown) => commerceRequest<T>(path, { method: 'PUT', body })
 const del = <T = void>(path: string) => commerceRequest<T>(path, { method: 'DELETE' })
@@ -36,8 +37,8 @@ function guestQuery(guestSessionKey?: string | null) {
 
 export const commerceApi = {
   categories: {
-    list: () => get<CatalogReferenceList>('/api/v1/categories'),
-    get: (id: UUID) => get<CatalogReference>(`/api/v1/categories/${id}`),
+    list: () => publicGet<CatalogReferenceList>('/api/v1/categories'),
+    get: (id: UUID) => publicGet<CatalogReference>(`/api/v1/categories/${id}`),
     listAdmin: () => get<CatalogReferenceList>('/api/v1/admin/categories'),
     getAdmin: (id: UUID) => get<CatalogReference>(`/api/v1/admin/categories/${id}`),
     create: (input: CatalogReferenceInput) => post<CatalogReference>('/api/v1/admin/categories', input),
@@ -45,8 +46,8 @@ export const commerceApi = {
     remove: (id: UUID) => del(`/api/v1/admin/categories/${id}`),
   },
   brands: {
-    list: () => get<CatalogReferenceList>('/api/v1/brands'),
-    get: (id: UUID) => get<CatalogReference>(`/api/v1/brands/${id}`),
+    list: () => publicGet<CatalogReferenceList>('/api/v1/brands'),
+    get: (id: UUID) => publicGet<CatalogReference>(`/api/v1/brands/${id}`),
     listAdmin: () => get<CatalogReferenceList>('/api/v1/admin/brands'),
     getAdmin: (id: UUID) => get<CatalogReference>(`/api/v1/admin/brands/${id}`),
     create: (input: CatalogReferenceInput) => post<CatalogReference>('/api/v1/admin/brands', input),
@@ -54,10 +55,10 @@ export const commerceApi = {
     remove: (id: UUID) => del(`/api/v1/admin/brands/${id}`),
   },
   products: {
-    list: (query: ProductListQuery = {}) => get<ProductListResponse>(`/api/v1/products${queryString(query)}`),
-    get: (id: UUID) => get<CommerceProduct>(`/api/v1/products/${id}`),
+    list: (query: ProductListQuery = {}) => publicGet<ProductListResponse>(`/api/v1/products${queryString(query)}`),
+    get: (id: UUID) => publicGet<CommerceProduct>(`/api/v1/products/${id}`),
     lookupVariants: (variantIds: UUID[]) =>
-      post<{ items: ProductVariant[] }>('/api/v1/variants/batch-lookup', { variant_ids: variantIds }),
+      commerceRequest<{ items: ProductVariant[] }>('/api/v1/variants/batch-lookup', { method: 'POST', body: { variant_ids: variantIds }, auth: false }),
     create: (input: ProductInput) => post<CommerceProduct>('/api/v1/admin/products', input),
     getAdmin: (id: UUID) => get<CommerceProduct>(`/api/v1/admin/products/${id}`),
     replace: (id: UUID, input: ProductInput) => put<CommerceProduct>(`/api/v1/admin/products/${id}`, input),
@@ -80,7 +81,7 @@ export const commerceApi = {
       put<VariantImage[]>(`/api/v1/admin/variants/${variantId}/images/reorder`, input),
     removeImage: (imageId: UUID) => del(`/api/v1/admin/variant-images/${imageId}`),
     getLegacyImage: (imageId: UUID) =>
-      commerceRequest<Blob>(`/api/v1/variant-images/${imageId}/content`, { responseType: 'blob' }),
+      commerceRequest<Blob>(`/api/v1/variant-images/${imageId}/content`, { responseType: 'blob', auth: false }),
   },
   branches: {
     list: () => get<BranchListResponse>('/api/v1/branches'),

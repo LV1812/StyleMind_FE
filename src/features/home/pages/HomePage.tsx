@@ -26,8 +26,8 @@ export function HomePage() {
       {!loading && !error && <>
       <section className="bg-[#FFFFFF] px-5 py-14 md:px-8">
         <div className="mx-auto max-w-[var(--container-wide)]">
-          <div className="flex flex-wrap items-end justify-between gap-4"><h2 className="font-display text-3xl font-semibold text-[#222222]">Mua sắm theo danh mục</h2><Link to={ROUTES.shop} className="text-sm font-medium text-[#5E5F5D] hover:text-[#1C1B1B] hover:underline">Xem tất cả →</Link></div>
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-wrap items-end justify-between gap-4"><h2 className="font-display text-3xl font-semibold text-[#222222]">Mua sắm theo danh mục</h2><Link to={ROUTES.shop} className="text-sm font-semibold text-[#805B41] transition-colors hover:text-[#503A2B] hover:underline">Xem tất cả →</Link></div>
+          <div className={`mt-6 grid gap-6 sm:grid-cols-2 ${activeCategories.length === 2 ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
             {activeCategories.map(category => {
               const image = activeProducts.filter(product => product.categoryId === category.id).flatMap(product => product.variants.filter(variant => variant.active).flatMap(variant => variant.images)).find(item => item.isPrimary)
                 ?? activeProducts.filter(product => product.categoryId === category.id).flatMap(product => product.variants.filter(variant => variant.active).flatMap(variant => variant.images))[0]
@@ -35,7 +35,7 @@ export function HomePage() {
               <Link
                 key={category.id}
                 to={`${ROUTES.shop}?category=${category.id}`}
-                className="group relative aspect-[4/5] overflow-hidden rounded-[24px] bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
+                className={`group relative aspect-[4/5] overflow-hidden rounded-[24px] bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#805B41] ${activeCategories.length === 2 ? 'sm:aspect-[5/4]' : ''}`}
               >
                 {image ? <img src={image.url} alt="" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" /> : <span className="grid h-full place-items-center text-[#C4C7C7]"><Shirt size={48} strokeWidth={1} /></span>}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />

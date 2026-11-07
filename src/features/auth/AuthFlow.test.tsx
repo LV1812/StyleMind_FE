@@ -68,6 +68,16 @@ function currentPath() {
 }
 
 describe('Auth flow', () => {
+  it('offers email login and password visibility without Google sign-in', async () => {
+    const user = userEvent.setup()
+    renderAuthAt('/login')
+    expect(await screen.findByLabelText('Email')).toHaveAttribute('autocomplete', 'email')
+    expect(screen.queryByRole('button', { name: /Google/ })).not.toBeInTheDocument()
+    const password = screen.getByLabelText('Mật khẩu')
+    expect(password).toHaveAttribute('type', 'password')
+    await user.click(screen.getByRole('button', { name: 'Hiện mật khẩu' }))
+    expect(password).toHaveAttribute('type', 'text')
+  })
   it('redirects the demo customer to the shop after login', async () => {
     renderAuthAt('/login')
 

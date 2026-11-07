@@ -1,6 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
+.auth-login-input:-webkit-autofill,
+.auth-login-input:-webkit-autofill:hover,
+.auth-login-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #fff inset;
+  -webkit-text-fill-color: #222;
+  caret-color: #222;
+}
+
 /* CẤU HÌNH GIAO DIỆN CHUNG
  * Đổi các biến tại đây để cập nhật toàn bộ giao diện đang sử dụng.
  * Màu sắc quần áo / sản phẩm được lưu riêng trong dữ liệu.

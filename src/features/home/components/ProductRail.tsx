@@ -21,11 +21,11 @@ function getPrimaryImage(product: Product) {
 
 export function ProductRail({ title, products }: ProductRailProps) {
   return (
-    <section className="px-5 py-12 md:px-8">
+    <section className="bg-[#F7F4F1] px-5 py-12 md:px-8">
       <div className="mx-auto max-w-[var(--container-wide)]">
         <div className="mb-5 flex items-end justify-between gap-4">
           <h2 className="font-display text-3xl font-semibold text-[#222222]">{title}</h2>
-          <Link to={ROUTES.shop} className="text-sm font-semibold text-[#1C1B1B] hover:underline">
+          <Link to={ROUTES.shop} className="text-sm font-semibold text-[#805B41] transition-colors hover:text-[#503A2B] hover:underline">
             Xem tất cả
           </Link>
         </div>
@@ -38,7 +38,7 @@ export function ProductRail({ title, products }: ProductRailProps) {
                 <Link to={productPath(product.id)} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]">
                   <ProductCardImage src={primaryImage?.url} alt={primaryImage?.alt ?? product.name} />
                   <div className="p-4">
-                    <p className="text-xs font-semibold text-[#9D9894]">{product.brand}</p>
+                    <p className="text-xs font-semibold text-[#5E5F5D]">{product.brand}</p>
                     <h3 className="mt-1 text-base font-semibold text-[#222222]">{product.name}</h3>
                     <p className="mt-2 text-sm font-semibold text-[#1C1B1B]">{formatCurrency(product.basePrice)}</p>
                     <p className="mt-2 text-xs text-[#5E5F5D]">{colors.join(' · ')}</p>
