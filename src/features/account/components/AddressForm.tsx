@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 
 import type { AddressPayload, IdentityAddress, Province, Ward } from '@/shared/api/identityApi'
 import { Button, TextField } from '@/shared/ui'
+import AddressAutocomplete from '@/shared/ui/AddressAutocomplete'
 
 export interface AddressFormValue extends Omit<AddressPayload, 'label' | 'recipient_name' | 'recipient_phone' | 'address_line' | 'ward_code'> {
   label: string
@@ -79,7 +80,7 @@ export function AddressForm({
         <TextField label="Tên gợi nhớ (không bắt buộc)" value={label} error={errors.label} onChange={event => setLabel(event.target.value)} />
         <TextField label="Tên người nhận" autoComplete="name" value={recipientName} error={errors.recipientName} onChange={event => setRecipientName(event.target.value)} />
         <TextField label="Số điện thoại Việt Nam" type="tel" autoComplete="tel" value={recipientPhone} error={errors.recipientPhone} onChange={event => setRecipientPhone(event.target.value)} />
-        <TextField label="Địa chỉ (số nhà, đường, quận/huyện, tỉnh/thành)" autoComplete="street-address" value={addressLine} error={errors.addressLine} onChange={event => setAddressLine(event.target.value)} />
+        <AddressAutocomplete label="Địa chỉ (số nhà, đường, quận/huyện, tỉnh/thành)" value={addressLine} error={errors.addressLine} onChange={setAddressLine} />
         <label className="grid gap-1.5 text-sm font-semibold text-[#3A3632]">
           Tỉnh/thành để tra cứu phường/xã (không bắt buộc)
           <select

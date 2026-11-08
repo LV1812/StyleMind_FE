@@ -4,6 +4,7 @@ import { ensureGuestSessionKey, readGuestSessionKey } from "@/features/cart/mode
 import { rememberOrder } from '@/features/payments/model/orderReferences'
 import { useGuestCommerce } from '@/features/cart/model/GuestCommerceProvider'
 import { Button, TextField } from "@/shared/ui"
+import AddressAutocomplete from '@/shared/ui/AddressAutocomplete'
 import { formatCurrency } from "@/shared/lib/formatCurrency"
 import { PaymentApiError } from "@/features/payments/api/paymentApi"
 import { PaymentMethodSection } from "../components/PaymentMethodSection"
@@ -155,7 +156,6 @@ export default function GuestCheckoutPage() {
           {([
             ["recipient_name", "Tên người nhận", 100, "name"],
             ["recipient_phone", "Số điện thoại", 64, "tel"],
-            ["address_line", "Địa chỉ giao hàng đầy đủ", 500, "street-address"],
           ] as const).map(([field, label, limit, autoComplete]) => (
             <TextField
               key={field}
@@ -173,6 +173,7 @@ export default function GuestCheckoutPage() {
               }
             />
           ))}
+          <AddressAutocomplete label="Địa chỉ giao hàng đầy đủ" required value={draft.address.address_line} error={errors.address_line} onChange={value => update({ ...draft, address: { ...draft.address, address_line: value } })} />
           <PaymentMethodSection
             value={draft.method}
             onChange={(method) => update({ ...draft, method })}
