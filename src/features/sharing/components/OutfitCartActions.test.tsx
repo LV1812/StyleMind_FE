@@ -22,6 +22,8 @@ it('adds only available items to the cart and reports the skipped item', async (
 
 it('adds an individual available item and disables an unavailable item', async () => {
   render(<OutfitCartActions items={items} />)
+  // The visible label is short (so it never overflows on phones); the product name lives in the accessible name.
+  expect(screen.getByRole('button', { name: 'Thêm Áo vào giỏ' })).toHaveTextContent(/^Thêm vào giỏ$/)
   expect(screen.getByRole('button', { name: 'Thêm Món cũ vào giỏ' })).toBeDisabled()
   await userEvent.setup().click(screen.getByRole('button', { name: 'Thêm Áo vào giỏ' }))
   expect(addItem).toHaveBeenCalledExactlyOnceWith('variant-one', 1)
