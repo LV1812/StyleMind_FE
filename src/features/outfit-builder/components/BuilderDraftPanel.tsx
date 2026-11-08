@@ -97,6 +97,7 @@ export function BuilderDraftPanel({
                 <span
                   className="h-6 w-6 flex-none rounded-full border border-[#C4C7C7]"
                   style={{ backgroundColor: item.variant.colorHex }}
+                  title={item.variant.color}
                   aria-hidden="true"
                 />
               </div>

@@ -9,6 +9,9 @@ import { rememberOrder } from './orderReferences'
 export const PAYMENT_POLL_INTERVAL_MS = 5000
 export const PAYMENT_POLL_WINDOW_MS = 15 * 60 * 1000
 
+/** Result of the last manual "check status" request, so the page can tell the customer something happened. */
+export interface PaymentStatusCheck { at: number; changed: boolean }
+
 export default function useOrderPayment(owner: 'guest' | 'account', orderId: string, accountId?: string) {
   const [order, setOrder] = useState<OrderResponse | null>(null)
   const [attempt, setAttempt] = useState<PaymentAttempt | null>(null)
@@ -17,6 +20,8 @@ export default function useOrderPayment(owner: 'guest' | 'account', orderId: str
   const [pollStopped, setPollStopped] = useState(false)
   const [pollTimedOut, setPollTimedOut] = useState(false)
   const [now, setNow] = useState(Date.now())
+  const [lastCheck, setLastCheck] = useState<PaymentStatusCheck | null>(null)
+  const statusRef = useRef<string | undefined>(undefined)
   const lifetime = useRef<AbortController | null>(null)
   const locked = useRef(false)
   const reading = useRef(false)
@@ -53,6 +58,7 @@ export default function useOrderPayment(owner: 'guest' | 'account', orderId: str
     }
   }, [getAttempt, getOrder, orderId, owner, accountId])
 
+  useEffect(() => { statusRef.current = order?.order_status }, [order])
   useEffect(() => {
     const controller = new AbortController()
     lifetime.current = controller
@@ -122,9 +128,11 @@ export default function useOrderPayment(owner: 'guest' | 'account', orderId: str
     locked.current = true; setBusy(true); setError('')
     try {
       // Checking status is always GET-only. Recovery never creates another order.
+      const before = statusRef.current
       const latest = await getOrder(controller.signal)
       if (controller.signal.aborted) return
       setOrder(latest)
+      if (!recover) setLastCheck({ at: Date.now(), changed: before !== undefined && before !== latest.order_status })
       if (recover && latest.order_status === 'PENDING_PAYMENT') await loadAttempt(controller.signal)
     } catch (failure) {
       if (!controller.signal.aborted) setError(message(failure))
@@ -137,7 +145,7 @@ export default function useOrderPayment(owner: 'guest' | 'account', orderId: str
   const remaining = Number.isFinite(expires) ? Math.max(0, Math.ceil((expires - now) / 1000)) : null
   const expired = attempt?.status === 'EXPIRED' || remaining === 0
   return {
-    order, attempt, error, busy, pending, expired, pollTimedOut,
+    order, attempt, error, busy, pending, expired, pollTimedOut, lastCheck,
     countdownSeconds: expired ? 0 : remaining,
     showQr: pending && order?.payment_method === 'SEPAY_VIETQR' && attempt?.status === 'PENDING' && !expired,
     refresh: () => void perform(false), recover: () => void perform(true),
