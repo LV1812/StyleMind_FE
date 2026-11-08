@@ -135,8 +135,9 @@ export default function GuestPaymentView({
 
           <div className="mt-7 grid gap-2 border-t border-sand/70 pt-6 sm:grid-cols-2">
             <Button className={`rounded-xl ${pending ? '' : 'sm:col-span-2'}`} loading={busy} onClick={onRefresh} icon={<RefreshCw size={15} aria-hidden="true" />}>Kiểm tra trạng thái đơn</Button>
-            {pending && !blocked && !expired && <Button variant="ghost" className="rounded-xl text-xs" disabled={busy} onClick={onRecover}>Khôi phục thanh toán</Button>}
+            {pending && !blocked && !expired && <Button variant="ghost" className="rounded-xl text-xs" disabled={busy} onClick={onRecover}>Tải lại thông tin thanh toán</Button>}
           </div>
+          {pending && !blocked && !expired && <p className="mt-3 text-xs text-secondary">Tải lại thông tin của đơn này khi mã thanh toán chưa hiển thị. Thao tác không tạo đơn mới.</p>}
         </div>
       </div>
 

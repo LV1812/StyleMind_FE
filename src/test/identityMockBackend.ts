@@ -157,6 +157,13 @@ async function handleRequest(input: RequestInfo | URL, init: RequestInit = {}): 
   calls.push({ method, path: `${url.pathname}${url.search}`, headers, body })
 
   // Public Commerce fixtures use the wire contract rather than bypassing the catalog adapter.
+  if (url.pathname === '/commerce/api/v1/variants/batch-lookup' && method === 'POST') {
+    const ids = new Set(Array.isArray(body?.variant_ids) ? body.variant_ids : [])
+    const products = (currentDatabase()?.products ?? []).filter((product: JsonRecord) => product.active)
+    return jsonResponse(200, { items: products.flatMap((product: JsonRecord) => product.variants
+      .filter((variant: JsonRecord) => variant.active && ids.has(variant.id))
+      .map((variant: JsonRecord) => ({ variant_id: variant.id, product_id: product.id, available_quantity: variant.stock }))) })
+  }
   if (url.pathname === '/commerce/api/v1/products' && method === 'GET') {
     const database = currentDatabase()
     const categories = database?.categories ?? []
@@ -180,8 +187,10 @@ async function handleRequest(input: RequestInfo | URL, init: RequestInit = {}): 
     const owner = user?.id ?? headers.get('X-Guest-Session-Key')
     const cartPath = url.pathname.match(/^\/commerce\/api\/v1\/cart(?:\/items(?:\/([^/]+))?)?$/)
     const pricesPath = url.pathname === '/commerce/api/v1/checkout/prices'
+    const selectionPrices = url.pathname.match(/^\/commerce\/api\/v1\/checkout\/(selected|buy-now)\/prices$/)
+    const selectionOrder = url.pathname.match(/^\/commerce\/api\/v1\/orders\/(selected|buy-now)$/)
     const orderPath = url.pathname.match(/^\/commerce\/api\/v1\/orders(?:\/([^/]+)(\/payment-attempt)?)?$/)
-    if (cartPath || pricesPath || orderPath) {
+    if (cartPath || pricesPath || orderPath || selectionPrices || selectionOrder) {
       if (!owner) return problem(401, 'UNAUTHENTICATED')
       if (!commerceCarts.has(owner)) {
         const lines = user ? currentDatabase()?.cartLines ?? [] : []
@@ -209,8 +218,39 @@ async function handleRequest(input: RequestInfo | URL, init: RequestInit = {}): 
         return jsonResponse(200, snapshot())
       }
       if (pricesPath) return lines.length ? jsonResponse(200, snapshot()) : problem(409, 'EMPTY_CART')
+      if (selectionPrices || selectionOrder) {
+        if (!user) return problem(401, 'UNAUTHENTICATED')
+        const mode = (selectionPrices ?? selectionOrder)![1]
+        let items: JsonRecord[] = []
+        if (mode === 'selected') {
+          const ids = Array.isArray(body?.cart_item_ids) ? body.cart_item_ids : []
+          items = snapshot().items.filter((item: JsonRecord) => ids.includes(item.cart_item_id))
+          if (!ids.length || items.length !== ids.length) return problem(409, 'INVALID_CART_ITEM')
+        } else {
+          const product = (currentDatabase()?.products ?? []).find((p: JsonRecord) => p.active && p.variants.some((v: JsonRecord) => v.id === body?.variant_id && v.active))
+          const variant = product?.variants.find((v: JsonRecord) => v.id === body?.variant_id)
+          if (!variant) return problem(409, 'INVALID_CART_ITEM')
+          const quantity = Number(body?.quantity)
+          const unit = variant.priceOverride ?? product.basePrice
+          items = [{ cart_item_id: 'buy-now-preview', variant_id: variant.id, product_name: product.name, color: variant.color, size: variant.size, quantity, unit_price_vnd: unit, line_total_vnd: unit * quantity }]
+        }
+        const total = items.reduce((sum, item) => sum + item.line_total_vnd, 0)
+        if (selectionPrices) return jsonResponse(200, { items, total_vnd: total })
+        const id = crypto.randomUUID()
+        const order = { order_id: id, order_number: 'TEST-' + id.slice(0, 8), customer_id: owner, checkout_key: body?.checkout_key, order_status: body?.payment_method === 'COD' ? 'PLACED' : 'PENDING_PAYMENT', payment_method: body?.payment_method, accepted_total_vnd: total, address: addressList(owner).find(a => a.address_id === body?.shipping_address_id), items: items.map(item => ({ ...item, order_item_id: item.variant_id, product_name_snapshot: item.product_name })), history: [], cancellation_request: null }
+        commerceOrders.set(id, order)
+        if (mode === 'selected') commerceCarts.set(owner, lines.filter(line => !body?.cart_item_ids.includes(line.cart_item_id)))
+        return jsonResponse(201, order)
+      }
       if (orderPath) {
         if (!user) return problem(401, 'UNAUTHENTICATED')
+        if (!orderPath[1] && method === 'GET') {
+          const status = url.searchParams.get('status')
+          const page = Number(url.searchParams.get('page') ?? 0)
+          const size = Number(url.searchParams.get('size') ?? 10)
+          const all = [...commerceOrders.values()].filter(order => order.customer_id === owner && (!status || order.order_status === status))
+          return jsonResponse(200, { items: all.slice(page * size, (page + 1) * size), page, size, total_elements: all.length, total_pages: Math.ceil(all.length / size) })
+        }
         if (!orderPath[1] && method === 'POST') {
           const existing = checkoutOrders.get(owner + body?.checkout_key)
           if (existing) return jsonResponse(201, commerceOrders.get(existing))

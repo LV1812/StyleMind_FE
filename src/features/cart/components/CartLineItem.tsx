@@ -10,13 +10,14 @@ interface CartLineItemProps {
   detail: CartLineDetail
   onQuantityChange: (quantity: number) => void
   onRemove: () => void
+  unavailable?: boolean
 }
 
 function productPath(productId: string) {
   return ROUTES.product.replace(':productId', productId)
 }
 
-export function CartLineItem({ detail, onQuantityChange, onRemove }: CartLineItemProps) {
+export function CartLineItem({ detail, onQuantityChange, onRemove, unavailable = false }: CartLineItemProps) {
   return (
     <article className="grid gap-4 rounded-lg bg-[#FFFFFF] p-4 shadow-[0_14px_30px_rgba(58,54,50,0.08)] sm:grid-cols-[108px_minmax(0,1fr)]">
       <Link to={productPath(detail.product.id)} className="overflow-hidden rounded-lg bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]">
@@ -49,6 +50,7 @@ export function CartLineItem({ detail, onQuantityChange, onRemove }: CartLineIte
             <button
               type="button"
               aria-label={`Giảm số lượng ${detail.product.name}`}
+              disabled={unavailable}
               onClick={() => onQuantityChange(Math.max(1, detail.quantity - 1))}
               className="grid h-10 w-10 place-items-center text-[#3A3632] transition hover:bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
             >
@@ -60,6 +62,7 @@ export function CartLineItem({ detail, onQuantityChange, onRemove }: CartLineIte
             <button
               type="button"
               aria-label={`Tăng số lượng ${detail.product.name}`}
+              disabled={unavailable}
               onClick={() => onQuantityChange(detail.quantity + 1)}
               className="grid h-10 w-10 place-items-center text-[#3A3632] transition hover:bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
             >

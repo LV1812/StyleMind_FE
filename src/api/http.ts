@@ -1,5 +1,5 @@
 import type { ApiProblem } from './commerce.types'
-import { readIdentitySession } from '../shared/api/identityApi'
+import { readIdentitySession, refreshIdentitySession } from '../shared/api/identityApi'
 
 const configuredGatewayUrl = import.meta.env.VITE_API_BASE_URL as string | undefined
 const gatewayUrl = (configuredGatewayUrl || '').replace(/\/$/, '')
@@ -46,7 +46,7 @@ type RequestOptions = Omit<RequestInit, 'body'> & {
   auth?: boolean
 }
 
-export async function commerceRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
+export async function commerceRequest<T>(path: string, options: RequestOptions = {}, retried = false): Promise<T> {
   const headers = new Headers(options.headers)
   const token = options.auth === false ? null : getCommerceAccessToken()
   const isFormData = options.body instanceof FormData
@@ -66,6 +66,12 @@ export async function commerceRequest<T>(path: string, options: RequestOptions =
     headers,
     body: requestBody,
   })
+
+  if (response.status === 401 && token && !retried && readIdentitySession()?.accessToken === token) {
+    try {
+      if (await refreshIdentitySession(token)) return commerceRequest<T>(path, options, true)
+    } catch { /* Surface the original unauthorized response. */ }
+  }
 
   if (!response.ok) {
     const contentType = response.headers.get('content-type') || ''

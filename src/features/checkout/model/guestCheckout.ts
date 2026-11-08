@@ -2,6 +2,7 @@ import type {
   GuestCheckoutRequest,
   GuestShippingAddress,
 } from "../data/guestCheckoutApi"
+import type { AccountSelection } from './accountSelection'
 
 export const GUEST_CHECKOUT_DRAFT = "stylemind.checkout.guest-draft"
 export const GUEST_LATEST_ORDER = "stylemind.checkout.guest-latest-order"
@@ -13,6 +14,7 @@ export interface GuestDraft {
   submitted?: GuestCheckoutRequest
   orderId?: string
   recoveryRequired?: boolean
+  selection?: AccountSelection
 }
 
 export function loadGuestDraft(): GuestDraft {
@@ -44,7 +46,7 @@ export function loadGuestDraft(): GuestDraft {
     checkoutKey: meta.checkoutKey ?? crypto.randomUUID(),
     address: { recipient_name: "", recipient_phone: "", address_line: "" },
     method: "cod",
-    ...(meta.checkoutKey ? { checkoutKey: meta.checkoutKey, method: meta.method ?? 'cod', orderId: meta.orderId, recoveryRequired: meta.recoveryRequired } : {}),
+    ...(meta.checkoutKey ? { checkoutKey: meta.checkoutKey, method: meta.method ?? 'cod', orderId: meta.orderId, recoveryRequired: meta.recoveryRequired, selection: meta.selection } : {}),
   }
   saveGuestDraft(draft)
   return draft
@@ -52,7 +54,7 @@ export function loadGuestDraft(): GuestDraft {
 
 export function saveGuestDraft(draft: GuestDraft) {
   window.sessionStorage.setItem(GUEST_CHECKOUT_DRAFT, JSON.stringify(draft))
-  window.localStorage.setItem(GUEST_CHECKOUT_DRAFT + '.meta', JSON.stringify({ checkoutKey: draft.checkoutKey, method: draft.method, orderId: draft.orderId, recoveryRequired: Boolean(draft.submitted || draft.recoveryRequired) }))
+  window.localStorage.setItem(GUEST_CHECKOUT_DRAFT + '.meta', JSON.stringify({ checkoutKey: draft.checkoutKey, method: draft.method, orderId: draft.orderId, recoveryRequired: Boolean(draft.submitted || draft.recoveryRequired), selection: draft.selection }))
 }
 
 export function trimGuestAddress(

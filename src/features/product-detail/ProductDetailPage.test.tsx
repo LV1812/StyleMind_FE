@@ -41,7 +41,7 @@ describe('ProductDetailPage', () => {
     expect(screen.getByText('Vui lòng chọn kích thước')).toBeInTheDocument()
   })
 
-  it('buy now adds the selected variant and navigates to checkout', async () => {
+  it('buy now keeps the cart unchanged and navigates to checkout', async () => {
     const user = userEvent.setup()
     renderProductDetail('prd-blouse-01')
 
@@ -49,6 +49,6 @@ describe('ProductDetailPage', () => {
     await user.click(screen.getByRole('button', { name: 'Mua ngay' }))
 
     await waitFor(() => expect(currentPath()).toBe('/checkout'))
-    expect(screen.getByLabelText('Giỏ hàng (1 sản phẩm)')).toBeInTheDocument()
+    expect(screen.getByLabelText('Giỏ hàng (0 sản phẩm)')).toBeInTheDocument()
   })
 })

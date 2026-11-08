@@ -42,6 +42,7 @@ beforeEach(() => {
     if (!path.includes('/commerce/')) return identity(input, init)
     calls.push({ path, init })
     if (path.includes('/products?')) return catalogFails ? json({ detail: 'Unavailable' }, 503) : json({ items: [product], total_pages: 1 })
+    if (path.endsWith('/variants/batch-lookup')) return json({ items: [{ variant_id: variantId, product_id: productId, available_quantity: 10 }] })
     const key = new Headers(init.headers).get('X-Guest-Session-Key')
     if (!key) return json({ detail: 'Missing guest key' }, 401)
     const method = init.method ?? 'GET'
@@ -63,6 +64,10 @@ beforeEach(() => {
       return json(cart())
     }
     if (path.endsWith('/cart/items/' + itemId) && method === 'DELETE') { items = []; return json(null, 204) }
+    if (path.endsWith('/guest/checkout/buy-now/prices')) return json({ items: [{ cart_item_id: 'preview', variant_id: variantId, product_name: product.name, quantity: 1, line_total_vnd: 123000 }], total_vnd: 123000 })
+    if (path.endsWith('/guest/checkout/selected/prices')) return json(cart())
+    if (path.endsWith('/guest/orders/selected') && method === 'POST') { items = []; return json({ order_id: orderId, payment_method: 'COD', order_status: 'PLACED', accepted_total_vnd: 123000 }) }
+    if (path.endsWith('/guest/orders/buy-now') && method === 'POST') return json({ order_id: orderId, payment_method: 'COD', order_status: 'PLACED', accepted_total_vnd: 123000 })
     if (path.endsWith('/guest/checkout/prices')) return items.length ? json(cart()) : json({ code: 'EMPTY_CART', detail: 'Cart has no checkout items' }, 409)
     if (path.endsWith('/guest/orders') && method === 'POST') {
       expect(items.length).toBeGreaterThan(0)
@@ -106,7 +111,7 @@ describe('Guest Commerce integration', () => {
     await screen.findByRole('heading', { name: 'Kết quả đơn hàng khách' })
     await waitFor(() => expect(screen.getByLabelText('Giỏ hàng (0 sản phẩm)')).toBeInTheDocument())
     expect(items).toHaveLength(0)
-    expect(addCalls()).toHaveLength(1)
+    expect(addCalls()).toHaveLength(0)
     const key = window.localStorage.getItem(GUEST_SESSION_KEY)!
     for (const call of calls.filter(call => !call.path.includes('/products?'))) {
       expect(new Headers(call.init.headers).get('X-Guest-Session-Key')).toBe(key)
@@ -136,6 +141,18 @@ describe('Guest Commerce integration', () => {
     expect(addCalls()).toHaveLength(1)
   })
 
+  it('sends only selected guest cart IDs to checkout preview', async () => {
+    const view = mount('/products/' + productId)
+    const user = await chooseSize()
+    await user.click(screen.getByRole('button', { name: 'Thêm vào giỏ' }))
+    await waitFor(() => expect(items).toHaveLength(1))
+    await act(async () => { await view.router.navigate('/cart') })
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Tiến hành thanh toán' })).toBeEnabled())
+    await user.click(screen.getByRole('button', { name: 'Tiến hành thanh toán' }))
+    await screen.findByRole('heading', { name: 'Thanh toán không cần đăng nhập' })
+    await waitFor(() => expect(calls.some(call => call.path.endsWith('/guest/checkout/selected/prices') && JSON.parse(String(call.init.body)).cart_item_ids[0] === itemId)).toBe(true))
+  })
+
   it('does not submit demo cart lines and explains why old local products need choosing again', async () => {
     mount('/cart')
     await screen.findByText(/Giỏ hàng cũ chứa sản phẩm mẫu/)
@@ -155,17 +172,17 @@ describe('Guest Commerce integration', () => {
     expect(items[0].quantity).toBe(1)
   })
 
-  it('blocks double-click add and waits for the backend before navigating', async () => {
+  it('blocks double-click add while waiting for the backend', async () => {
     let release!: () => void
     holdAdd = new Promise(resolve => { release = resolve })
     const view = mount('/products/' + productId)
     const user = await chooseSize()
-    const button = screen.getByRole('button', { name: 'Mua ngay' })
+    const button = screen.getByRole('button', { name: 'Thêm vào giỏ' })
     await user.dblClick(button)
     expect(addCalls()).toHaveLength(1)
     expect(view.router.state.location.pathname).toBe('/products/' + productId)
     await act(async () => release())
-    await screen.findByRole('heading', { name: 'Thanh toán không cần đăng nhập' })
+    await waitFor(() => expect(items).toHaveLength(1))
     expect(addCalls()).toHaveLength(1)
   })
 

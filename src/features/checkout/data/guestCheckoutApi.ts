@@ -33,7 +33,7 @@ async function request<T>(
   key: string | null,
   path: string,
   method: "GET" | "POST",
-  body?: GuestCheckoutRequest,
+  body?: unknown,
   signal?: AbortSignal,
 ): Promise<T> {
   if (!key) throw new PaymentApiError(401, { code: "GUEST_SESSION_REQUIRED" })
@@ -76,6 +76,15 @@ export const guestCheckoutApi = {
     request<GuestPrices>(key, "/checkout/prices", "GET", undefined, signal),
   createOrder: (key: string, body: GuestCheckoutRequest) =>
     request<OrderResponse>(key, "/orders", "POST", body),
+  previewSelection: (key: string | null, body: { cart_item_ids: string[] }, signal?: AbortSignal) =>
+    request<GuestPrices>(key, '/checkout/selected/prices', 'POST', body, signal),
+  previewBuyNow: (key: string | null, body: { variant_id: string; quantity: number }, signal?: AbortSignal) =>
+    request<GuestPrices>(key, '/checkout/buy-now/prices', 'POST', body, signal),
+  checkoutSelection: (key: string, body: GuestCheckoutRequest & { cart_item_ids: string[] }) =>
+    request<OrderResponse>(key, '/orders/selected', 'POST', body),
+  checkoutBuyNow: (key: string, body: GuestCheckoutRequest & { variant_id: string; quantity: number }) =>
+    request<OrderResponse>(key, '/orders/buy-now', 'POST', body),
+  recoverCheckout: (key: string | null, checkoutKey: string) => request<OrderResponse>(key, '/checkout/recover', 'POST', { checkout_key: checkoutKey }),
   getOrder: (key: string | null, id: string, signal?: AbortSignal) =>
     request<OrderResponse>(
       key,
@@ -96,6 +105,7 @@ export const guestCheckoutApi = {
 
 export function guestErrorMessage(error: unknown): string {
   if (error instanceof PaymentApiError) {
+    if (error.code === 'INVALID_CART_ITEM') return 'Sản phẩm đã chọn không còn trong giỏ hoặc không còn bán. Hãy tải lại giỏ và chọn lại.'
     if (error.code === 'EMPTY_CART') return 'Giỏ hàng trên hệ thống đang trống. Vui lòng quay lại cửa hàng và thêm sản phẩm trước khi thanh toán.'
     if (error.code === 'DUPLICATE_CHECKOUT') return 'Lần checkout này đã được xử lý hoặc kết quả chưa xác định. Không tạo lại đơn bằng mã mới. Hãy kiểm tra đơn đã lưu hoặc liên hệ hỗ trợ.'
     if (error.code === 'INSUFFICIENT_STOCK') return 'Số lượng sản phẩm không còn đủ. Giỏ và giá đã được tải lại; hãy điều chỉnh số lượng trong giỏ.'

@@ -290,6 +290,31 @@ describe("guest checkout", () => {
     expect(posts()[1].init.body).toBe(firstBody)
   })
 
+  it('recovers the existing guest order when a retry reports duplicate checkout', async () => {
+    const original = respond
+    respond = (path, init) => {
+      if (path.endsWith('/guest/orders') && posts().length === 1) return Promise.reject(new TypeError('network'))
+      if (path.endsWith('/guest/orders')) return json({ code: 'DUPLICATE_CHECKOUT' }, 409)
+      return original(path, init)
+    }
+    mount()
+    const user = await fill()
+    await user.click(screen.getByRole('button', { name: 'Đặt hàng' }))
+    await screen.findByRole('alert')
+    await user.click(screen.getByRole('button', { name: 'Thử lại đặt hàng' }))
+    await screen.findByRole('heading', { name: 'Kết quả đơn hàng khách' })
+    expect(calls.some(call => call.path.endsWith('/guest/checkout/recover'))).toBe(true)
+  })
+
+  it('can recover a guest order after the original checkout tab was closed', async () => {
+    localStorage.setItem(GUEST_SESSION_KEY, guestKey)
+    localStorage.setItem(GUEST_CHECKOUT_DRAFT + '.meta', JSON.stringify({ checkoutKey: 'checkout-existing', method: 'cod', recoveryRequired: true }))
+    mount()
+    await userEvent.setup().click(await screen.findByRole('button', { name: 'Kiểm tra đơn đã gửi' }))
+    await screen.findByRole('heading', { name: 'Kết quả đơn hàng khách' })
+    expect(calls.some(call => call.path.endsWith('/guest/checkout/recover') && JSON.parse(String(call.init.body)).checkout_key === 'checkout-existing')).toBe(true)
+  })
+
   it.each([400, 401, 404, 409])(
     "handles guest HTTP %s without redirecting or replacing the checkout key",
     async (status) => {
@@ -373,7 +398,7 @@ describe("guest checkout", () => {
     window.localStorage.setItem(GUEST_SESSION_KEY, guestKey)
     mount("/guest/orders/" + orderId)
     const button = await screen.findByRole("button", {
-      name: "Khôi phục thanh toán",
+      name: "Tải lại thông tin thanh toán",
     })
     await waitFor(() => expect(button).toBeEnabled())
     fireEvent.click(button)

@@ -32,7 +32,11 @@ export default function AccountCheckoutPage() {
     const controller = new AbortController()
     lifetime.current = controller
     setPrices(null); setReady(false)
-    void paymentApi.getPrices({ signal: controller.signal }).then(value => { if (!controller.signal.aborted) setPrices(value) })
+    const selection = draft.selection
+    const priceRequest = selection?.kind === 'selected' ? paymentApi.previewSelection({ cart_item_ids: selection.cart_item_ids }, { signal: controller.signal })
+      : selection?.kind === 'buy-now' ? paymentApi.previewBuyNow({ variant_id: selection.variant_id, quantity: selection.quantity }, { signal: controller.signal })
+      : paymentApi.getPrices({ signal: controller.signal })
+    void priceRequest.then(value => { if (!controller.signal.aborted) setPrices(value) })
       .catch(failure => {
         if (!controller.signal.aborted) setError(paymentErrorMessage(failure))
         if (failure instanceof PaymentApiError && failure.code === 'EMPTY_CART') void cart.refreshCart().catch(() => undefined)
@@ -54,7 +58,9 @@ export default function AccountCheckoutPage() {
     const submitted = { ...draft, submitted: body }
     update(submitted)
     try {
-      const order = await paymentApi.checkout(body)
+      const order = draft.selection?.kind === 'selected' ? await paymentApi.checkoutSelection({ ...body, cart_item_ids: draft.selection.cart_item_ids })
+        : draft.selection?.kind === 'buy-now' ? await paymentApi.checkoutBuyNow({ ...body, variant_id: draft.selection.variant_id, quantity: draft.selection.quantity })
+        : await paymentApi.checkout(body)
       if (!order.order_id) throw new Error('Không nhận được mã đơn hàng; kết quả chưa xác định.')
       rememberOrder({ orderId: order.order_id, owner: 'account', accountId: owner })
       saveAccountDraft(owner, { ...submitted, orderId: order.order_id })
@@ -64,8 +70,18 @@ export default function AccountCheckoutPage() {
       navigate(ROUTES.paymentOrder.replace(':orderId', encodeURIComponent(order.order_id)), { replace: true })
     } catch (failure) {
       if (controller.signal.aborted) return
+      if (failure instanceof PaymentApiError && failure.code === 'DUPLICATE_CHECKOUT') {
+        try {
+          const recovered = await paymentApi.recoverCheckout(draft.checkoutKey)
+          if (!recovered.order_id) throw new Error('Missing order id')
+          rememberOrder({ orderId: recovered.order_id, owner: 'account', accountId: owner })
+          saveAccountDraft(owner, { ...submitted, orderId: recovered.order_id })
+          if (!controller.signal.aborted) { setDraft({ ...submitted, orderId: recovered.order_id }); void cart.refreshCart().catch(() => undefined); navigate(ROUTES.paymentOrder.replace(':orderId', encodeURIComponent(recovered.order_id)), { replace: true }) }
+        } catch { if (!controller.signal.aborted) setError('Chưa tìm thấy kết quả lần đặt này. Hãy chờ rồi thử lại cùng yêu cầu.') }
+        return
+      }
       if (failure instanceof PaymentApiError && failure.status === 400) update({ ...draft, submitted: undefined })
-      if (failure instanceof PaymentApiError && ['EMPTY_CART', 'INSUFFICIENT_STOCK'].includes(failure.code)) {
+      if (failure instanceof PaymentApiError && ['EMPTY_CART', 'INSUFFICIENT_STOCK', 'INVALID_CART_ITEM'].includes(failure.code)) {
         void cart.refreshCart().catch(() => undefined)
         setVersion(value => value + 1)
         update({ ...draft, submitted: undefined })

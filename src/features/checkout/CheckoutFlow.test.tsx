@@ -46,9 +46,9 @@ describe('Account checkout using backend contracts', () => {
     await screen.findByRole('img', { name: 'Mã QR chuyển khoản ngân hàng' })
     const path = router.state.location.pathname
     fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra trạng thái đơn' }))
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Khôi phục thanh toán' })).toBeEnabled())
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Tải lại thông tin thanh toán' })).toBeEnabled())
     expect(getIdentityMockCalls().filter(call => call.path.endsWith('/payment-attempt'))).toHaveLength(1)
-    fireEvent.click(screen.getByRole('button', { name: 'Khôi phục thanh toán' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Tải lại thông tin thanh toán' }))
     await waitFor(() => expect(getIdentityMockCalls().filter(call => call.path.endsWith('/payment-attempt'))).toHaveLength(2))
     unmount()
     const router2 = createMemoryRouter(appRoutes, { initialEntries: [path] })
