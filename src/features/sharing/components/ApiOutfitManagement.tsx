@@ -1,16 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import type { CommerceProduct, ProductVariant } from '@/api/commerce.types'
-import { loadAllCommerceProducts } from '@/features/commerce/data/loadCommerceProducts'
 import { useAuth } from '@/features/auth'
 import { ApiModal } from '@/shared/api/ApiUi'
 import { communityApi, type OutfitDetailDto, type OutfitItemDto } from '@/shared/api/communityApi'
 import { ApiError } from '@/shared/api/http'
 import { Button } from '@/shared/ui'
 import { Shirt } from 'lucide-react'
+import { OutfitProductPicker } from './OutfitProductPicker'
 
 type Dialog = 'rename' | 'delete' | 'add' | 'change' | 'remove' | null
-const optionLabel = (product: CommerceProduct, variant: ProductVariant) =>
-  `${product.name} · ${variant.color || 'Mặc định'} · ${variant.size || 'Một cỡ'}`
 
 function errorMessage(error: unknown) {
   if (error instanceof ApiError) {
@@ -37,23 +34,10 @@ export function ApiOutfitManagement({ detail, refresh, onDeleted }: { detail: Ou
   const [selectedItem, setSelectedItem] = useState<OutfitItemDto | null>(null)
   const [name, setName] = useState(detail.name)
   const [selected, setSelected] = useState('')
-  const [catalog, setCatalog] = useState<CommerceProduct[]>([])
-  const [catalogLoading, setCatalogLoading] = useState(false)
-  const [catalogError, setCatalogError] = useState('')
-  const [catalogRevision, setCatalogRevision] = useState(0)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
-  useEffect(() => {
-    if (dialog !== 'add' && dialog !== 'change') return
-    let active = true
-    setCatalogLoading(true); setCatalogError(''); setSelected('')
-    void loadAllCommerceProducts().then(products => { if (active) setCatalog(products) })
-      .catch(() => { if (active) setCatalogError('Không tải được sản phẩm. Vui lòng thử lại.') })
-      .finally(() => { if (active) setCatalogLoading(false) })
-    return () => { active = false }
-  }, [dialog, catalogRevision])
 
   const open = (next: Dialog, item?: OutfitItemDto) => {
     setError(''); setSelected(''); setSelectedItem(item ?? null); setName(detail.name); setDialog(next)
@@ -75,10 +59,6 @@ export function ApiOutfitManagement({ detail, refresh, onDeleted }: { detail: Ou
   }
 
   const used = new Set(detail.items.map(item => item.variant_id))
-  const options = catalog.filter(product => product.product_status === 'ACTIVE' && (dialog !== 'change' || product.product_id === selectedItem?.product_id))
-    .flatMap(product => product.variants.filter(variant => variant.variant_status === 'ACTIVE' && !used.has(variant.variant_id))
-      .map(variant => ({ value: variant.variant_id, label: optionLabel(product, variant) })))
-
   return <>
     <div className="mt-5 flex flex-wrap gap-3">
       <Button variant="secondary" onClick={() => open('rename')}>Đổi tên</Button>
@@ -111,11 +91,15 @@ export function ApiOutfitManagement({ detail, refresh, onDeleted }: { detail: Ou
     </ApiModal>
 
     <ApiModal open={dialog === 'add' || dialog === 'change'} title={dialog === 'add' ? 'Thêm món' : 'Đổi phiên bản'} onClose={close}>
-      {catalogLoading && <p role="status">Đang tải sản phẩm…</p>}
-      {catalogError && <div><p role="alert">{catalogError}</p><Button variant="secondary" onClick={() => setCatalogRevision(value => value + 1)}>Thử lại</Button></div>}
-      {!catalogLoading && !catalogError && <><label className="grid gap-2 text-sm font-semibold">{dialog === 'add' ? 'Chọn sản phẩm và phiên bản' : 'Chọn phiên bản mới'}<select className="rounded-lg border p-3" value={selected} onChange={event => setSelected(event.target.value)} disabled={busy}><option value="">Chọn phiên bản</option>{options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>{!options.length && <p className="mt-3 text-sm">Không có phiên bản phù hợp.</p>}</>}
+      <OutfitProductPicker
+        key={`${dialog}:${selectedItem?.outfit_item_id ?? 'new'}`}
+        usedVariantIds={used}
+        restrictToProductId={dialog === 'change' ? selectedItem?.product_id ?? undefined : undefined}
+        disabled={busy}
+        onSelect={setSelected}
+      />
       {error && <p role="alert" className="mt-3 text-sm text-[#A94B4B]">{error}</p>}
-      <div className="mt-5 flex justify-end gap-3"><Button variant="ghost" disabled={busy} onClick={close}>Hủy</Button><Button disabled={!selected || catalogLoading || !!catalogError} loading={busy} onClick={() => { if (dialog === 'add') void perform(() => communityApi.addOutfitItem(detail.outfit_id, selected)); else if (selectedItem) void perform(() => communityApi.changeOutfitItem(detail.outfit_id, selectedItem.outfit_item_id, selected)) }}>{dialog === 'add' ? 'Thêm vào outfit' : 'Lưu phiên bản'}</Button></div>
+      <div className="mt-5 flex justify-end gap-3"><Button variant="ghost" disabled={busy} onClick={close}>Hủy</Button><Button disabled={!selected} loading={busy} onClick={() => { if (dialog === 'add') void perform(() => communityApi.addOutfitItem(detail.outfit_id, selected)); else if (selectedItem) void perform(() => communityApi.changeOutfitItem(detail.outfit_id, selectedItem.outfit_item_id, selected)) }}>{dialog === 'add' ? 'Thêm vào outfit' : 'Lưu phiên bản'}</Button></div>
     </ApiModal>
   </>
 }
