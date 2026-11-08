@@ -4,6 +4,16 @@ import type { AddressPayload, IdentityAddress, Province, Ward } from '@/shared/a
 import { Button, TextField } from '@/shared/ui'
 import AddressAutocomplete from '@/shared/ui/AddressAutocomplete'
 
+import { firstInvalidField, validateAddressFields, type AddressField, type AddressFieldErrors } from '../model/addressValidation'
+
+const FIELD_IDS: Record<AddressField, string> = {
+  label: 'address-label',
+  recipientName: 'address-recipient-name',
+  recipientPhone: 'address-recipient-phone',
+  addressLine: 'address-line',
+  wardCode: 'address-ward',
+}
+
 export interface AddressFormValue extends Omit<AddressPayload, 'label' | 'recipient_name' | 'recipient_phone' | 'address_line' | 'ward_code'> {
   label: string
   recipientName: string
@@ -18,6 +28,8 @@ interface AddressFormProps {
   wards: Ward[]
   wardLoading: boolean
   saving: boolean
+  /** Message returned by the server for the last save attempt (shown inside the form). */
+  serverError?: string
   onProvinceChange: (provinceCode: string) => void
   onCancel: () => void
   onSubmit: (value: AddressFormValue) => Promise<void>
@@ -29,6 +41,7 @@ export function AddressForm({
   wards,
   wardLoading,
   saving,
+  serverError,
   onProvinceChange,
   onCancel,
   onSubmit,
@@ -40,21 +53,18 @@ export function AddressForm({
   const [provinceCode, setProvinceCode] = useState('')
   const [wardCode, setWardCode] = useState('')
   const [clearSavedWard, setClearSavedWard] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<AddressFieldErrors>({})
+  const clearError = (field: AddressField) => setErrors(current => (current[field] ? { ...current, [field]: undefined } : current))
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const nextErrors: Record<string, string> = {}
-    if (!recipientName.trim()) nextErrors.recipientName = 'Vui lòng nhập tên người nhận.'
-    else if ([...recipientName.trim()].length > 100) nextErrors.recipientName = 'Tên người nhận tối đa 100 ký tự.'
-    if (!recipientPhone.trim()) nextErrors.recipientPhone = 'Vui lòng nhập số điện thoại.'
-    else if ([...recipientPhone.trim()].length > 64) nextErrors.recipientPhone = 'Số điện thoại không hợp lệ.'
-    if (!addressLine.trim()) nextErrors.addressLine = 'Vui lòng nhập địa chỉ giao hàng.'
-    else if ([...addressLine.trim()].length > 500) nextErrors.addressLine = 'Địa chỉ tối đa 500 ký tự.'
-    if ([...label.trim()].length > 50) nextErrors.label = 'Tên gợi nhớ tối đa 50 ký tự.'
-    if (wardCode && !wards.some(ward => ward.code === wardCode)) nextErrors.wardCode = 'Hãy chọn phường/xã từ danh sách.'
+    const nextErrors = validateAddressFields({ label, recipientName, recipientPhone, addressLine }, wardCode, wards.map(ward => ward.code))
     setErrors(nextErrors)
-    if (Object.keys(nextErrors).length > 0) return
+    const invalid = firstInvalidField(nextErrors)
+    if (invalid) {
+      document.getElementById(FIELD_IDS[invalid])?.focus()
+      return
+    }
 
     let resolvedWardCode: string | null | undefined
     if (clearSavedWard) resolvedWardCode = null
@@ -66,7 +76,7 @@ export function AddressForm({
   }
 
   return (
-    <form className="grid gap-4 rounded-lg border border-[#E3E2E2] bg-white p-5 shadow-sm" onSubmit={handleSubmit}>
+    <form className="grid gap-4 rounded-lg border border-[#E3E2E2] bg-white p-5 shadow-sm" noValidate onSubmit={handleSubmit}>
       <div>
         <h2 className="font-display text-2xl font-semibold text-[#222222]">
           {initialAddress ? 'Sửa địa chỉ' : 'Thêm địa chỉ'}
@@ -77,10 +87,10 @@ export function AddressForm({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <TextField label="Tên gợi nhớ (không bắt buộc)" value={label} error={errors.label} onChange={event => setLabel(event.target.value)} />
-        <TextField label="Tên người nhận" autoComplete="name" value={recipientName} error={errors.recipientName} onChange={event => setRecipientName(event.target.value)} />
-        <TextField label="Số điện thoại Việt Nam" type="tel" autoComplete="tel" value={recipientPhone} error={errors.recipientPhone} onChange={event => setRecipientPhone(event.target.value)} />
-        <AddressAutocomplete label="Địa chỉ (số nhà, đường, quận/huyện, tỉnh/thành)" value={addressLine} error={errors.addressLine} onChange={setAddressLine} />
+        <TextField id={FIELD_IDS.label} label="Tên gợi nhớ (không bắt buộc)" value={label} error={errors.label} onChange={event => { setLabel(event.target.value); clearError('label') }} />
+        <TextField id={FIELD_IDS.recipientName} label="Tên người nhận" autoComplete="name" value={recipientName} error={errors.recipientName} onChange={event => { setRecipientName(event.target.value); clearError('recipientName') }} />
+        <TextField id={FIELD_IDS.recipientPhone} label="Số điện thoại Việt Nam" type="tel" autoComplete="tel" value={recipientPhone} error={errors.recipientPhone} onChange={event => { setRecipientPhone(event.target.value); clearError('recipientPhone') }} />
+        <AddressAutocomplete id={FIELD_IDS.addressLine} label="Địa chỉ (số nhà, đường, quận/huyện, tỉnh/thành)" value={addressLine} error={errors.addressLine} onChange={value => { setAddressLine(value); clearError('addressLine') }} />
         <label className="grid gap-1.5 text-sm font-semibold text-[#3A3632]">
           Tỉnh/thành để tra cứu phường/xã (không bắt buộc)
           <select
@@ -101,6 +111,7 @@ export function AddressForm({
         <label className="grid gap-1.5 text-sm font-semibold text-[#3A3632]">
           Phường/xã (không bắt buộc)
           <select
+            id={FIELD_IDS.wardCode}
             value={wardCode}
             disabled={!provinceCode || wardLoading}
             onChange={event => { setWardCode(event.target.value); setClearSavedWard(false) }}
@@ -129,6 +140,8 @@ export function AddressForm({
           <p className="text-xs leading-5 text-[#5E5F5D]">Nếu không chọn mã mới hoặc xóa, mã hiện tại sẽ được giữ nguyên.</p>
         </div>
       )}
+
+      {serverError && <p role="alert" className="rounded-lg border border-[#E7BBBB] bg-[#FCEAEA] px-4 py-3 text-sm font-semibold text-[#A94B4B]">{serverError}</p>}
 
       <div className="flex flex-wrap gap-3">
         <Button type="submit" loading={saving}>Lưu địa chỉ</Button>
