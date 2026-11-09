@@ -1,5 +1,6 @@
 import type { Product, ProductCategory, ProductSize } from '@/entities/product/model/types'
 import { COMMERCE_GATEWAY, commerceRequest } from '@/shared/api/commerceApi'
+import { colorSwatchHex } from '@/shared/lib/colorSwatch'
 
 export interface CatalogProductResponse {
   product_id: string
@@ -28,7 +29,7 @@ export function catalogProduct(raw: CatalogProductResponse): Product {
     material: raw.variants[0]?.material ?? '', fit: '', pattern: '', styleIds: [], occasionIds: [], tags: [],
     active: raw.product_status === 'ACTIVE', featured: false, createdAt: '',
     variants: raw.variants.map(variant => ({
-      id: variant.variant_id, color: variant.color, colorHex: '#D8D0C6', size: variant.size as ProductSize,
+      id: variant.variant_id, color: variant.color, colorHex: colorSwatchHex(variant.color), size: variant.size as ProductSize,
       stock: variant.available_quantity, priceOverride: variant.unit_price_vnd, active: variant.variant_status === 'ACTIVE',
       images: variant.images.map(image => ({
         id: image.image_id, url: image.image_url.startsWith('/api/') ? `${COMMERCE_GATEWAY}/commerce${image.image_url}` : image.image_url,

@@ -1,4 +1,6 @@
 import { createBrowserRouter, Link, RouterProvider, type RouteObject } from 'react-router-dom'
+import { useEffect, useMemo } from 'react'
+import { useAuth } from '@/features/auth'
 
 import { CustomerLayout } from '@/app/layouts/CustomerLayout'
 import { AuthGuard } from '@/app/router/guards/AuthGuard'
@@ -89,5 +91,13 @@ export const appRoutes: RouteObject[] = [
 ]
 
 export function AppRouter() {
-  return <RouterProvider router={createBrowserRouter(appRoutes)} />
+  const router = useMemo(() => createBrowserRouter(appRoutes), [])
+  const { roleRedirect, clearRoleRedirect } = useAuth()
+  useEffect(() => {
+    if (roleRedirect) {
+      void router.navigate(roleRedirect, { replace: true })
+      clearRoleRedirect()
+    }
+  }, [router, roleRedirect, clearRoleRedirect])
+  return <RouterProvider router={router} />
 }

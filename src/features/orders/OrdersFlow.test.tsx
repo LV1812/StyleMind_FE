@@ -19,14 +19,14 @@ function mount(path: string) {
   return router
 }
 describe('Real Order lookup and owner references', () => {
-  it('lists only known IDs belonging to the current account and reads detail from API', async () => {
+  it('loads only current account orders from the API and reads detail', async () => {
     seed()
     const order = await paymentApi.checkout({ checkout_key: crypto.randomUUID(), shipping_address_id: 'adr-customer-home', payment_method: 'COD' })
     rememberOrder({ orderId: order.order_id, owner: 'account', accountId: 'usr-customer-01' })
     rememberOrder({ orderId: 'other-account-order', owner: 'account', accountId: 'someone-else' })
     rememberOrder({ orderId: 'guest-order', owner: 'guest' })
     mount('/orders')
-    const link = await screen.findByRole('link', { name: 'Xem đơn ' + order.order_id })
+    const link = await screen.findByRole('link', { name: new RegExp(order.order_number) })
     expect(screen.queryByText(/other-account-order|guest-order/)).not.toBeInTheDocument()
     fireEvent.click(link)
     await screen.findByText(/Đặt hàng thành công/)
@@ -36,7 +36,7 @@ describe('Real Order lookup and owner references', () => {
 
   it('does not render demo orders or mark them paid from local state', async () => {
     seed(); mount('/orders')
-    expect(await screen.findByText('Chưa lưu mã đơn nào trên trình duyệt này.')).toBeInTheDocument()
+    expect(await screen.findByText('Chưa có đơn hàng phù hợp.')).toBeInTheDocument()
     expect(screen.queryByText(/ORD-TEST/)).not.toBeInTheDocument()
   })
 
@@ -57,6 +57,6 @@ describe('Real Order lookup and owner references', () => {
     await screen.findByText(/Đặt hàng thành công/)
     expect(router.state.location.pathname).toBe('/payments/' + order.order_id)
     await act(async () => { await router.navigate('/orders') })
-    expect(await screen.findByRole('link', { name: 'Xem đơn ' + order.order_id })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: new RegExp(order.order_number) })).toBeInTheDocument()
   })
 })

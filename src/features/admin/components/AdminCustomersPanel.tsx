@@ -99,7 +99,7 @@ export function AdminCustomersPanel() {
 
   const startRoleEdit = (user: ManagedUser) => {
     setEditingRolesFor(user.account_id)
-    setRoleDraft([...user.roles])
+    setRoleDraft(user.roles.length === 1 ? [...user.roles] : [])
     setError('')
     setNotice('')
   }
@@ -126,12 +126,6 @@ export function AdminCustomersPanel() {
     } finally {
       setActionId('')
     }
-  }
-
-  const toggleRole = (selectedRole: IdentityRole) => {
-    setRoleDraft(current => current.includes(selectedRole)
-      ? current.filter(item => item !== selectedRole)
-      : [...current, selectedRole])
   }
 
   return (
@@ -249,19 +243,13 @@ export function AdminCustomersPanel() {
                       <tr className="bg-[#FBF9F9]">
                         <td colSpan={5} className="px-4 py-3">
                           <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-                            <span className="text-sm font-semibold text-[#3A3632]">Vai trò</span>
-                            {(['CUSTOMER', 'ADMIN'] as IdentityRole[]).map(item => (
-                              <label key={item} className="inline-flex items-center gap-2 text-sm font-medium text-[#3A3632]">
-                                <input
-                                  type="checkbox"
-                                  checked={roleDraft.includes(item)}
-                                  disabled={isSelf || actionId === user.account_id}
-                                  onChange={() => toggleRole(item)}
-                                  className="h-4 w-4 accent-[#1C1B1B]"
-                                />
-                                {roleLabels[item]}
-                              </label>
-                            ))}
+                            <label className="inline-flex items-center gap-3 text-sm font-semibold text-[#3A3632]">Vai trò
+                              <select aria-label="Chọn vai trò" value={roleDraft[0] ?? ''} disabled={isSelf || actionId === user.account_id} onChange={event => setRoleDraft(event.target.value ? [event.target.value as IdentityRole] : [])} className="min-h-10 rounded-lg border border-[#C4C7C7] bg-white px-3">
+                                <option value="" disabled>Chọn vai trò</option>
+                                <option value="CUSTOMER">Khách hàng</option>
+                                <option value="ADMIN">Quản trị viên</option>
+                              </select>
+                            </label>
                             {isSelf && <p className="text-xs text-[#5E5F5D]">Bạn không thể tự thay đổi vai trò của tài khoản này.</p>}
                             <div className="ml-auto flex items-center gap-2">
                               <Button size="sm" type="button" loading={actionId === user.account_id} disabled={isSelf || roleDraft.length === 0} onClick={() => void saveRoles(user)}>Lưu</Button>

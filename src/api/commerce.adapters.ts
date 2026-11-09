@@ -1,35 +1,12 @@
 import type { CartItem, Order, Product } from '../types'
 import type { CartResponse, CommerceProduct, OrderResponse, ProductVariant } from './commerce.types'
+import { colorSwatchHex } from '@/shared/lib/colorSwatch'
 
 const FALLBACK_IMAGE =
   'data:image/svg+xml;charset=UTF-8,' +
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><rect width="100%" height="100%" fill="#eee7df"/><text x="50%" y="50%" text-anchor="middle" fill="#7d6e66" font-family="sans-serif" font-size="28">StyleMind</text></svg>',
   )
-
-const namedColors: Record<string, string> = {
-  black: '#222222',
-  white: '#f7f5ef',
-  red: '#9f3f45',
-  blue: '#496781',
-  green: '#58705a',
-  beige: '#d8c5aa',
-  brown: '#76584a',
-  gray: '#918d88',
-  grey: '#918d88',
-  pink: '#d6a6ad',
-  navy: '#26384c',
-}
-
-function colorHex(color: string): string {
-  const normalized = color.trim().toLowerCase()
-  const known = Object.entries(namedColors).find(([name]) => normalized.includes(name))
-  if (known) return known[1]
-
-  let hash = 0
-  for (const char of normalized) hash = (hash * 31 + char.charCodeAt(0)) >>> 0
-  return `hsl(${hash % 360} 28% 55%)`
-}
 
 function primaryImage(variant?: ProductVariant): string {
   if (!variant) return FALLBACK_IMAGE
@@ -65,7 +42,7 @@ export function commerceProductToUi(product: CommerceProduct): Product {
     image: images[0] || primaryImage(first),
     images: images.length ? images : [primaryImage(first)],
     colors: colors.length
-      ? colors.map(color => ({ name: color, hex: colorHex(color) }))
+      ? colors.map(color => ({ name: color, hex: colorSwatchHex(color) }))
       : [{ name: 'Mặc định', hex: '#c8bbb1' }],
     sizes: sizes.length ? sizes : ['Một cỡ'],
     availableSizes: availableSizes.length ? availableSizes : activeVariants.length ? ['Một cỡ'] : [],

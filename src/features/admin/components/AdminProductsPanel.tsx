@@ -2,6 +2,7 @@ import { ChevronDown, Pencil, Plus } from 'lucide-react'
 import { Fragment, useMemo, useState, type FormEvent } from 'react'
 
 import { commerceApi } from '@/api/commerce'
+import { CommerceApiError } from '@/api/http'
 import type { DemoAction, DemoDatabase } from '@/app/store/types'
 import type { Product, ProductSize } from '@/entities/product/model/types'
 import { selectAdminProducts } from '@/features/admin/model/adminSelectors'
@@ -9,6 +10,7 @@ import type { AdminProductFilters } from '@/features/admin/model/adminTypes'
 import { commerceProductToEntity } from '@/features/commerce/data/commerceEntityAdapters'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
 import { Button, Modal, SelectField, TextField, ToggleSwitch, useToast } from '@/shared/ui'
+import VariantImagesManager from './VariantImagesManager'
 
 interface AdminProductsPanelProps {
   database: DemoDatabase
@@ -35,7 +37,6 @@ interface ProductFormState {
   variantPriceOverride: string
   variantActive: boolean
   imageUrl: string
-  imageFile: File | null
 }
 
 const productSizes: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL']
@@ -83,7 +84,6 @@ function createInitialForm(categoryId: string, database: DemoDatabase): ProductF
     variantPriceOverride: '',
     variantActive: true,
     imageUrl: '',
-    imageFile: null,
   }
 }
 
@@ -111,7 +111,6 @@ function createFormFromProduct(product: Product, database: DemoDatabase): Produc
     variantPriceOverride: variant?.priceOverride ? String(variant.priceOverride) : '',
     variantActive: variant?.active ?? true,
     imageUrl: primaryImage?.url ?? '',
-    imageFile: null,
   }
 }
 
@@ -174,12 +173,17 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
   const [form, setForm] = useState<ProductFormState>(() => createInitialForm(firstCategoryId, database))
   const [formError, setFormError] = useState<string | null>(null)
   const [expandedProductId, setExpandedProductId] = useState<string | null>(null)
+  const [imageVariant, setImageVariant] = useState<{ productId: string; variantId: string; label: string } | null>(null)
   const [saving, setSaving] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState('')
+  const [saveUncertain, setSaveUncertain] = useState(false)
 
   const rows = useMemo(() => selectAdminProducts(database, filters), [database, filters])
   const editingProduct = editingProductId ? database.products.find(product => product.id === editingProductId) : undefined
 
   const openCreateModal = () => {
+    setImageFile(null); setImagePreview(''); setSaveUncertain(false)
     setEditingProductId(null)
     setForm(createInitialForm(firstCategoryId, database))
     setFormError(null)
@@ -189,6 +193,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
   const openEditModal = (productId: string) => {
     const product = database.products.find(item => item.id === productId)
     if (!product) return
+    setImageFile(null); setImagePreview(''); setSaveUncertain(false)
 
     setEditingProductId(productId)
     setForm(createFormFromProduct(product, database))
@@ -202,6 +207,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (saveUncertain) return
     const productId = editingProductId ?? form.id.trim()
     const duplicate = database.products.some(product => product.id === productId && product.id !== editingProductId)
     const basePrice = Number(form.basePrice)
@@ -217,7 +223,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
       !form.fit.trim() ||
       !form.pattern.trim() ||
       !form.color.trim() ||
-      (!form.imageUrl.trim() && !form.imageFile)
+      (!editingProductId && !imageFile)
     ) {
       setFormError('Vui lòng nhập đủ thông tin bắt buộc của sản phẩm và biến thể.')
       return
@@ -239,6 +245,10 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
     }
 
     setSaving(true)
+    let createStarted = false
+    let createdId: string | null = null
+    let variantCreateStarted = false
+    let imageUploadStarted = false
     try {
       const brands = await commerceApi.brands.listAdmin()
       let brand = brands.items.find(item => item.name.trim().toLowerCase() === form.brand.trim().toLowerCase())
@@ -257,9 +267,12 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
         demographic_segment: null,
         product_status: form.productActive ? 'ACTIVE' : 'INACTIVE',
       }
+      createStarted = !editingProductId
       const savedProduct = editingProductId
         ? await commerceApi.products.replace(editingProductId, productInput)
         : await commerceApi.products.create(productInput)
+      createdId = savedProduct.product_id
+      if (!editingProductId) setEditingProductId(savedProduct.product_id)
       const currentVariant = savedProduct.variants[0]
       const variantInput = {
         sku: currentVariant?.sku || `${toSlug(form.name)}-${toSlug(form.color)}-${form.size}`.toUpperCase(),
@@ -269,18 +282,20 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
         unit_price_vnd: variantPriceOverride ?? basePrice,
         variant_status: form.variantActive ? 'ACTIVE' : 'INACTIVE',
       }
+      variantCreateStarted = !currentVariant
       const savedVariant = currentVariant
         ? await commerceApi.products.replaceVariant(currentVariant.variant_id, variantInput)
         : await commerceApi.products.createVariant(savedProduct.product_id, variantInput)
-      if (form.imageFile) {
-        await commerceApi.products.uploadImage(savedVariant.variant_id, form.imageFile, form.name.trim())
-      }
+      variantCreateStarted = false
+      if (imageFile) { imageUploadStarted = true; await commerceApi.products.uploadImage(savedVariant.variant_id, imageFile, form.name.trim()); imageUploadStarted = false; setImageFile(null) }
       const refreshed = await commerceApi.products.getAdmin(savedProduct.product_id)
       dispatch({ type: 'admin/productUpserted', payload: commerceProductToEntity(refreshed) })
       toast.success(editingProductId ? 'Đã cập nhật sản phẩm.' : 'Đã thêm sản phẩm.')
       setModalOpen(false)
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Không thể lưu sản phẩm')
+      const uncertain = (!(error instanceof CommerceApiError) || error.status >= 500) && ((createStarted && !createdId) || variantCreateStarted || imageUploadStarted)
+      if (uncertain) setSaveUncertain(true)
+      setFormError(uncertain ? 'Chưa xác định được kết quả lưu. Vui lòng đóng biểu mẫu, tải lại danh sách và kiểm tra sản phẩm/ảnh trước khi thử tiếp.' : error instanceof Error ? `Không thể hoàn tất lưu sản phẩm: ${error.message}. Nếu sản phẩm đã được tạo, hãy thử lại trong biểu mẫu này.` : 'Không thể lưu sản phẩm. Vui lòng thử lại trong biểu mẫu này.')
     } finally {
       setSaving(false)
     }
@@ -431,6 +446,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                                   <th scope="col" className="px-3 py-2">Cỡ</th>
                                   <th scope="col" className="px-3 py-2 text-right">Giá</th>
                                   <th scope="col" className="px-3 py-2 text-center">Đang bán</th>
+                                  <th scope="col" className="px-3 py-2 text-right">Ảnh</th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-[#E5E0D8]">
@@ -470,6 +486,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                                         />
                                       </span>
                                     </td>
+                                    <td className="px-3 py-2.5 text-right"><Button type="button" size="sm" variant="ghost" className="border border-[#E5E0D8]" onClick={() => setImageVariant({ productId: row.id, variantId: variant.id, label: `${row.name} · ${variant.color} · ${variant.size}` })}>Quản lý ảnh</Button></td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -485,6 +502,10 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
           </table>
         </div>
       </div>
+
+      <Modal open={!!imageVariant} title="Quản lý ảnh biến thể" description={imageVariant?.label} onClose={() => setImageVariant(null)}>
+        {imageVariant && <VariantImagesManager productId={imageVariant.productId} variantId={imageVariant.variantId} onUpdated={product => dispatch({ type: 'admin/productUpserted', payload: commerceProductToEntity(product) })} />}
+      </Modal>
 
       <Modal
         open={modalOpen}
@@ -552,18 +573,11 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
               value={form.variantPriceOverride}
               onChange={event => updateField('variantPriceOverride', event.target.value)}
             />
-            <div className="grid gap-2">
-              <label htmlFor="product-image-file" className="text-sm font-semibold text-[#3A3632]">Ảnh sản phẩm</label>
-              <input
-                id="product-image-file"
-                type="file"
-                accept="image/*"
-                onChange={event => updateField('imageFile', event.target.files?.[0] ?? null)}
-                className="min-h-11 rounded-lg border border-[#C4C7C7] bg-white px-3 py-2 text-sm text-[#222222] file:mr-3 file:rounded-md file:border-0 file:bg-[#EFEDED] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
-              />
-              {form.imageUrl && <p className="text-xs text-[#5E5F5D]">Ảnh hiện tại: {form.imageUrl}</p>}
-              {form.imageFile && <p className="text-xs text-[#5E5F5D]">Ảnh mới: {form.imageFile.name}</p>}
-            </div>
+            <label className="grid gap-2 text-sm font-semibold">Ảnh sản phẩm<input aria-label="Ảnh sản phẩm" type="file" accept="image/jpeg,image/png,image/webp" onChange={event => {
+              const file = event.target.files?.[0] ?? null
+              setImageFile(file); setImagePreview('')
+              if (file) { const reader = new FileReader(); reader.onload = () => setImagePreview(typeof reader.result === 'string' ? reader.result : ''); reader.readAsDataURL(file) }
+            }} className="block w-full rounded-lg border p-3 text-sm" />{(imagePreview || form.imageUrl) && <img src={imagePreview || form.imageUrl} alt="Ảnh sản phẩm xem trước" className="h-28 w-28 rounded-lg object-cover" />}</label>
           </div>
           <TextField label="Mô tả" value={form.description} onChange={event => updateField('description', event.target.value)} />
           <div className="grid gap-2 rounded-lg border border-[#E3E2E2] bg-white p-3 sm:grid-cols-2">
@@ -590,7 +604,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
             <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>
               Hủy
             </Button>
-            <Button loading={saving} type="submit">Lưu sản phẩm</Button>
+            <Button loading={saving} disabled={saveUncertain} type="submit">Lưu sản phẩm</Button>
           </div>
         </form>
       </Modal>

@@ -11,6 +11,7 @@ export function ApiState({ loading, error, retry }: { loading: boolean; error: s
   return null
 }
 export function ApiPagination({ data, setPage }: { data: Page<unknown>; setPage: (index: number) => void }) {
+  if (data.total_pages <= 1 && data.page === 0) return null // nothing to page through
   return <div className="mt-6 flex flex-wrap items-center gap-3 text-sm"><Button variant="secondary" disabled={data.page === 0} onClick={() => setPage(data.page - 1)}>Trang trước</Button><span>Trang {data.page + 1} / {Math.max(1, data.total_pages)} · {data.total_elements} kết quả</span><Button variant="secondary" disabled={data.page + 1 >= data.total_pages} onClick={() => setPage(data.page + 1)}>Trang sau</Button></div>
 }
 export function ApiModal(props: React.ComponentProps<typeof Modal>) {

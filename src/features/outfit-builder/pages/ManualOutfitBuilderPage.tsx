@@ -145,7 +145,7 @@ export function ManualOutfitBuilderPage() {
           onSearchChange={setSearch}
           onAddVariant={addVariant}
         />}
-        <div className="min-w-0 lg:sticky lg:top-28 lg:self-start">
+        <div role="region" aria-label="Chi tiết outfit đang tạo" tabIndex={0} className="min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]/30 lg:sticky lg:top-28 lg:max-h-[calc(100dvh-8rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain">
         {saveError && <p role="alert" className="mb-3 text-sm text-[#A94B4B]">{saveError}</p>}
         <BuilderDraftPanel
           draft={draft}

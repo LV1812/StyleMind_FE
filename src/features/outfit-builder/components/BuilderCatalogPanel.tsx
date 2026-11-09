@@ -1,6 +1,8 @@
 import type { Product, ProductVariant } from '@/entities/product/model/types'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
 import { Plus, Shirt } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { paginateProducts } from '@/features/catalog/model/paginateProducts'
 
 interface BuilderCatalogPanelProps {
   products: Product[]
@@ -37,9 +39,12 @@ function matchesSearch(product: Product, query: string) {
 }
 
 export function BuilderCatalogPanel({ products, search, onSearchChange, onAddVariant }: BuilderCatalogPanelProps) {
+  const [page, setPage] = useState(1)
+  useEffect(() => { setPage(1) }, [search])
   const visibleProducts = products
     .filter(product => product.active && getActiveVariants(product).length > 0)
     .filter(product => matchesSearch(product, search))
+  const pagination = paginateProducts(visibleProducts, page, 5)
 
   return (
     <section className="grid min-h-0 min-w-0 gap-5 rounded-xl border border-[#E3E2E2] bg-white p-5 md:p-7">
@@ -66,7 +71,7 @@ export function BuilderCatalogPanel({ products, search, onSearchChange, onAddVar
         </div>
       ) : (
         <div className="grid gap-3">
-          {visibleProducts.map(product => {
+          {pagination.items.map(product => {
             const activeVariants = getActiveVariants(product)
             const defaultVariant = getDefaultVariant(product)
             const image = defaultVariant?.images.find(item => item.isPrimary) ?? defaultVariant?.images[0]
@@ -108,6 +113,11 @@ export function BuilderCatalogPanel({ products, search, onSearchChange, onAddVar
           })}
         </div>
       )}
+      {visibleProducts.length > 0 && <nav aria-label="Phân trang catalog sản phẩm" className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E3E2E2] pt-4 text-sm">
+        <button type="button" disabled={pagination.page <= 1} onClick={() => setPage(pagination.page - 1)} className="min-h-10 rounded-lg border px-3 disabled:opacity-40">Trang trước</button>
+        <span aria-live="polite">Trang {pagination.page} / {pagination.totalPages} · {visibleProducts.length} sản phẩm</span>
+        <button type="button" disabled={pagination.page >= pagination.totalPages} onClick={() => setPage(pagination.page + 1)} className="min-h-10 rounded-lg border px-3 disabled:opacity-40">Trang sau</button>
+      </nav>}
     </section>
   )
 }

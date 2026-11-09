@@ -4,6 +4,7 @@ import { ensureGuestSessionKey, readGuestSessionKey } from "@/features/cart/mode
 import { rememberOrder } from '@/features/payments/model/orderReferences'
 import { useGuestCommerce } from '@/features/cart/model/GuestCommerceProvider'
 import { Button, TextField } from "@/shared/ui"
+import AddressAutocomplete from '@/shared/ui/AddressAutocomplete'
 import { formatCurrency } from "@/shared/lib/formatCurrency"
 import { PaymentApiError } from "@/features/payments/api/paymentApi"
 import { PaymentMethodSection } from "../components/PaymentMethodSection"
@@ -39,8 +40,11 @@ export default function GuestCheckoutPage() {
   useEffect(() => {
     const controller = new AbortController()
     setPrices(null)
-    void guestCheckoutApi
-      .prices(key, controller.signal)
+    const selection = draft.selection
+    const priceRequest = selection?.kind === 'selected' ? guestCheckoutApi.previewSelection(key, { cart_item_ids: selection.cart_item_ids }, controller.signal)
+      : selection?.kind === 'buy-now' ? guestCheckoutApi.previewBuyNow(key, { variant_id: selection.variant_id, quantity: selection.quantity }, controller.signal)
+      : guestCheckoutApi.prices(key, controller.signal)
+    void priceRequest
       .then((value) => {
         if (!controller.signal.aborted) {
           setPrices(value)
@@ -65,6 +69,20 @@ export default function GuestCheckoutPage() {
     saveGuestDraft(next)
     setDraft(next)
   }
+  const recoverOrder = async () => {
+    if (inFlight.current || !key) return
+    inFlight.current = true; setBusy(true); setError('')
+    try {
+      const order = await guestCheckoutApi.recoverCheckout(key, draft.checkoutKey)
+      if (!order.order_id) throw new Error('Missing order id')
+      window.localStorage.setItem(GUEST_LATEST_ORDER, order.order_id)
+      rememberOrder({ orderId: order.order_id, owner: 'guest' })
+      update({ ...draft, orderId: order.order_id })
+      void guest.refreshCart().catch(() => undefined)
+      if (mounted.current) navigate('/guest/orders/' + encodeURIComponent(order.order_id), { replace: true })
+    } catch { if (mounted.current) setError('Chưa tìm thấy kết quả lần đặt này. Hãy chờ rồi kiểm tra lại hoặc liên hệ hỗ trợ.') }
+    finally { inFlight.current = false; if (mounted.current) setBusy(false) }
+  }
   const submit = async () => {
     if (inFlight.current || !key || draft.orderId || (draft.recoveryRequired && !draft.submitted) || (!prices && !draft.submitted))
       return
@@ -84,7 +102,9 @@ export default function GuestCheckoutPage() {
       }
       const pending = { ...draft, address, submitted: body }
       update(pending)
-      const order = await guestCheckoutApi.createOrder(key, body)
+      const order = draft.selection?.kind === 'selected' ? await guestCheckoutApi.checkoutSelection(key, { ...body, cart_item_ids: draft.selection.cart_item_ids })
+        : draft.selection?.kind === 'buy-now' ? await guestCheckoutApi.checkoutBuyNow(key, { ...body, variant_id: draft.selection.variant_id, quantity: draft.selection.quantity })
+        : await guestCheckoutApi.createOrder(key, body)
       if (!order.order_id) throw new Error("Missing order id")
       // Persist before clearing the cart or navigating, so refresh cannot submit a new order.
       window.localStorage.setItem(GUEST_LATEST_ORDER, order.order_id)
@@ -96,9 +116,14 @@ export default function GuestCheckoutPage() {
       })
     } catch (failure) {
       if (!mounted.current) return
+      if (failure instanceof PaymentApiError && failure.code === 'DUPLICATE_CHECKOUT') {
+        inFlight.current = false
+        await recoverOrder()
+        return
+      }
       if (failure instanceof PaymentApiError && failure.status === 400)
         update({ ...draft, address, submitted: undefined, recoveryRequired: false })
-      if (failure instanceof PaymentApiError && ['EMPTY_CART', 'INSUFFICIENT_STOCK'].includes(failure.code ?? '')) {
+      if (failure instanceof PaymentApiError && ['EMPTY_CART', 'INSUFFICIENT_STOCK', 'INVALID_CART_ITEM'].includes(failure.code ?? '')) {
         update({ ...draft, address, submitted: undefined, recoveryRequired: false })
         void guest.refreshCart().catch(() => undefined)
         setPriceVersion(value => value + 1)
@@ -131,7 +156,6 @@ export default function GuestCheckoutPage() {
           {([
             ["recipient_name", "Tên người nhận", 100, "name"],
             ["recipient_phone", "Số điện thoại", 64, "tel"],
-            ["address_line", "Địa chỉ giao hàng đầy đủ", 500, "street-address"],
           ] as const).map(([field, label, limit, autoComplete]) => (
             <TextField
               key={field}
@@ -149,6 +173,7 @@ export default function GuestCheckoutPage() {
               }
             />
           ))}
+          <AddressAutocomplete label="Địa chỉ giao hàng đầy đủ" required value={draft.address.address_line} error={errors.address_line} onChange={value => update({ ...draft, address: { ...draft.address, address_line: value } })} />
           <PaymentMethodSection
             value={draft.method}
             onChange={(method) => update({ ...draft, method })}
@@ -186,7 +211,7 @@ export default function GuestCheckoutPage() {
             tránh tạo trùng đơn.
           </p>
         )}
-        {draft.recoveryRequired && !draft.submitted && <p role="alert">Phiên nhập thông tin trước đã đóng và kết quả đặt hàng chưa rõ. Không tạo đơn mới. Hãy kiểm tra đơn đã lưu hoặc liên hệ hỗ trợ.</p>}
+        {draft.recoveryRequired && !draft.submitted && <div className="grid gap-3"><p role="alert">Phiên nhập thông tin trước đã đóng và kết quả đặt hàng chưa rõ. Hãy kiểm tra đơn đã gửi.</p><Button type="button" disabled={busy || !key} onClick={() => void recoverOrder()}>Kiểm tra đơn đã gửi</Button></div>}
         {error && (
           <p role="alert" className="rounded-lg bg-red-50 p-3 text-red-800">
             {error}

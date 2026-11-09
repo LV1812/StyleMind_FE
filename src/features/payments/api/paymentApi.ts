@@ -96,7 +96,19 @@ export function createPaymentApi(options: PaymentApiOptions) {
 
   return {
     getPrices: (requestOptions?: RequestOptions) => request<GuestPrices>('/commerce/api/v1/checkout/prices', 'GET', undefined, requestOptions),
+    previewSelection: (body: { cart_item_ids: string[] }, requestOptions?: RequestOptions) => request<GuestPrices>('/commerce/api/v1/checkout/selected/prices', 'POST', body, requestOptions),
+    previewBuyNow: (body: { variant_id: string; quantity: number }, requestOptions?: RequestOptions) => request<GuestPrices>('/commerce/api/v1/checkout/buy-now/prices', 'POST', body, requestOptions),
+    checkoutSelection: (body: CheckoutRequest & { cart_item_ids: string[] }) => request<OrderResponse>('/commerce/api/v1/orders/selected', 'POST', body),
+    checkoutBuyNow: (body: CheckoutRequest & { variant_id: string; quantity: number }) => request<OrderResponse>('/commerce/api/v1/orders/buy-now', 'POST', body),
+    recoverCheckout: (checkoutKey: string) => request<OrderResponse>('/commerce/api/v1/checkout/recover', 'POST', { checkout_key: checkoutKey }),
     getCart: (requestOptions?: RequestOptions) => request<GuestCart>('/commerce/api/v1/cart', 'GET', undefined, requestOptions),
+    listOrders: (query: { page: number; size: number; status?: string }, requestOptions?: RequestOptions) => {
+      const params = new URLSearchParams({ page: String(query.page), size: String(query.size) })
+      if (query.status) params.set('status', query.status)
+      return request<{ items: OrderResponse[]; page: number; total_pages: number; total_elements: number }>(`/commerce/api/v1/orders?${params}`, 'GET', undefined, requestOptions)
+    },
+    requestCancellation: (orderId: string, reason: string) => request<unknown>(`/commerce/api/v1/orders/${encodeURIComponent(orderId)}/cancellation-requests`, 'POST', { reason }),
+    mergeGuestCart: (key: string) => request<GuestCart>('/commerce/api/v1/cart/merge', 'POST', { guest_session_key: key }),
     addCartItem: (variantId: string, quantity: number) => request<GuestCart>('/commerce/api/v1/cart/items', 'POST', { variant_id: variantId, quantity, guest_session_key: null }),
     updateCartItem: (id: string, quantity: number) => request<GuestCart>(`/commerce/api/v1/cart/items/${encodeURIComponent(id)}`, 'PUT', { quantity, guest_session_key: null }),
     removeCartItem: (id: string) => request<void>(`/commerce/api/v1/cart/items/${encodeURIComponent(id)}`, 'DELETE'),

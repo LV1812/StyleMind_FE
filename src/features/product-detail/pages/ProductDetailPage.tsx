@@ -12,6 +12,8 @@ import { useCommerceDisplay, useGuestCommerce } from '@/features/cart/model/Gues
 import { useAuth } from '@/features/auth'
 import { useActiveCommerce } from '@/features/cart/model/AccountCommerceProvider'
 import { guestCartErrorMessage } from '@/features/cart/data/guestCartApi'
+import { beginAccountSelection } from '@/features/checkout/model/accountSelection'
+import { beginGuestSelection } from '@/features/checkout/model/guestSelection'
 
 import { ColorSelector } from '../components/ColorSelector'
 import { ProductGallery } from '../components/ProductGallery'
@@ -97,6 +99,17 @@ export function ProductDetailPage() {
 
     if (!selection.variant || !selection.canPurchase) {
       setValidationError(selection.error ?? 'Phiên bản này hiện chưa thể mua')
+      return
+    }
+
+    if (buyNow) {
+      const choice = { kind: 'buy-now' as const, variant_id: selection.variant.id, quantity }
+      const started = currentUser ? beginAccountSelection(currentUser.id, choice) : beginGuestSelection(choice)
+      if (!started) {
+        setValidationError('Có yêu cầu đặt hàng trước đó chưa rõ kết quả. Vui lòng kiểm tra đơn trước khi tạo lần mới.')
+        return
+      }
+      navigate(ROUTES.checkout)
       return
     }
 

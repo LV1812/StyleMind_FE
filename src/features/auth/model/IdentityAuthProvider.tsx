@@ -4,6 +4,7 @@ import { useDemoStore } from '@/app/store/DemoStoreProvider'
 import type { User } from '@/entities/user/model/types'
 import {
   clearIdentitySession,
+  IdentityApiError,
   identityApi,
   readIdentitySession,
   storeIdentityTokens,
@@ -14,10 +15,13 @@ import {
 } from '@/shared/api/identityApi'
 
 import type { LoginInput, RegisterInput } from '../data/authRepository'
+import { refreshRoleOnReload, rolesFromAccessToken } from './roleRefresh'
 
 interface IdentityAuthValue {
   currentUser: User | null
   isInitializing: boolean
+  roleRedirect: string | null
+  clearRoleRedirect: () => void
   login: (input: LoginInput) => Promise<User>
   register: (input: RegisterInput) => Promise<void>
   logout: () => Promise<void>
@@ -31,20 +35,6 @@ interface IdentityAuthValue {
 }
 
 const IdentityAuthContext = createContext<IdentityAuthValue | null>(null)
-
-function rolesFromAccessToken(accessToken: string): string[] {
-  try {
-    const encodedPayload = accessToken.split('.')[1]
-    if (!encodedPayload) return []
-    const normalized = encodedPayload.replace(/-/g, '+').replace(/_/g, '/')
-    const decoded = atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '='))
-    const bytes = Uint8Array.from(decoded, character => character.charCodeAt(0))
-    const payload = JSON.parse(new TextDecoder().decode(bytes)) as { roles?: unknown }
-    return Array.isArray(payload.roles) ? payload.roles.filter((role): role is string => typeof role === 'string') : []
-  } catch {
-    return []
-  }
-}
 
 function initials(name: string): string {
   return name
@@ -77,10 +67,13 @@ export function IdentityAuthProvider({ children }: PropsWithChildren) {
   const initialDemoSession = useRef(state.session)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
+  const [roleRedirect, setRoleRedirect] = useState<string | null>(null)
+  const [initializationError, setInitializationError] = useState('')
+  const clearRoleRedirect = useCallback(() => setRoleRedirect(null), [])
 
   const loadCurrentUser = useCallback(async (session: StoredIdentitySession) => {
     const [profile, styleProfile] = await Promise.all([identityApi.getMyProfile(), identityApi.getStyleProfile()])
-    const user = toUser(profile, styleProfile, session)
+    const user = toUser(profile, styleProfile, readIdentitySession() ?? session)
     dispatch({ type: 'identity/sessionSynced', payload: { user, persistent: session.persistent } })
     setCurrentUser(user)
     return user
@@ -98,12 +91,21 @@ export function IdentityAuthProvider({ children }: PropsWithChildren) {
       }
     }
 
-    void loadCurrentUser(session)
-      .catch(() => {
-        clearIdentitySession()
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+    const isReload = navigation?.type === 'reload'
+    void (async () => {
+      const refreshed = isReload ? await refreshRoleOnReload(session) : { session, destination: null }
+      if (!active) return
+      await loadCurrentUser(refreshed.session)
+      if (active && refreshed.destination) setRoleRedirect(refreshed.destination)
+    })()
+      .catch(error => {
         if (active) {
-          setCurrentUser(null)
-          dispatch({ type: 'session/loggedOut' })
+          if (error instanceof IdentityApiError && (error.status === 401 || error.code === 'ACCOUNT_NOT_ACTIVE')) {
+            clearIdentitySession()
+            setCurrentUser(null)
+            dispatch({ type: 'session/loggedOut' })
+          } else setInitializationError('Không thể cập nhật phiên đăng nhập. Hãy kiểm tra kết nối rồi thử lại.')
         }
       })
       .finally(() => {
@@ -190,6 +192,8 @@ export function IdentityAuthProvider({ children }: PropsWithChildren) {
   const value = useMemo<IdentityAuthValue>(() => ({
     currentUser,
     isInitializing,
+    roleRedirect,
+    clearRoleRedirect,
     login,
     register,
     logout,
@@ -200,9 +204,9 @@ export function IdentityAuthProvider({ children }: PropsWithChildren) {
     resetPassword,
     updateDisplayName,
     updateStyleProfile,
-  }), [currentUser, isInitializing, login, register, logout, verifyEmail, resendEmailVerification, requestPasswordReset, verifyPasswordReset, resetPassword, updateDisplayName, updateStyleProfile])
+  }), [currentUser, isInitializing, roleRedirect, clearRoleRedirect, login, register, logout, verifyEmail, resendEmailVerification, requestPasswordReset, verifyPasswordReset, resetPassword, updateDisplayName, updateStyleProfile])
 
-  return <IdentityAuthContext.Provider value={value}>{children}</IdentityAuthContext.Provider>
+  return <IdentityAuthContext.Provider value={value}>{initializationError ? <main className="mx-auto max-w-lg p-8"><p role="alert">{initializationError}</p><button type="button" className="mt-4 rounded bg-black px-4 py-2 text-white" onClick={() => window.location.reload()}>Thử lại</button></main> : children}</IdentityAuthContext.Provider>
 }
 
 export function useIdentityAuth(): IdentityAuthValue {

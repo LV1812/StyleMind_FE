@@ -1,9 +1,11 @@
 import type { CheckoutRequest, PaymentMethod } from '@/features/payments/api/types'
+import type { AccountSelection } from './accountSelection'
 export interface AccountDraft {
   checkoutKey: string
   addressId: string
   method: PaymentMethod
   submitted?: CheckoutRequest
+  selection?: AccountSelection
   orderId?: string
 }
 export const accountDraftKey = (id: string) => `stylemind.checkout.account.${id}`

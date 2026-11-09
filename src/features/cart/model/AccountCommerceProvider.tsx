@@ -3,6 +3,15 @@ import { useAuth } from '@/features/auth'
 import { paymentApi, paymentErrorMessage } from '@/features/payments/api/paymentClient'
 import { emptyGuestCart, type GuestCart } from '../data/guestCartApi'
 import { useGuestCommerce } from './GuestCommerceProvider'
+import { readGuestSessionKey } from './guestSession'
+
+let pendingMerge: { owner: string; key: string; promise: Promise<GuestCart> } | null = null
+function mergeCart(owner: string, key: string): Promise<GuestCart> {
+  if (pendingMerge?.owner === owner && pendingMerge.key === key) return pendingMerge.promise
+  const promise = paymentApi.mergeGuestCart(key).finally(() => { if (pendingMerge?.promise === promise) pendingMerge = null })
+  pendingMerge = { owner, key, promise }
+  return promise
+}
 
 interface AccountCartValue {
   cart: GuestCart
@@ -33,11 +42,12 @@ export default function AccountCommerceProvider({ children }: PropsWithChildren)
     const version = ++generation.current
     setLoading(true)
     try {
-      const next = owner ? await paymentApi.getCart({ signal }) : emptyGuestCart()
+      const key = owner ? readGuestSessionKey() : null
+      const next = owner ? key ? await mergeCart(owner, key) : await paymentApi.getCart({ signal }) : emptyGuestCart()
       if (!signal?.aborted && currentOwner.current === owner && version === generation.current) { setCartOwner(owner); setCart(next); setError('') }
       return next
     } catch (error) {
-      if (!signal?.aborted && currentOwner.current === owner && version === generation.current) setError(paymentErrorMessage(error))
+      if (!signal?.aborted && currentOwner.current === owner && version === generation.current) setError(readGuestSessionKey() ? 'Chưa thể gộp giỏ khách. Sản phẩm có thể đã ngừng bán hoặc không đủ hàng. Giỏ khách vẫn được giữ lại; hãy thử lại sau.' : paymentErrorMessage(error))
       throw error
     } finally {
       if (!signal?.aborted && currentOwner.current === owner && version === generation.current) setLoading(false)
