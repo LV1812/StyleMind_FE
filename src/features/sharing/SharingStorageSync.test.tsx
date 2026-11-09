@@ -9,6 +9,8 @@ import { appRoutes } from '@/app/router/AppRouter'
 import { useDemoStore } from '@/app/store/DemoStoreProvider'
 import type { DemoDatabase } from '@/app/store/types'
 import { DEMO_STORAGE_KEY } from '@/shared/storage/demoStorage'
+import GuestCommerceProvider from '@/features/cart/model/GuestCommerceProvider'
+import AccountCommerceProvider from '@/features/cart/model/AccountCommerceProvider'
 
 vi.mock('@/features/auth', async importOriginal => ({
   ...await importOriginal<typeof import('@/features/auth')>(),
@@ -19,6 +21,11 @@ vi.mock('@/features/auth', async importOriginal => ({
   },
 }))
 
+vi.mock('@/shared/api/http', async importOriginal => ({
+  ...await importOriginal<typeof import('@/shared/api/http')>(),
+  apiMode: () => false,
+}))
+
 function MutationProbe() {
   const { dispatch } = useDemoStore()
   return <button onClick={() => dispatch({ type: 'notification/readAll', payload: { userId: 'usr-customer-01', readAt: '2026-10-31' } })}>Mark notifications</button>
@@ -26,7 +33,7 @@ function MutationProbe() {
 function setup(path: string, db: DemoDatabase) {
   localStorage.clear(); localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(db))
   const router = createMemoryRouter(appRoutes, { initialEntries: [path] })
-  render(<DemoStoreProvider><ToastProvider><MutationProbe /><RouterProvider router={router} /></ToastProvider></DemoStoreProvider>)
+  render(<DemoStoreProvider><GuestCommerceProvider><AccountCommerceProvider><ToastProvider><MutationProbe /><RouterProvider router={router} /></ToastProvider></AccountCommerceProvider></GuestCommerceProvider></DemoStoreProvider>)
 }
 async function externalWrite(db: DemoDatabase, announcedValue = JSON.stringify(db)) {
   localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(db))

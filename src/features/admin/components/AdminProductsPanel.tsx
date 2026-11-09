@@ -35,6 +35,7 @@ interface ProductFormState {
   variantPriceOverride: string
   variantActive: boolean
   imageUrl: string
+  imageFile: File | null
 }
 
 const productSizes: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL']
@@ -82,6 +83,7 @@ function createInitialForm(categoryId: string, database: DemoDatabase): ProductF
     variantPriceOverride: '',
     variantActive: true,
     imageUrl: '',
+    imageFile: null,
   }
 }
 
@@ -109,6 +111,7 @@ function createFormFromProduct(product: Product, database: DemoDatabase): Produc
     variantPriceOverride: variant?.priceOverride ? String(variant.priceOverride) : '',
     variantActive: variant?.active ?? true,
     imageUrl: primaryImage?.url ?? '',
+    imageFile: null,
   }
 }
 
@@ -214,7 +217,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
       !form.fit.trim() ||
       !form.pattern.trim() ||
       !form.color.trim() ||
-      !form.imageUrl.trim()
+      (!form.imageUrl.trim() && !form.imageFile)
     ) {
       setFormError('Vui lòng nhập đủ thông tin bắt buộc của sản phẩm và biến thể.')
       return
@@ -266,10 +269,11 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
         unit_price_vnd: variantPriceOverride ?? basePrice,
         variant_status: form.variantActive ? 'ACTIVE' : 'INACTIVE',
       }
-      if (currentVariant) {
-        await commerceApi.products.replaceVariant(currentVariant.variant_id, variantInput)
-      } else {
-        await commerceApi.products.createVariant(savedProduct.product_id, variantInput)
+      const savedVariant = currentVariant
+        ? await commerceApi.products.replaceVariant(currentVariant.variant_id, variantInput)
+        : await commerceApi.products.createVariant(savedProduct.product_id, variantInput)
+      if (form.imageFile) {
+        await commerceApi.products.uploadImage(savedVariant.variant_id, form.imageFile, form.name.trim())
       }
       const refreshed = await commerceApi.products.getAdmin(savedProduct.product_id)
       dispatch({ type: 'admin/productUpserted', payload: commerceProductToEntity(refreshed) })
@@ -548,7 +552,18 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
               value={form.variantPriceOverride}
               onChange={event => updateField('variantPriceOverride', event.target.value)}
             />
-            <TextField label="URL ảnh" value={form.imageUrl} onChange={event => updateField('imageUrl', event.target.value)} />
+            <div className="grid gap-2">
+              <label htmlFor="product-image-file" className="text-sm font-semibold text-[#3A3632]">Ảnh sản phẩm</label>
+              <input
+                id="product-image-file"
+                type="file"
+                accept="image/*"
+                onChange={event => updateField('imageFile', event.target.files?.[0] ?? null)}
+                className="min-h-11 rounded-lg border border-[#C4C7C7] bg-white px-3 py-2 text-sm text-[#222222] file:mr-3 file:rounded-md file:border-0 file:bg-[#EFEDED] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
+              />
+              {form.imageUrl && <p className="text-xs text-[#5E5F5D]">Ảnh hiện tại: {form.imageUrl}</p>}
+              {form.imageFile && <p className="text-xs text-[#5E5F5D]">Ảnh mới: {form.imageFile.name}</p>}
+            </div>
           </div>
           <TextField label="Mô tả" value={form.description} onChange={event => updateField('description', event.target.value)} />
           <div className="grid gap-2 rounded-lg border border-[#E3E2E2] bg-white p-3 sm:grid-cols-2">

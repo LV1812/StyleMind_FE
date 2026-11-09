@@ -27,8 +27,28 @@ function failure(status: number, body: Record<string, unknown>, retryHeader: str
   const message = messages[code] ?? (status === 401 ? 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' : status === 403 ? 'Tài khoản chưa có quyền thực hiện thao tác này. Kiểm tra email đã xác minh và vai trò tài khoản.' : status === 404 ? 'Không tìm thấy dữ liệu hoặc bạn không có quyền xem.' : status === 409 ? 'Trạng thái đã thay đổi hoặc lời mời đang tồn tại. Hãy tải lại danh sách.' : status === 400 ? 'Thông tin gửi lên chưa hợp lệ.' : status >= 500 ? 'Dịch vụ hiện chưa sẵn sàng. Vui lòng thử lại sau.' : 'Không thể hoàn tất yêu cầu.')
   return new ApiError(status, code, message, Number.isFinite(retry) ? Math.max(0, retry) : 0, isUuid(body.friend_invitation_id) ? body.friend_invitation_id : undefined)
 }
-export async function apiRequest<T = unknown>(path: string, options: { method?: string; body?: unknown; auth?: boolean; signal?: AbortSignal; responseType?: 'blob' } = {}, retried = false): Promise<T> {
-  if (!/^\/(identity|wardrobe-community)\/api\/v1\//.test(path) || path.includes('://') || path.includes('\\')) throw new ApiError(0, 'INVALID_PATH', 'Đường dẫn API không hợp lệ.')
+function requestWithTimeout<T>(request: (signal: AbortSignal) => Promise<T>, externalSignal: AbortSignal | undefined, timeoutMs: number): Promise<T> {
+  const controller = new AbortController()
+  const abortFromCaller = () => controller.abort()
+  if (externalSignal?.aborted) controller.abort()
+  else externalSignal?.addEventListener('abort', abortFromCaller, { once: true })
+
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      controller.abort()
+      reject(new ApiError(0, 'REQUEST_TIMEOUT', 'The request exceeded its time limit.'))
+    }, timeoutMs)
+  })
+
+  return Promise.race([request(controller.signal), timeout]).finally(() => {
+    if (timeoutId !== null) clearTimeout(timeoutId)
+    externalSignal?.removeEventListener('abort', abortFromCaller)
+  })
+}
+
+export async function apiRequest<T = unknown>(path: string, options: { method?: string; body?: unknown; auth?: boolean; signal?: AbortSignal; responseType?: 'blob'; timeoutMs?: number } = {}, retried = false): Promise<T> {
+  if (!/^\/(identity|wardrobe-community|stylist)\/api\/v1\//.test(path) || path.includes('://') || path.includes('\\')) throw new ApiError(0, 'INVALID_PATH', 'Đường dẫn API không hợp lệ.')
   const headers: Record<string, string> = { Accept: 'application/json, application/problem+json' }
   let requestToken: string | null = null
   if (options.auth !== false) {
@@ -39,26 +59,35 @@ export async function apiRequest<T = unknown>(path: string, options: { method?: 
   }
   const multipart = options.body instanceof FormData
   if (options.body !== undefined && !multipart) headers['Content-Type'] = 'application/json'
-  let response: Response
-  try {
-    response = await fetch(`${gatewayBase}${path}`, { method: options.method ?? 'GET', headers, body: options.body === undefined ? undefined : multipart ? options.body as FormData : JSON.stringify(options.body), credentials: 'omit', cache: 'no-store', signal: options.signal, redirect: 'error' })
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') throw error
-    throw new ApiError(0, 'NETWORK_UNAVAILABLE', 'Không kết nối được Gateway. Kiểm tra backend đang chạy và thử lại.')
-  }
-  if (response.status === 204 && response.ok) return undefined as T
-  if (response.ok && options.responseType === 'blob') return await response.blob() as T
-  let body: unknown
-  try { body = await response.json() } catch { body = null }
-  if (!response.ok) {
-    if (response.status === 401 && requestToken && !retried && accessToken() === requestToken) {
-      try {
-        if (await refreshIdentitySession(requestToken)) return apiRequest<T>(path, options, true)
-      } catch { /* The current session is invalidated below if it has not changed. */ }
+  const performRequest = async (signal?: AbortSignal): Promise<T> => {
+    let response: Response
+    try {
+      response = await fetch(`${gatewayBase}${path}`, { method: options.method ?? 'GET', headers, body: options.body === undefined ? undefined : multipart ? options.body as FormData : JSON.stringify(options.body), credentials: 'omit', cache: 'no-store', signal, redirect: 'error' })
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') throw error
+      throw new ApiError(0, 'NETWORK_UNAVAILABLE', 'Không kết nối được Gateway. Kiểm tra backend đang chạy và thử lại.')
     }
-    if (response.status === 401 && requestToken && (!accessToken() || accessToken() === requestToken)) expireSession()
-    throw failure(response.status, body && typeof body === 'object' ? body as Record<string, unknown> : {}, response.headers.get('Retry-After'))
+    if (response.status === 204 && response.ok) return undefined as T
+    if (response.ok && options.responseType === 'blob') return await response.blob() as T
+    let body: unknown
+    try { body = await response.json() } catch (error) {
+      if (signal?.aborted) throw error
+      body = null
+    }
+    if (!response.ok) {
+      if (response.status === 401 && requestToken && !retried && accessToken() === requestToken) {
+        try {
+          if (await refreshIdentitySession(requestToken)) return apiRequest<T>(path, { ...options, signal }, true)
+        } catch { /* The current session is invalidated below if it has not changed. */ }
+      }
+      if (response.status === 401 && requestToken && (!accessToken() || accessToken() === requestToken)) expireSession()
+      throw failure(response.status, body && typeof body === 'object' ? body as Record<string, unknown> : {}, response.headers.get('Retry-After'))
+    }
+    if (!body || typeof body !== 'object') throw new ApiError(502, 'INVALID_RESPONSE', 'Phản hồi API không hợp lệ.')
+    return body as T
   }
-  if (!body || typeof body !== 'object') throw new ApiError(502, 'INVALID_RESPONSE', 'Phản hồi API không hợp lệ.')
-  return body as T
+
+  return options.timeoutMs
+    ? requestWithTimeout(performRequest, options.signal, options.timeoutMs)
+    : performRequest(options.signal)
 }
