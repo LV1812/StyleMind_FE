@@ -289,6 +289,7 @@ describe('AdminPage', () => {
     fireEvent.change(within(dialog).getByLabelText('Chất liệu'), { target: { value: 'Linen' } })
     fireEvent.change(within(dialog).getByLabelText('Màu'), { target: { value: 'Trắng' } })
     fireEvent.change(within(dialog).getByLabelText('Size'), { target: { value: 'M' } })
+    fireEvent.change(within(dialog).getByLabelText('Số lượng'), { target: { value: '12' } })
     await user.upload(within(dialog).getByLabelText('Ảnh sản phẩm'), file)
     await user.click(within(dialog).getByRole('button', { name: 'Lưu sản phẩm' }))
 
@@ -301,7 +302,7 @@ describe('AdminPage', () => {
       product_status: 'ACTIVE',
     }))
     expect(createVariant).toHaveBeenCalledWith(productId, expect.objectContaining({
-      size: 'M', color: 'Trắng', material: 'Linen', unit_price_vnd: 580000, variant_status: 'ACTIVE',
+      size: 'M', color: 'Trắng', material: 'Linen', unit_price_vnd: 580000, quantity: 12, variant_status: 'ACTIVE',
     }))
     expect(uploadImage).toHaveBeenCalledWith(variantId, file, 'Áo linen test màu Trắng')
     await waitFor(() => {
@@ -557,7 +558,18 @@ describe('AdminPage', () => {
 
   it('approves a cancellation request and creates a customer notification', async () => {
     const user = setupUser()
-    const reviewCancellation = vi.spyOn(commerceApi.orders, 'reviewCancellation').mockResolvedValue({} as never)
+    const reviewCancellation = vi.spyOn(commerceApi.orders, 'reviewCancellation').mockResolvedValue({
+      cancellation_request_id: 'cancel-1001',
+      order_id: 'ORD-ADM-1001',
+      requested_by_user_id: 'usr-customer-01',
+      reason: 'Không cần nữa',
+      request_status: 'APPROVED',
+      requested_at: '2026-11-11T00:00:00Z',
+      reviewed_by_user_id: 'usr-admin-01',
+      reviewed_at: '2026-11-11T01:00:00Z',
+      decision_reason: null,
+      refund_status: null,
+    })
     renderAt('/admin?section=requests', adminDatabase())
 
     const row = await screen.findByRole('row', { name: /cancel-1001/ })

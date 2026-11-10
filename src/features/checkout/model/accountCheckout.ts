@@ -7,6 +7,7 @@ export interface AccountDraft {
   submitted?: CheckoutRequest
   selection?: AccountSelection
   orderId?: string
+  qrCheckoutId?: string
 }
 export const accountDraftKey = (id: string) => `stylemind.checkout.account.${id}`
 export function loadAccountDraft(id: string): AccountDraft {

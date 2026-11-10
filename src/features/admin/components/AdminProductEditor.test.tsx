@@ -62,6 +62,30 @@ beforeEach(() => {
 })
 afterEach(() => vi.restoreAllMocks())
 
+it("loads existing stock and includes quantity when updating a variant", async () => {
+  vi.mocked(commerceApi.products.getAdmin).mockResolvedValue({
+    ...product,
+    variants: [{ ...variant, available_quantity: 13 }],
+  })
+  const onSaved = vi.fn()
+  render(
+    <AdminProductEditor productId="p1" onSaved={onSaved} onClose={vi.fn()} />,
+  )
+  expect(await screen.findByLabelText("Số lượng")).toHaveValue(13)
+  fireEvent.change(screen.getByLabelText("Số lượng"), {
+    target: { value: "7" },
+  })
+  await userEvent
+    .setup()
+    .click(screen.getByRole("button", { name: "Lưu sản phẩm" }))
+  await waitFor(() => expect(onSaved).toHaveBeenCalled())
+  expect(commerceApi.products.replaceVariant).toHaveBeenCalledWith(
+    "v1",
+    expect.objectContaining({ quantity: 7, sku: "WHITE-M" }),
+  )
+  expect(commerceApi.products.createVariant).not.toHaveBeenCalled()
+})
+
 it("selects the brand created inside the product form and submits its returned ID", async () => {
   vi.spyOn(commerceApi.brands, "listAdmin").mockResolvedValue({
     items: [{ id: "b1", name: "Brand", slug: "brand", is_active: true }],

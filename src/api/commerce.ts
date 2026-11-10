@@ -1,8 +1,5 @@
 import { commerceRequest, queryString } from './http'
 import type {
-  Branch,
-  BranchInput,
-  BranchListResponse,
   CancellationRequestResponse,
   CartResponse,
   CatalogReference,
@@ -84,15 +81,6 @@ export const commerceApi = {
     getLegacyImage: (imageId: UUID) =>
       commerceRequest<Blob>(`/api/v1/variant-images/${imageId}/content`, { responseType: 'blob', auth: false }),
   },
-  branches: {
-    list: () => get<BranchListResponse>('/api/v1/branches'),
-    get: (id: UUID) => get<Branch>(`/api/v1/branches/${id}`),
-    listAdmin: () => get<BranchListResponse>('/api/v1/admin/branches'),
-    getAdmin: (id: UUID) => get<Branch>(`/api/v1/admin/branches/${id}`),
-    create: (input: BranchInput) => post<Branch>('/api/v1/admin/branches', input),
-    replace: (id: UUID, input: BranchInput) => put<Branch>(`/api/v1/admin/branches/${id}`, input),
-    remove: (id: UUID) => del(`/api/v1/admin/branches/${id}`),
-  },
   cart: {
     get: (guestSessionKey?: string | null) => get<CartResponse>(`/api/v1/cart${guestQuery(guestSessionKey)}`),
     add: (variantId: UUID, quantity: number, guestSessionKey?: string | null) =>
@@ -123,6 +111,7 @@ export const commerceApi = {
     listAdmin: (query: OrderListQuery = {}) =>
       get<OrderListResponse>(`/api/v1/admin/orders${queryString(query)}`),
     getAdmin: (id: UUID) => get<OrderResponse>(`/api/v1/admin/orders/${id}`),
+    confirm: (id: UUID) => post<OrderResponse>(`/api/v1/admin/orders/${id}/confirm`),
     updateStatus: (id: UUID, orderStatus: string, reason: string | null = null) =>
       put<OrderResponse>(`/api/v1/admin/orders/${id}/status`, {
         order_status: orderStatus,
@@ -137,3 +126,4 @@ export const commerceApi = {
 }
 
 export type CommerceApi = typeof commerceApi
+

@@ -91,6 +91,7 @@ export function selectAdminProducts(database: DemoDatabase, filters: AdminProduc
           size: variant.size,
           active: variant.active,
           price: variant.priceOverride ?? product.basePrice,
+          stock: variant.stock,
         })),
       }
     })

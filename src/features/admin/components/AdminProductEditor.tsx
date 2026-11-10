@@ -103,7 +103,7 @@ export default function AdminProductEditor({
               color: variant.color ?? "",
               material: variant.material ?? "",
               price: String(variant.unit_price_vnd),
-              quantity: "0",
+              quantity: String(variant.available_quantity),
               active: variant.variant_status === "ACTIVE",
               file: null,
               altText: "",
@@ -184,10 +184,9 @@ export default function AdminProductEditor({
         return
       }
       if (
-        !variant.id &&
-        (!variant.quantity.trim() ||
-          !Number.isSafeInteger(Number(variant.quantity)) ||
-          Number(variant.quantity) < 0)
+        !variant.quantity.trim() ||
+        !Number.isSafeInteger(Number(variant.quantity)) ||
+        Number(variant.quantity) < 0
       ) {
         setError(
           `Biến thể ${index + 1}: số lượng phải là số nguyên từ 0 trở lên.`,
@@ -230,6 +229,7 @@ export default function AdminProductEditor({
           color: variant.color.trim(),
           material: variant.material.trim() || null,
           unit_price_vnd: Number(variant.price),
+          quantity: Number(variant.quantity),
           variant_status: variant.active ? "ACTIVE" : "INACTIVE",
         }
         pendingPost = !variant.id
@@ -499,21 +499,19 @@ export default function AdminProductEditor({
                       updateVariant(variant.key, { price: event.target.value })
                     }
                   />
-                  {!variant.id && (
-                    <TextField
-                      id={`quantity-${variant.key}`}
-                      label="Số lượng"
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={variant.quantity}
-                      onChange={(event) =>
-                        updateVariant(variant.key, {
-                          quantity: event.target.value,
-                        })
-                      }
-                    />
-                  )}
+                  <TextField
+                    id={`quantity-${variant.key}`}
+                    label="Số lượng"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={variant.quantity}
+                    onChange={(event) =>
+                      updateVariant(variant.key, {
+                        quantity: event.target.value,
+                      })
+                    }
+                  />
                   <SelectField
                     id={`status-${variant.key}`}
                     label="Trạng thái biến thể"

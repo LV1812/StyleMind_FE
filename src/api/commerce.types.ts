@@ -95,6 +95,7 @@ export interface VariantInput {
   color: string | null
   material: string | null
   unit_price_vnd: number
+  quantity: number
   variant_status: string
 }
 
@@ -105,27 +106,6 @@ export interface CreateVariantInput extends VariantInput {
 export interface ImageOrderInput {
   items: Array<{ image_id: UUID; display_order: number }>
   primary_image_id: UUID | null
-}
-
-export interface Branch {
-  branch_id: UUID
-  branch_code: string
-  name: string
-  address_line: string
-  contact_phone: string | null
-  branch_status: string
-}
-
-export interface BranchListResponse {
-  items: Branch[]
-}
-
-export interface BranchInput {
-  branch_code: string
-  name: string
-  address_line: string
-  contact_phone: string | null
-  branch_status: string
 }
 
 export interface CartItemResponse {
@@ -197,6 +177,7 @@ export interface CancellationRequestResponse {
   reviewed_by_user_id: UUID | null
   reviewed_at: string | null
   decision_reason: string | null
+  refund_status?: 'PENDING_REFUND' | null
 }
 
 export interface OrderResponse {
@@ -205,6 +186,7 @@ export interface OrderResponse {
   customer_id: UUID
   checkout_key: string
   order_status: string
+  confirmation_state?: 'UNCONFIRMED' | 'CONFIRMED' | 'LEGACY_UNKNOWN'
   payment_method: 'COD' | 'SEPAY_VIETQR'
   accepted_total_vnd: number
   placed_at: string | null
@@ -246,3 +228,5 @@ export interface PaymentAttempt {
   transferContent: string | null
   qrPayload: string | null
 }
+
+

@@ -171,6 +171,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                                   <th scope="col" className="px-3 py-2">Màu</th>
                                   <th scope="col" className="px-3 py-2">Cỡ</th>
                                   <th scope="col" className="px-3 py-2 text-right">Giá</th>
+                                  <th scope="col" className="px-3 py-2 text-right">Tồn kho</th>
                                   <th scope="col" className="px-3 py-2 text-center">Đang bán</th>
                                   <th scope="col" className="px-3 py-2 text-right">Ảnh</th>
                                 </tr>
@@ -186,6 +187,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                                     </td>
                                     <td className="px-3 py-2.5 font-medium text-[#3A3632]">{variant.size}</td>
                                     <td className="whitespace-nowrap px-3 py-2.5 text-right tabular-nums text-[#3A3632]">{formatCurrency(variant.price)}</td>
+                                    <td className="whitespace-nowrap px-3 py-2.5 text-right tabular-nums text-[#3A3632]">{variant.stock}</td>
                                     <td className="px-3 py-2.5 text-center">
                                       <span className="inline-flex justify-center">
                                         <ToggleSwitch
@@ -201,6 +203,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                                                 color: source.color,
                                                 material: source.material,
                                                 unit_price_vnd: source.unit_price_vnd,
+                                                quantity: source.available_quantity,
                                                 variant_status: active ? 'ACTIVE' : 'INACTIVE',
                                               })
                                               return commerceApi.products.getAdmin(row.id)
