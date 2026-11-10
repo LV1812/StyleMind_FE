@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { commerceApi } from '@/api/commerce'
 import type { CommerceProduct, ProductVariant as CommerceVariant, VariantImage } from '@/api/commerce.types'
@@ -11,7 +11,7 @@ import { appRoutes } from '@/app/router/AppRouter'
 import type { DemoDatabase } from '@/app/store/types'
 import type { Product } from '@/entities/product/model/types'
 import { identityApi } from '@/shared/api/identityApi'
-import { DEMO_STORAGE_KEY } from '@/shared/storage/demoStorage'
+import { DEMO_STORAGE_KEY, readDemoSnapshot } from '@/shared/storage/demoStorage'
 
 vi.mock('@/shared/api/http', async importOriginal => ({
   ...await importOriginal<typeof import('@/shared/api/http')>(),
@@ -19,6 +19,10 @@ vi.mock('@/shared/api/http', async importOriginal => ({
 }))
 
 let router: ReturnType<typeof createMemoryRouter>
+beforeEach(() => {
+  vi.spyOn(commerceApi.categories, 'list').mockResolvedValue({ items: createDemoSeed().categories.map(item => ({ id: item.id, name: item.label, slug: item.id, is_active: true })) })
+  vi.spyOn(commerceApi.brands, 'list').mockResolvedValue({ items: [{ id: '52000000-0000-4000-8000-000000000001', name: 'Studio Test', slug: 'studio-test', is_active: true }] })
+})
 afterEach(() => vi.restoreAllMocks())
 
 function mockCommerceReads() {
@@ -38,7 +42,9 @@ function persistDatabase(database: DemoDatabase) {
 function getDatabase() {
   const raw = window.localStorage.getItem(DEMO_STORAGE_KEY)
   if (!raw) throw new Error('Expected demo database in localStorage')
-  return JSON.parse(raw) as DemoDatabase
+  const database = readDemoSnapshot(raw)
+  if (!database) throw new Error('Expected valid demo database')
+  return database
 }
 
 function renderAt(initialEntry: string, database: DemoDatabase) {
@@ -265,7 +271,6 @@ describe('AdminPage', () => {
     const createBrand = vi.spyOn(commerceApi.brands, 'create').mockResolvedValue({
       id: '52000000-0000-4000-8000-000000000001', name: 'Studio Test', slug: 'studio-test', is_active: true,
     })
-    vi.spyOn(commerceApi.brands, 'listAdmin').mockResolvedValue({ items: [] })
     const createProduct = vi.spyOn(commerceApi.products, 'create').mockResolvedValue(created)
     const createVariant = vi.spyOn(commerceApi.products, 'createVariant').mockResolvedValue(variant)
     const uploadImage = vi.spyOn(commerceApi.products, 'uploadImage').mockResolvedValue(image)
@@ -274,22 +279,20 @@ describe('AdminPage', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Thêm sản phẩm' }))
     const dialog = await screen.findByRole('dialog')
-    fireEvent.change(within(dialog).getByLabelText('ID sản phẩm'), { target: { value: 'prd-admin-test' } })
+    await within(dialog).findByLabelText('Tên sản phẩm')
+    fireEvent.change(within(dialog).getByLabelText('SKU'), { target: { value: 'AO-LINEN-TRANG-M' } })
     fireEvent.change(within(dialog).getByLabelText('Tên sản phẩm'), { target: { value: 'Áo linen test' } })
-    fireEvent.change(within(dialog).getByLabelText('Thương hiệu'), { target: { value: 'Studio Test' } })
+    fireEvent.change(within(dialog).getByLabelText('Thương hiệu'), { target: { value: created.brand_id } })
     fireEvent.change(within(dialog).getByLabelText('Danh mục'), { target: { value: 'tops' } })
-    fireEvent.change(within(dialog).getByLabelText('Giá cơ bản'), { target: { value: '580000' } })
+    fireEvent.change(within(dialog).getByLabelText('Giá bán (VND)'), { target: { value: '580000' } })
     fireEvent.change(within(dialog).getByLabelText('Mô tả'), { target: { value: 'Sản phẩm demo cho admin' } })
     fireEvent.change(within(dialog).getByLabelText('Chất liệu'), { target: { value: 'Linen' } })
-    fireEvent.change(within(dialog).getByLabelText('Phom dáng'), { target: { value: 'Dáng vừa' } })
-    fireEvent.change(within(dialog).getByLabelText('Họa tiết'), { target: { value: 'Trơn' } })
     fireEvent.change(within(dialog).getByLabelText('Màu'), { target: { value: 'Trắng' } })
-    fireEvent.change(within(dialog).getByLabelText('Mã màu'), { target: { value: '#FFFFFF' } })
     fireEvent.change(within(dialog).getByLabelText('Size'), { target: { value: 'M' } })
     await user.upload(within(dialog).getByLabelText('Ảnh sản phẩm'), file)
     await user.click(within(dialog).getByRole('button', { name: 'Lưu sản phẩm' }))
 
-    expect(createBrand).toHaveBeenCalledWith({ name: 'Studio Test', slug: 'studio-test', is_active: true })
+    expect(createBrand).not.toHaveBeenCalled()
     expect(createProduct).toHaveBeenCalledWith(expect.objectContaining({
       category_id: 'tops',
       brand_id: '52000000-0000-4000-8000-000000000001',
@@ -300,7 +303,7 @@ describe('AdminPage', () => {
     expect(createVariant).toHaveBeenCalledWith(productId, expect.objectContaining({
       size: 'M', color: 'Trắng', material: 'Linen', unit_price_vnd: 580000, variant_status: 'ACTIVE',
     }))
-    expect(uploadImage).toHaveBeenCalledWith(variantId, file, 'Áo linen test')
+    expect(uploadImage).toHaveBeenCalledWith(variantId, file, 'Áo linen test màu Trắng')
     await waitFor(() => {
       const product = getDatabase().products.find(item => item.id === productId)
       expect(product?.variants[0]?.images[0]).toMatchObject({
@@ -316,19 +319,19 @@ describe('AdminPage', () => {
     renderAt('/admin?section=products', adminDatabase())
 
     await user.click(await screen.findByRole('button', { name: 'Thêm sản phẩm' }))
-    fireEvent.change(screen.getByLabelText('ID sản phẩm'), { target: { value: 'prd-zero-price' } })
+    await screen.findByLabelText('Tên sản phẩm')
+    fireEvent.change(screen.getByLabelText('SKU'), { target: { value: 'ZERO-PRICE-M' } })
+    fireEvent.change(within(screen.getByRole('dialog')).getByLabelText('Danh mục'), { target: { value: 'tops' } })
     fireEvent.change(screen.getByLabelText('Tên sản phẩm'), { target: { value: 'Áo lỗi giá' } })
-    fireEvent.change(screen.getByLabelText('Thương hiệu'), { target: { value: 'Studio Test' } })
-    fireEvent.change(screen.getByLabelText('Giá cơ bản'), { target: { value: '0' } })
+    fireEvent.change(screen.getByLabelText('Thương hiệu'), { target: { value: '52000000-0000-4000-8000-000000000001' } })
+    fireEvent.change(screen.getByLabelText('Giá bán (VND)'), { target: { value: '0' } })
     fireEvent.change(screen.getByLabelText('Mô tả'), { target: { value: 'Sản phẩm kiểm tra validation' } })
     fireEvent.change(screen.getByLabelText('Chất liệu'), { target: { value: 'Cotton' } })
-    fireEvent.change(screen.getByLabelText('Phom dáng'), { target: { value: 'Dáng vừa' } })
-    fireEvent.change(screen.getByLabelText('Họa tiết'), { target: { value: 'Trơn' } })
     fireEvent.change(screen.getByLabelText('Màu'), { target: { value: 'Trắng' } })
     await user.upload(screen.getByLabelText('Ảnh sản phẩm'), new File(['image bytes'], 'shirt.png', { type: 'image/png' }))
     await user.click(screen.getByRole('button', { name: 'Lưu sản phẩm' }))
 
-    expect(await screen.findByText('Giá cơ bản phải lớn hơn 0.')).toBeInTheDocument()
+    expect(await screen.findByText('Biến thể 1: giá bán phải là số nguyên lớn hơn 0.')).toBeInTheDocument()
   })
 
   it('saves product and variant status and price using the Commerce contract', async () => {
@@ -345,7 +348,7 @@ describe('AdminPage', () => {
       variant_status: 'INACTIVE',
     })
     const image = imageFixture(variantId, 'https://commerce.example.test/images/linen-beige.png')
-    vi.spyOn(commerceApi.brands, 'listAdmin').mockResolvedValue({ items: [
+    vi.mocked(commerceApi.brands.list).mockResolvedValue({ items: [
       { id: created.brand_id, name: 'Studio Test', slug: 'studio-test', is_active: true },
     ] })
     const createProduct = vi.spyOn(commerceApi.products, 'create').mockResolvedValue(created)
@@ -356,23 +359,18 @@ describe('AdminPage', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Thêm sản phẩm' }))
     const dialog = await screen.findByRole('dialog')
-    fireEvent.change(within(dialog).getByLabelText('ID sản phẩm'), { target: { value: 'prd-rich-product' } })
+    await within(dialog).findByLabelText('Tên sản phẩm')
+    fireEvent.change(within(dialog).getByLabelText('SKU'), { target: { value: 'AO-METADATA-TEST-KEM-M' } })
     fireEvent.change(within(dialog).getByLabelText('Tên sản phẩm'), { target: { value: 'Áo metadata test' } })
-    fireEvent.change(within(dialog).getByLabelText('Thương hiệu'), { target: { value: 'Studio Test' } })
+    fireEvent.change(within(dialog).getByLabelText('Thương hiệu'), { target: { value: created.brand_id } })
     fireEvent.change(within(dialog).getByLabelText('Danh mục'), { target: { value: 'tops' } })
-    fireEvent.change(within(dialog).getByLabelText('Giá cơ bản'), { target: { value: '580000' } })
     fireEvent.change(within(dialog).getByLabelText('Mô tả'), { target: { value: 'Sản phẩm có metadata do admin chọn' } })
     fireEvent.change(within(dialog).getByLabelText('Chất liệu'), { target: { value: 'Linen' } })
-    fireEvent.change(within(dialog).getByLabelText('Phom dáng'), { target: { value: 'Dáng vừa' } })
-    fireEvent.change(within(dialog).getByLabelText('Họa tiết'), { target: { value: 'Trơn' } })
-    fireEvent.change(within(dialog).getByLabelText('Phong cách'), { target: { value: 'classic' } })
-    fireEvent.change(within(dialog).getByLabelText('Dịp sử dụng'), { target: { value: 'party' } })
-    fireEvent.change(within(dialog).getByLabelText('Thẻ tìm kiếm'), { target: { value: 'linen test, tiệc nhẹ' } })
     fireEvent.change(within(dialog).getByLabelText('Màu'), { target: { value: 'Kem' } })
-    fireEvent.change(within(dialog).getByLabelText('Giá biến thể'), { target: { value: '610000' } })
+    fireEvent.change(within(dialog).getByLabelText('Giá bán (VND)'), { target: { value: '610000' } })
     await user.upload(within(dialog).getByLabelText('Ảnh sản phẩm'), new File(['image bytes'], 'linen-beige.png', { type: 'image/png' }))
-    await user.click(within(dialog).getByLabelText('Sản phẩm đang bán'))
-    await user.click(within(dialog).getByLabelText('Biến thể đang bật'))
+    await user.selectOptions(within(dialog).getByLabelText('Trạng thái sản phẩm'), 'INACTIVE')
+    await user.selectOptions(within(dialog).getByLabelText('Trạng thái biến thể'), 'INACTIVE')
     await user.click(within(dialog).getByRole('button', { name: 'Lưu sản phẩm' }))
 
     expect(createProduct).toHaveBeenCalledWith({
@@ -380,7 +378,7 @@ describe('AdminPage', () => {
       brand_id: created.brand_id,
       name: 'Áo metadata test',
       description: 'Sản phẩm có metadata do admin chọn',
-      demographic_segment: null,
+      demographic_segment: 'WOMEN',
       product_status: 'INACTIVE',
     })
     expect(createVariant).toHaveBeenCalledWith(productId, {
@@ -389,9 +387,10 @@ describe('AdminPage', () => {
       color: 'Kem',
       material: 'Linen',
       unit_price_vnd: 610000,
+      quantity: 0,
       variant_status: 'INACTIVE',
     })
-    expect(uploadImage).toHaveBeenCalledWith(variantId, expect.any(File), 'Áo metadata test')
+    expect(uploadImage).toHaveBeenCalledWith(variantId, expect.any(File), 'Áo metadata test màu Kem')
     await waitFor(() => {
       const product = getDatabase().products.find(item => item.id === productId)
       expect(product?.active).toBe(false)
@@ -411,7 +410,7 @@ describe('AdminPage', () => {
     const updatedVariant = { ...source.variants[0], unit_price_vnd: 640000 }
     const updatedImage = imageFixture(variantId, 'https://commerce.example.test/images/blouse-edited.png')
     const updatedProduct = { ...updatedBase, variants: [{ ...updatedVariant, images: [updatedImage] }, ...source.variants.slice(1)] }
-    vi.spyOn(commerceApi.brands, 'listAdmin').mockResolvedValue({ items: [
+    vi.mocked(commerceApi.brands.list).mockResolvedValue({ items: [
       { id: source.brand_id, name: source.brand_name, slug: 'brand', is_active: true },
     ] })
     const replaceProduct = vi.spyOn(commerceApi.products, 'replace').mockResolvedValue(updatedBase)
@@ -422,16 +421,17 @@ describe('AdminPage', () => {
 
     await user.click(await screen.findByRole('button', { name: `Sửa ${blouse.name}` }))
     const dialog = await screen.findByRole('dialog')
+    await within(dialog).findByLabelText('Tên sản phẩm')
     fireEvent.change(within(dialog).getByLabelText('Tên sản phẩm'), { target: { value: 'Áo blouse đã sửa' } })
-    fireEvent.change(within(dialog).getByLabelText('Giá cơ bản'), { target: { value: '640000' } })
-    await user.upload(within(dialog).getByLabelText('Ảnh sản phẩm'), new File(['image bytes'], 'blouse-edited.png', { type: 'image/png' }))
+    fireEvent.change(within(dialog).getAllByLabelText('Giá bán (VND)')[0], { target: { value: '640000' } })
+    await user.upload(within(dialog).getAllByLabelText('Ảnh sản phẩm')[0], new File(['image bytes'], 'blouse-edited.png', { type: 'image/png' }))
     await user.click(within(dialog).getByRole('button', { name: 'Lưu sản phẩm' }))
 
     expect(replaceProduct).toHaveBeenCalledWith('prd-blouse-01', expect.objectContaining({
       name: 'Áo blouse đã sửa', product_status: 'ACTIVE',
     }))
     expect(replaceVariant).toHaveBeenCalledWith(variantId, expect.objectContaining({ unit_price_vnd: 640000 }))
-    expect(uploadImage).toHaveBeenCalledWith(variantId, expect.any(File), 'Áo blouse đã sửa')
+    expect(uploadImage).toHaveBeenCalledWith(variantId, expect.any(File), `Áo blouse đã sửa màu ${source.variants[0].color}`)
     await waitFor(() => {
       const updated = getDatabase().products.find(item => item.id === 'prd-blouse-01')
       expect(updated).toMatchObject({ name: 'Áo blouse đã sửa' })

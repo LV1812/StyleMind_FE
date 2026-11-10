@@ -98,6 +98,10 @@ export interface VariantInput {
   variant_status: string
 }
 
+export interface CreateVariantInput extends VariantInput {
+  quantity: number
+}
+
 export interface ImageOrderInput {
   items: Array<{ image_id: UUID; display_order: number }>
   primary_image_id: UUID | null
