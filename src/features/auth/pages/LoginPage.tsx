@@ -16,6 +16,7 @@ export function LoginPage() {
   const location = useLocation()
   const auth = useAuth()
   const verifiedEmail = (location.state as { verifiedEmail?: string } | null)?.verifiedEmail
+  const checkoutLoginRequired = Boolean((location.state as { checkoutLoginRequired?: boolean } | null)?.checkoutLoginRequired)
   const [input, setInput] = useState<LoginInput>({ email: verifiedEmail ?? '', password: '', remember: true })
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -49,6 +50,7 @@ export function LoginPage() {
   return (
     <AuthLayout title="Đăng nhập" description="Một tài khoản dùng chung cho khách hàng và quản trị viên StyleMind.">
       <h1 className="font-display text-4xl font-semibold">Đăng nhập</h1>
+      {checkoutLoginRequired && <p role="status" className="mt-4 rounded-xl bg-[#F6F2EF] p-4 text-sm text-secondary">Vui lòng đăng nhập để đặt hàng. Sau khi đăng nhập, hãy kiểm tra lại sản phẩm và tiếp tục đặt hàng.</p>}
       <form className="mt-8 grid gap-5" onSubmit={handleSubmit}>
         <TextField
           label="Email"

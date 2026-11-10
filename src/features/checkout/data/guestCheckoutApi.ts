@@ -4,6 +4,7 @@ import type {
   OrderResponse,
   PaymentAttempt,
   PaymentMethod,
+  QrCheckout,
 } from "@/features/payments/api/types"
 
 export interface GuestShippingAddress {
@@ -72,6 +73,12 @@ async function request<T>(
 }
 
 export const guestCheckoutApi = {
+  prepareQrSelection: (key: string, body: GuestCheckoutRequest & { cart_item_ids: string[] }) => request<QrCheckout>(key, '/qr-checkouts/selected', 'POST', body),
+  prepareQrBuyNow: (key: string, body: GuestCheckoutRequest & { variant_id: string; quantity: number }) => request<QrCheckout>(key, '/qr-checkouts/buy-now', 'POST', body),
+  recoverQr: (key: string | null, checkoutKey: string) => request<QrCheckout>(key, '/qr-checkouts/recover', 'POST', { checkout_key: checkoutKey }),
+  getQr: (key: string | null, id: string, signal?: AbortSignal) => request<QrCheckout>(key, `/qr-checkouts/${encodeURIComponent(id)}`, 'GET', undefined, signal),
+  qrAttempt: (key: string | null, id: string, signal?: AbortSignal) => request<PaymentAttempt>(key, `/qr-checkouts/${encodeURIComponent(id)}/payment-attempt`, 'POST', undefined, signal),
+  cancelQr: (key: string | null, id: string) => request<QrCheckout>(key, `/qr-checkouts/${encodeURIComponent(id)}/cancel`, 'POST'),
   prices: (key: string | null, signal?: AbortSignal) =>
     request<GuestPrices>(key, "/checkout/prices", "GET", undefined, signal),
   createOrder: (key: string, body: GuestCheckoutRequest) =>

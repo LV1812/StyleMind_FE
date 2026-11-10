@@ -13,7 +13,6 @@ import { commerceApi } from '@/api/commerce'
 import { unavailableVariants } from '../model/cartAvailability'
 import { useAuth } from '@/features/auth'
 import { beginAccountSelection } from '@/features/checkout/model/accountSelection'
-import { beginGuestSelection } from '@/features/checkout/model/guestSelection'
 
 export default function GuestCartPage() {
   const guest = useActiveCommerce()
@@ -76,8 +75,12 @@ export default function GuestCartPage() {
         <h2 className="font-display text-2xl font-semibold">Tóm tắt đơn hàng</h2>
         <div className="flex items-center justify-between gap-4 border-t border-[#E3E2E2] pt-5"><span className="text-sm text-secondary">Tạm tính</span><p className="text-xl font-bold text-[#1C1B1B]">{formatCurrency(selected.reduce((sum, item) => sum + item.line_total_vnd, 0))}</p></div>
         <Button disabled={Boolean(guest.busy || guest.cartError || availability.loading || availability.error || !selected.length)} onClick={() => {
+          if (!currentUser) {
+            navigate(ROUTES.login, { state: { from: { pathname: ROUTES.cart }, checkoutLoginRequired: true } })
+            return
+          }
           const choice = { kind: 'selected' as const, cart_item_ids: selected.map(item => item.cart_item_id) }
-          const started = currentUser ? beginAccountSelection(currentUser.id, choice) : beginGuestSelection(choice)
+          const started = beginAccountSelection(currentUser.id, choice)
           if (!started) { setSelectionError('Có yêu cầu đặt hàng trước đó chưa rõ kết quả. Vui lòng kiểm tra đơn trước khi tạo lần mới.'); return }
           navigate(ROUTES.checkout)
         }}>Tiến hành thanh toán</Button>

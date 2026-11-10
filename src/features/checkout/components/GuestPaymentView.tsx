@@ -43,6 +43,15 @@ export default function GuestPaymentView({
   const closed = order?.order_status === 'CANCELLED' || order?.order_status === 'EXPIRED'
   const urgent = countdownSeconds !== null && countdownSeconds <= 60
   const amount = showQr && attempt ? attempt.amountVnd : order?.accepted_total_vnd
+  const codStatus: Record<string, { title: string; detail: string }> = {
+    PENDING_PAYMENT: { title: 'Đang tiếp nhận đơn hàng', detail: 'Cửa hàng đang xử lý thông tin đơn hàng của bạn.' },
+    PLACED: { title: 'Đặt hàng thành công', detail: 'Cửa hàng sẽ xác nhận đơn hàng trước khi chuẩn bị.' },
+    PROCESSING: { title: 'Đơn hàng đang được chuẩn bị', detail: 'Cửa hàng đang chuẩn bị các sản phẩm của bạn.' },
+    SHIPPED: { title: 'Đơn hàng đang được giao', detail: 'Nhân viên cửa hàng đang giao đơn hàng đến bạn.' },
+    COMPLETED: { title: 'Đơn hàng đã giao thành công', detail: 'Cảm ơn bạn đã mua sắm tại StyleMind.' },
+    CANCELLED: { title: 'Đơn hàng đã được hủy', detail: 'Đơn hàng này sẽ không được giao.' },
+  }
+  const codDisplay = order ? codStatus[order.order_status] : undefined
 
   useEffect(() => {
     if (!copied) return
@@ -60,7 +69,7 @@ export default function GuestPaymentView({
     }
   }
 
-  return <div className="mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-10 lg:py-12">
+  return <div className="mx-auto max-w-6xl px-5 pb-12 pt-6 sm:px-8 sm:pb-16 sm:pt-8">
     <Link to={ROUTES.shop} className="mb-7 inline-flex items-center gap-2 rounded-lg text-sm font-medium text-secondary transition hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
       <ArrowLeft size={16} aria-hidden="true" /> Trở về cửa hàng
     </Link>
@@ -68,7 +77,7 @@ export default function GuestPaymentView({
     <header className="mb-8 flex flex-wrap items-start justify-between gap-5">
       <div>
         <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-accent-mid">Mua sắm cùng StyleMind</p>
-        <h1 className="font-display text-3xl font-medium leading-tight text-charcoal sm:text-4xl">{ownerType === 'guest' ? 'Kết quả đơn hàng khách' : 'Thanh toán đơn hàng'}</h1>
+        <h1 className="font-display text-3xl font-medium leading-tight text-charcoal sm:text-4xl">{ownerType === 'guest' ? 'Thông tin đơn hàng' : online && pending ? 'Thanh toán đơn hàng' : 'Chi tiết đơn hàng'}</h1>
         <p className="mt-3 max-w-xl text-sm leading-6 text-secondary">
           {blocked ? 'Khoản thanh toán cần được kiểm tra. Hãy xem trạng thái đơn hoặc liên hệ hỗ trợ.' : paid ? 'Cảm ơn bạn đã lựa chọn StyleMind. Đơn hàng của bạn đang được tiếp nhận.'
             : pending && online ? 'Chỉ còn một bước nữa để hoàn tất thanh toán cho đơn hàng của bạn.'
@@ -89,37 +98,39 @@ export default function GuestPaymentView({
       <p className="text-sm text-secondary">{busy ? 'Đang tải thông tin thanh toán…' : 'Chưa tải được thông tin đơn hàng.'}</p>
       <Button variant="secondary" loading={busy} onClick={onRefresh} icon={<RefreshCw size={15} aria-hidden="true" />}>Kiểm tra trạng thái đơn</Button>
       <p className="max-w-sm break-all text-xs text-muted">Mã đơn hàng: {orderId}</p>
-    </section> : <section aria-label={ownerType === 'guest' ? 'Đơn hàng khách' : 'Thông tin thanh toán'} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+    </section> : <section aria-label={ownerType === 'guest' ? 'Đơn hàng khách' : 'Thông tin thanh toán'} className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-7">
       <div className="overflow-hidden rounded-3xl border border-sand bg-white shadow-[0_12px_40px_-24px_rgba(58,54,50,0.2)]">
-        <div className="border-b border-sand/70 px-6 py-5 sm:px-8">
+        <div className="border-b border-sand/70 bg-[#faf9f7] px-6 py-5 sm:px-8">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-base font-semibold text-ink">{online ? 'Thanh toán chuyển khoản' : 'Thanh toán khi nhận hàng'}</h2>
             <span className="rounded-md bg-ivory px-2.5 py-1 text-[10px] font-bold tracking-wider text-accent">{online ? 'VIETQR · SEPAY' : 'COD'}</span>
           </div>
         </div>
 
-        <div className="px-6 py-7 sm:px-8 sm:py-8">
-          <div className="mb-7 text-center">
+        <div className="px-6 py-7 sm:px-8 sm:py-9">
+          <div className={`mb-7 ${online ? 'text-center' : 'flex flex-wrap items-end justify-between gap-2 border-b border-sand/70 pb-5'}`}>
             <p className="text-xs font-medium text-secondary">{online && pending && !blocked ? 'Số tiền cần thanh toán' : 'Giá trị đơn hàng'}</p>
-            <p className="mt-2 font-display text-4xl font-semibold tracking-tight text-accent sm:text-5xl">{amount !== undefined ? formatCurrency(amount) : '—'}</p>
+            <p className={`font-display font-semibold tracking-tight text-accent ${online ? 'mt-2 text-4xl sm:text-5xl' : 'text-2xl sm:text-3xl'}`}>{amount !== undefined ? formatCurrency(amount) : '—'}</p>
           </div>
 
           {showQr && attempt ? <>
-            <div className="mx-auto max-w-[296px] rounded-[24px] border border-sand bg-ivory p-4">
+            <div className="mx-auto max-w-[264px] rounded-[24px] border border-sand bg-ivory p-3">
               <div className="rounded-2xl bg-white p-3 shadow-[0_4px_20px_rgba(58,54,50,0.04)]">
-                {attempt.qrPayload && !imageFailed ? <img src={attempt.qrPayload} alt="Mã QR chuyển khoản ngân hàng" className="mx-auto aspect-square w-full max-w-60 object-contain" onError={onImageError} />
+                {attempt.qrPayload && !imageFailed ? <img src={attempt.qrPayload} alt="Mã QR chuyển khoản ngân hàng" className="mx-auto aspect-square w-full max-w-52 object-contain" onError={onImageError} />
                   : <div className="grid aspect-square place-content-center gap-3 px-3 text-center"><QrCode size={42} className="mx-auto text-muted" aria-hidden="true" /><p role="alert" className="text-sm leading-6 text-error">Không tải được ảnh QR. Hãy thử khôi phục thanh toán.</p></div>}
               </div>
             </div>
-            <p className="mt-4 flex items-center justify-center gap-2 text-center text-xs text-secondary"><Smartphone size={15} className="shrink-0" aria-hidden="true" />Mở ứng dụng ngân hàng để quét mã VietQR</p>
-          </> : <div className="mx-auto grid max-w-md place-items-center gap-4 py-4 text-center">
-            <span className={`grid h-20 w-20 place-items-center rounded-full ${blocked || qrExpired || (pending && online) ? 'bg-warning-bg text-warning-ink' : closed ? 'bg-sand text-secondary' : 'bg-success-bg text-success'}`}>
-              {blocked ? <AlertTriangle size={34} strokeWidth={1.5} aria-hidden="true" /> : qrExpired || (pending && online) ? <Clock3 size={34} strokeWidth={1.5} aria-hidden="true" /> : paid ? <CheckCircle2 size={34} strokeWidth={1.5} aria-hidden="true" /> : <Truck size={34} strokeWidth={1.5} aria-hidden="true" />}
+            <p className="mt-4 flex items-center justify-center gap-2 text-center text-xs text-secondary"><Smartphone size={15} className="shrink-0" aria-hidden="true" />Mở ứng dụng ngân hàng và quét mã VietQR</p>
+          </> : <div className={`grid gap-4 ${online ? 'mx-auto max-w-md place-items-center py-4 text-center' : 'grid-cols-[auto_minmax(0,1fr)] items-start rounded-2xl bg-[#F7F7F2] p-5'}`}>
+            <span className={`grid h-14 w-14 place-items-center rounded-full ${blocked || qrExpired || (pending && online) ? 'bg-warning-bg text-warning-ink' : closed ? 'bg-sand text-secondary' : 'bg-success-bg text-success'}`}>
+              {blocked ? <AlertTriangle size={25} strokeWidth={1.5} aria-hidden="true" /> : qrExpired || (pending && online) ? <Clock3 size={25} strokeWidth={1.5} aria-hidden="true" /> : paid || order.order_status === 'COMPLETED' ? <CheckCircle2 size={25} strokeWidth={1.5} aria-hidden="true" /> : <Truck size={25} strokeWidth={1.5} aria-hidden="true" />}
             </span>
-            <h3 className="font-display text-2xl font-medium text-charcoal">{blocked ? 'Thanh toán cần kiểm tra' : qrExpired ? 'Mã QR đã hết hạn' : paid ? 'Thanh toán thành công' : closed ? 'Đơn hàng đã kết thúc' : pending && online ? 'Đang chờ thanh toán' : online ? 'Thông tin thanh toán' : 'Đơn hàng của bạn đã được lưu'}</h3>
+            <div className={online ? 'grid gap-3' : 'grid gap-2'}>
+            <h3 className="font-display text-2xl font-medium text-charcoal">{!online && codDisplay ? codDisplay.title : blocked ? 'Thanh toán cần kiểm tra' : qrExpired ? 'Mã QR đã hết hạn' : paid ? 'Thanh toán thành công' : closed ? 'Đơn hàng đã kết thúc' : pending && online ? 'Đang chờ thanh toán' : 'Thông tin thanh toán'}</h3>
             {paid && <p role="status" className="text-sm leading-6 text-secondary">Máy chủ đã xác nhận thanh toán.</p>}
-            {!online && <p className="text-sm leading-6 text-secondary">{order.order_status === 'PLACED' ? 'Đặt hàng thành công — thanh toán khi nhận hàng.' : 'Thanh toán khi nhận hàng.'} Trạng thái đặt đơn không xác nhận đã thu tiền.</p>}
+            {!online && <p className="text-sm leading-6 text-secondary">{codDisplay?.detail ?? 'Theo dõi trạng thái đơn hàng của bạn tại đây.'}{!closed && ' Trạng thái đặt đơn không xác nhận đã thu tiền.'}</p>}
             {pending && !expired && !blocked && <p role="status" className="text-sm leading-6 text-secondary">Đơn hàng đã được lưu, đang chờ bước thanh toán. Bạn có thể thử lại trên đơn này.</p>}
+            </div>
           </div>}
 
           {pending && online && !blocked && countdownSeconds !== null && <div className={`mx-auto mt-6 flex max-w-sm items-center justify-between gap-3 rounded-2xl border px-4 py-3 ${urgent ? 'border-warning/20 bg-warning-bg text-warning-ink' : 'border-accent/10 bg-blush/60 text-accent'}`}>
@@ -128,7 +139,7 @@ export default function GuestPaymentView({
           </div>}
 
           {expired && pending && <p role="status" className="mx-auto mt-4 max-w-sm text-center text-xs leading-6 text-warning-ink">QR đã hết hạn. Chưa hỗ trợ tạo mã mới cho đơn này. Hãy kiểm tra trạng thái nếu bạn đã chuyển khoản.</p>}
-          {showQr && <p className="mx-auto mt-4 max-w-sm text-center text-xs leading-5 text-secondary">Sau khi chuyển khoản, trạng thái sẽ tự cập nhật khi hệ thống xác nhận thanh toán.</p>}
+          {showQr && <p className="mx-auto mt-4 max-w-sm text-center text-xs leading-5 text-secondary">Sau khi chuyển khoản, vui lòng giữ trang này mở. Trạng thái sẽ cập nhật khi hệ thống xác nhận thanh toán.</p>}
           {attempt?.status === 'EXCEPTION' && <p role="status" className="mt-4 rounded-xl bg-warning-bg p-4 text-sm text-warning-ink">Khoản thanh toán cần được kiểm tra. Vui lòng liên hệ hỗ trợ.</p>}
           {attempt?.status === 'CANCELLED' && <p role="status" className="mt-4 rounded-xl bg-warning-bg p-4 text-sm text-warning-ink">Khoản thanh toán đã bị hủy. Không tiếp tục chuyển khoản theo thông tin cũ.</p>}
           {pending && online && attempt?.status === 'PAID' && <p role="status" className="mt-4 text-sm text-success">Khoản chuyển khoản đã được ghi nhận, đang chờ cập nhật trạng thái đơn hàng.</p>}

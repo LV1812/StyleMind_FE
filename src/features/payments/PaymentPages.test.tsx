@@ -8,7 +8,7 @@ import { PAYMENT_POLL_WINDOW_MS } from './model/useOrderPayment'
 vi.mock('@/features/auth', () => ({ useAuth: () => ({ currentUser: { id: 'account-1' }, isInitializing: false }) }))
 
 const api = vi.hoisted(() => ({
-  getOrder: vi.fn(), getOrderPaymentAttempt: vi.fn(), confirmCodCollection: vi.fn(), listPaymentExceptions: vi.fn(),
+  getOrder: vi.fn(), getOrderPaymentAttempt: vi.fn(), confirmCodCollection: vi.fn(), listPaymentExceptions: vi.fn(), cancelOrder: vi.fn(), requestCancellation: vi.fn(),
 }))
 vi.mock('./api/paymentClient', async importOriginal => ({
   ...await importOriginal<typeof import('./api/paymentClient')>(),
@@ -46,6 +46,18 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers() })
 
 describe('Live customer Payment page', () => {
+  it('không báo hủy ngay khi đơn VietQR chỉ mới gửi yêu cầu', async () => {
+    api.requestCancellation.mockResolvedValue({ request_status: 'PENDING' })
+    customer()
+    expect(await screen.findByRole('img', { name: 'Mã QR chuyển khoản ngân hàng' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Yêu cầu hủy đơn' }))
+    fireEvent.change(screen.getByLabelText('Lý do hủy đơn'), { target: { value: 'Không còn nhu cầu' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Gửi yêu cầu hủy' }))
+    expect(await screen.findByText(/Yêu cầu hủy đã được gửi/)).toBeInTheDocument()
+    expect(api.cancelOrder).not.toHaveBeenCalled()
+    expect(screen.getByRole('img', { name: 'Mã QR chuyển khoản ngân hàng' })).toBeInTheDocument()
+  })
+
   it('bounds polling and leaves manual GET available without declaring failure', async () => {
     vi.useFakeTimers()
     await act(async () => { customer() })
@@ -73,8 +85,8 @@ describe('Live customer Payment page', () => {
     api.getOrderPaymentAttempt.mockResolvedValue({ ...attempt, status: 'EXCEPTION' })
     customer()
     const title = await screen.findByRole('heading', { name: 'Thanh toán cần kiểm tra' })
-    expect(title.previousElementSibling).toHaveClass('bg-warning-bg')
-    expect(title.previousElementSibling).not.toHaveClass('bg-success-bg')
+    expect(title.parentElement?.previousElementSibling).toHaveClass('bg-warning-bg')
+    expect(title.parentElement?.previousElementSibling).not.toHaveClass('bg-success-bg')
   })
 
   it('reads Order again when an attempt reports PAID', async () => {

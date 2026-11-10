@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { RotateCcw } from 'lucide-react'
 
@@ -34,9 +34,16 @@ function orderAdminHref(orderId: string) {
   return `/admin?section=orders&orderId=${encodeURIComponent(orderId)}`
 }
 
+function compactId(id: string) {
+  return id.length > 16 ? `${id.slice(0, 8)}…${id.slice(-4)}` : id
+}
+
 export function AdminRequestsPanel({ database, dispatch, reviewerId }: AdminRequestsPanelProps) {
   const toast = useToast()
   const [activeTab, setActiveTab] = useState<RequestTab>('cancellations')
+  const [rejecting, setRejecting] = useState<string | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
+  const [reviewing, setReviewing] = useState(false)
 
   const cancellations = useMemo(
     () => [...database.cancellationRequests].sort((first, second) => second.createdAt.localeCompare(first.createdAt)),
@@ -48,12 +55,19 @@ export function AdminRequestsPanel({ database, dispatch, reviewerId }: AdminRequ
   )
 
   const reviewCancellation = async (requestId: string, decision: 'approved' | 'rejected') => {
+    if (reviewing || (decision === 'rejected' && !rejectReason.trim())) return
+    setReviewing(true)
     try {
-      await commerceApi.orders.reviewCancellation(
+      const result = await commerceApi.orders.reviewCancellation(
         requestId,
         decision === 'approved' ? 'APPROVED' : 'REJECTED',
-        null,
+        decision === 'rejected' ? rejectReason.trim() : null,
       )
+      if (result.request_status !== (decision === 'approved' ? 'APPROVED' : 'REJECTED')) {
+        throw new Error('Chưa nhận được kết quả xử lý từ máy chủ.')
+      }
+      setRejecting(null)
+      setRejectReason('')
       dispatch({
         type: 'admin/cancellationReviewed',
         payload: {
@@ -61,12 +75,16 @@ export function AdminRequestsPanel({ database, dispatch, reviewerId }: AdminRequ
           decision,
           reviewerId,
           reviewedAt: new Date().toISOString(),
+          note: result.decision_reason ?? undefined,
+          refundStatus: result.refund_status ?? undefined,
         },
       })
-      toast.success(decision === 'approved' ? 'Đã duyệt yêu cầu hủy.' : 'Đã từ chối yêu cầu hủy.')
+      toast.success(result.refund_status === 'PENDING_REFUND'
+        ? 'Đã duyệt hủy đơn. Đã ghi nhận khoản chờ hoàn tiền.'
+        : decision === 'approved' ? 'Đã duyệt yêu cầu hủy.' : 'Đã từ chối yêu cầu hủy.')
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Không thể xử lý yêu cầu hủy')
-    }
+    } finally { setReviewing(false) }
   }
 
   const reviewReturn = (requestId: string, decision: 'approved' | 'rejected' | 'refunded') => {
@@ -83,7 +101,7 @@ export function AdminRequestsPanel({ database, dispatch, reviewerId }: AdminRequ
   }
 
   return (
-    <section className="grid gap-5">
+    <section className="grid min-w-0 gap-5">
       <div>
         <p className="text-sm font-semibold text-[#1C1B1B]">Chăm sóc sau mua</p>
         <h1 className="mt-2 font-display text-3xl font-semibold leading-tight text-[#222222] md:text-4xl">
@@ -112,10 +130,23 @@ export function AdminRequestsPanel({ database, dispatch, reviewerId }: AdminRequ
         </div>
         <div className="grid justify-items-center gap-3 rounded-xl bg-[#FBF9F9] px-5 py-12 text-center text-sm text-secondary"><RotateCcw size={32} aria-hidden="true" className="opacity-50" /><p>Quản lý yêu cầu đổi/trả hiện chưa được hỗ trợ.</p></div>
       </section> : activeTab === 'cancellations' ? (
-        <div className="overflow-hidden rounded-lg border border-[#E3E2E2] bg-white">
-          <p className="border-b border-[#E3E2E2] px-4 py-2 text-xs text-[#5E5F5D] lg:hidden">Vuốt ngang để xem toàn bộ yêu cầu hủy.</p>
+        <div className="min-w-0 overflow-hidden rounded-xl border border-[#E3E2E2] bg-white">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E3E2E2] px-5 py-4">
+            <h2 className="text-sm font-semibold text-[#222222]">Yêu cầu hủy đơn <span className="ml-1 text-[#5E5F5D]">({cancellations.length})</span></h2>
+            <p className="text-xs text-[#5E5F5D]">Chọn mã đơn hàng để xem chi tiết</p>
+          </div>
+          <p className="border-b border-[#E3E2E2] px-5 py-2 text-xs text-[#5E5F5D] xl:hidden">Vuốt ngang để xem toàn bộ yêu cầu hủy.</p>
           <div className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1C1B1B]" role="region" aria-label="Bảng yêu cầu hủy đơn" tabIndex={0}>
-            <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[1120px] table-fixed border-collapse text-left text-sm">
+              <colgroup>
+                <col className="w-[15%]" />
+                <col className="w-[15%]" />
+                <col className="w-[12%]" />
+                <col className="w-[11%]" />
+                <col className="w-[20%]" />
+                <col className="w-[13%]" />
+                <col className="w-[14%]" />
+              </colgroup>
               <thead className="bg-[#FBF9F9] text-xs font-semibold uppercase tracking-wide text-[#5E5F5D]">
                 <tr>
                   <th scope="col" className="px-4 py-3">Yêu cầu</th>
@@ -131,30 +162,57 @@ export function AdminRequestsPanel({ database, dispatch, reviewerId }: AdminRequ
                 {cancellations.length === 0 ? (
                   <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-[#5E5F5D]">Chưa có yêu cầu hủy đơn.</td></tr>
                 ) : cancellations.map(request => (
-                  <tr key={request.id} className="align-middle hover:bg-[#FBF9F9]/70">
-                    <td className="whitespace-nowrap px-4 py-3 font-semibold text-[#222222]">{request.id}</td>
-                    <td className="whitespace-nowrap px-4 py-3">
-                      <Link to={orderAdminHref(request.orderId)} className="font-semibold text-accent underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-                        {request.orderId}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-[#3A3632]">{customerName(database, request.userId)}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-[#5E5F5D]">{formatDate(request.createdAt)}</td>
-                    <td className="max-w-[18rem] px-4 py-3">
-                      <blockquote className="rounded-r-md border-l-2 border-[#C4C7C7] bg-[#F5F2EE] px-3 py-2 leading-5 text-[#3A3632]">{request.reason}</blockquote>
-                    </td>
-                    <td className="px-4 py-3"><StatusBadge tone={statusTone(request.status)}>{cancellationStatusLabel[request.status]}</StatusBadge></td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        {request.status === 'submitted' ? (
-                          <>
-                            <Button type="button" size="sm" onClick={() => void reviewCancellation(request.id, 'approved')}>Duyệt yêu cầu</Button>
-                            <Button type="button" size="sm" variant="danger-soft" onClick={() => void reviewCancellation(request.id, 'rejected')}>Từ chối</Button>
-                          </>
-                        ) : <span className="whitespace-nowrap text-xs font-medium text-[#5E5F5D]">Đã xử lý</span>}
-                      </div>
-                    </td>
-                  </tr>
+                  <Fragment key={request.id}>
+                    <tr className="align-top hover:bg-[#FBF9F9]/70">
+                      <td className="px-4 py-5 text-[#222222]">
+                        <p className="font-semibold" title={request.id}>{compactId(request.id)}</p>
+                        <details className="mt-2 text-xs text-[#5E5F5D]">
+                          <summary className="w-fit cursor-pointer rounded py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Xem mã đầy đủ</summary>
+                          <dl className="mt-2 space-y-2 rounded-lg bg-[#FBF9F9] p-2">
+                            <div><dt className="font-semibold">Mã yêu cầu</dt><dd className="mt-1 break-all leading-5">{request.id}</dd></div>
+                            <div><dt className="font-semibold">Mã đơn hàng</dt><dd className="mt-1 break-all leading-5">{request.orderId}</dd></div>
+                          </dl>
+                        </details>
+                      </td>
+                      <td className="px-4 py-5">
+                        <Link to={orderAdminHref(request.orderId)} aria-label={`Xem đơn hàng ${request.orderId}`} title={request.orderId} className="font-semibold text-accent underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                          {compactId(request.orderId)}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-5 leading-6 text-[#3A3632] [overflow-wrap:anywhere]">{customerName(database, request.userId)}</td>
+                      <td className="px-4 py-5 leading-6 text-[#5E5F5D]">{formatDate(request.createdAt)}</td>
+                      <td className="px-4 py-5">
+                        <p className="whitespace-pre-wrap leading-6 text-[#3A3632] [overflow-wrap:anywhere]">{request.reason}</p>
+                      </td>
+                      <td className="px-4 py-5"><StatusBadge tone={statusTone(request.status)}>{cancellationStatusLabel[request.status]}</StatusBadge>{request.refundStatus === 'PENDING_REFUND' && <p className="mt-2 text-sm leading-5 text-warning-ink">Đang chờ hoàn tiền</p>}</td>
+                      <td className="px-4 py-5">
+                        <div className="flex flex-col items-stretch gap-2">
+                          {request.status === 'submitted' ? (
+                            <>
+                              <Button type="button" size="sm" className="whitespace-nowrap shadow-none" disabled={reviewing || rejecting === request.id} onClick={() => void reviewCancellation(request.id, 'approved')}>Duyệt yêu cầu</Button>
+                              <Button type="button" size="sm" variant="danger-soft" className="whitespace-nowrap" aria-expanded={rejecting === request.id} aria-controls={`reject-${request.id}`} disabled={reviewing} onClick={() => { setRejecting(request.id); setRejectReason('') }}>Từ chối</Button>
+                            </>
+                          ) : <span className="text-right text-xs font-medium text-[#5E5F5D]">Đã xử lý</span>}
+                        </div>
+                      </td>
+                    </tr>
+                    {rejecting === request.id && request.status === 'submitted' && (
+                      <tr id={`reject-${request.id}`} className="bg-[#FBF9F9]">
+                        <td colSpan={7} className="px-5 py-5">
+                          <div className="ml-auto grid max-w-xl gap-3">
+                            <label className="grid gap-2 text-sm font-semibold text-[#222222]">
+                              Lý do từ chối
+                              <textarea autoFocus rows={3} value={rejectReason} onChange={event => setRejectReason(event.target.value)} maxLength={500} placeholder="Nhập lý do để thông báo cho khách hàng…" className="w-full resize-y rounded-lg border border-[#C4C7C7] bg-white px-3 py-2 font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]" />
+                            </label>
+                            <div className="flex flex-wrap justify-end gap-2">
+                              <Button type="button" size="sm" variant="secondary" disabled={reviewing} onClick={() => { setRejecting(null); setRejectReason('') }}>Đóng</Button>
+                              <Button type="button" size="sm" variant="danger" disabled={reviewing || !rejectReason.trim()} onClick={() => void reviewCancellation(request.id, 'rejected')}>Xác nhận từ chối</Button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

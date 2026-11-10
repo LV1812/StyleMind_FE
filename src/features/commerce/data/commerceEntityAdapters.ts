@@ -119,6 +119,8 @@ export function commerceOrderToEntity(order: OrderResponse): Order {
     id: order.order_id,
     userId: order.customer_id,
     status: statusMap[order.order_status] ?? 'pending',
+    confirmationState: order.confirmation_state,
+    backendStatus: order.order_status,
     paymentMethod: order.payment_method === 'COD' ? 'cod' : 'vietqr',
     paymentStatus: 'unknown',
     paymentReference: order.order_number,
@@ -160,6 +162,7 @@ export function commerceCancellationToEntity(request: CancellationRequestRespons
       : 'submitted'
   return {
     id: request.cancellation_request_id,
+    refundStatus: request.refund_status ?? undefined,
     orderId: request.order_id,
     userId: request.requested_by_user_id,
     reason: request.reason,
@@ -170,3 +173,4 @@ export function commerceCancellationToEntity(request: CancellationRequestRespons
     adminNote: request.decision_reason || undefined,
   }
 }
+

@@ -101,7 +101,7 @@ export type DemoAction =
   | { type: 'admin/productStatusChanged'; payload: { productId: string; active: boolean } }
   | { type: 'admin/variantStatusChanged'; payload: { productId: string; variantId: string; active: boolean } }
   | { type: 'admin/orderStatusChanged'; payload: { orderId: string; status: OrderStatus; at: string } }
-  | { type: 'admin/cancellationReviewed'; payload: { requestId: string; decision: 'approved' | 'rejected'; reviewerId: string; reviewedAt: string; note?: string } }
+  | { type: 'admin/cancellationReviewed'; payload: { requestId: string; decision: 'approved' | 'rejected'; reviewerId: string; reviewedAt: string; note?: string; refundStatus?: 'PENDING_REFUND' } }
   | { type: 'admin/returnReviewed'; payload: { requestId: string; decision: 'approved' | 'rejected' | 'refunded'; reviewerId: string; reviewedAt: string; note?: string } }
   | { type: 'admin/fashionMetadataOptionUpserted'; payload: { group: keyof FashionMetadata; option: FashionMetadataOption } }
   | { type: 'admin/fashionMetadataOptionStatusChanged'; payload: { group: keyof FashionMetadata; optionId: string; active: boolean } }

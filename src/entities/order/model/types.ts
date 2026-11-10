@@ -35,6 +35,8 @@ export interface Order {
   id: string
   userId: string
   status: OrderStatus
+  confirmationState?: 'UNCONFIRMED' | 'CONFIRMED' | 'LEGACY_UNKNOWN'
+  backendStatus?: string
   paymentMethod: PaymentMethod
   paymentStatus: PaymentStatus
   paymentReference: string | null
@@ -49,6 +51,7 @@ export interface Order {
 }
 
 export interface CancellationRequest {
+  refundStatus?: 'PENDING_REFUND'
   id: string
   orderId: string
   userId: string
@@ -72,3 +75,5 @@ export interface ReturnRequest {
   reviewedAt?: string
   adminNote?: string
 }
+
+
