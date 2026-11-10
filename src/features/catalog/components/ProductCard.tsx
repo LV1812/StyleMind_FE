@@ -4,6 +4,7 @@ import { ROUTES } from '@/app/router/routes'
 import type { Product } from '@/entities/product/model/types'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
 import { ProductCardImage } from './ProductCardImage'
+import { colorSwatchStyle } from '@/shared/lib/colorSwatch'
 
 interface ProductCardProps {
   product: Product
@@ -35,7 +36,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <p className="mt-2 text-base font-semibold text-[#1C1B1B]">{formatCurrency(product.basePrice)}</p>
           <div className="mt-3 flex gap-1.5" role="group" aria-label={`Màu của ${product.name}: ${colors.map(([color]) => color).join(', ')}`}>
             {colors.slice(0, 5).map(([color, hex]) => (
-              <span key={color} aria-hidden="true" title={color} className="h-4 w-4 rounded-full border border-[#C4C7C7]" style={{ backgroundColor: hex }} />
+              <span key={color} aria-hidden="true" title={color} className="h-4 w-4 shrink-0 rounded-full border border-[#C4C7C7]" style={colorSwatchStyle(color, hex)} />
             ))}
           </div>
         </div>

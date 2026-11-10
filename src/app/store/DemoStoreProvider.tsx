@@ -14,7 +14,8 @@ interface DemoStoreValue {
 const DemoStoreContext = createContext<DemoStoreValue | null>(null)
 
 function getBrowserStorage(): Storage | null {
-  return typeof window === 'undefined' ? null : window.localStorage
+  try { return typeof window === 'undefined' ? null : window.localStorage }
+  catch { return null }
 }
 
 function loadInitialDatabase() {
@@ -44,12 +45,15 @@ export function DemoStoreProvider({ children }: PropsWithChildren) {
   const initial = useMemo(() => loadInitialDatabase(), [])
   const [state, dispatch] = useReducer(demoReducer, initial.database)
   const [storageRecovered, setStorageRecovered] = useState(initial.recovered)
+  const [storageFailed, setStorageFailed] = useState(false)
 
   useEffect(() => {
     const storage = getBrowserStorage()
     const receive = (event: StorageEvent) => {
       if (!storage || event.storageArea !== storage || event.key !== DEMO_STORAGE_KEY) return
-      const next = readDemoSnapshot(storage.getItem(DEMO_STORAGE_KEY))
+      let raw: string | null
+      try { raw = storage.getItem(DEMO_STORAGE_KEY) } catch { return }
+      const next = readDemoSnapshot(raw)
       if (next) dispatch({ type: 'database/replaced', payload: next })
     }
     window.addEventListener('storage', receive)
@@ -58,7 +62,7 @@ export function DemoStoreProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     const storage = getBrowserStorage()
-    if (storage) saveDemoDatabase(storage, state)
+    setStorageFailed(!storage || !saveDemoDatabase(storage, state))
   }, [state])
 
   const value = useMemo<DemoStoreValue>(
@@ -76,7 +80,10 @@ export function DemoStoreProvider({ children }: PropsWithChildren) {
     [state, storageRecovered],
   )
 
-  return <DemoStoreContext.Provider value={value}>{children}</DemoStoreContext.Provider>
+  return <DemoStoreContext.Provider value={value}>
+    {storageFailed && <p role="status" className="bg-amber-50 px-4 py-2 text-sm text-amber-900">Không thể lưu dữ liệu tạm trên trình duyệt. Bạn vẫn có thể sử dụng trang; thay đổi chưa đồng bộ có thể mất khi tải lại.</p>}
+    {children}
+  </DemoStoreContext.Provider>
 }
 
 export function useDemoStore(): DemoStoreValue {

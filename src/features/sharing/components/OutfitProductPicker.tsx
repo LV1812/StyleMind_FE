@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { commerceApi } from '@/api/commerce'
 import type { CommerceProduct, ProductVariant } from '@/api/commerce.types'
 import { Button } from '@/shared/ui'
-import { colorSwatchHex } from '@/shared/lib/colorSwatch'
+import { colorSwatchStyle } from '@/shared/lib/colorSwatch'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
 
 const PAGE_SIZE = 12
@@ -138,7 +138,7 @@ export function OutfitProductPicker({ usedVariantIds, restrictToProductId, disab
               key={name} type="button" aria-pressed={name === activeColor} aria-label={`Màu ${name}`} onClick={() => choose(product.product_id, name, '')}
               className={`inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B] ${name === activeColor ? 'border-[#1C1B1B] bg-[#E9E8E7]' : 'border-[#C4C7C7] bg-white hover:border-[#1C1B1B]'}`}
             >
-              <span aria-hidden="true" className="h-4 w-4 rounded-full border border-[#C4C7C7]" style={{ backgroundColor: colorSwatchHex(name) }} />{name}
+              <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-full border border-[#C4C7C7]" style={colorSwatchStyle(name)} />{name}
             </button>)}
           </div>
           {activeColor && <div role="group" aria-label="Kích cỡ" className="flex flex-wrap gap-2">
