@@ -1,4 +1,5 @@
 import type { ProductColorOption } from '../model/productSelection'
+import { colorSwatchStyle } from '@/shared/lib/colorSwatch'
 
 interface ColorSelectorProps {
   options: ProductColorOption[]
@@ -24,7 +25,7 @@ export function ColorSelector({ options, selectedColor, onChange }: ColorSelecto
                 : 'border-[#C4C7C7] bg-white text-[#3A3632] hover:border-[#8B6475]'
             }`}
           >
-            <span className="h-4 w-4 rounded-full border border-[#C4C7C7]" style={{ backgroundColor: option.colorHex }} />
+            <span aria-hidden="true" className="h-4 w-4 shrink-0 rounded-full border border-[#C4C7C7]" style={colorSwatchStyle(option.color, option.colorHex)} />
             {option.color}
           </button>
         ))}

@@ -127,7 +127,7 @@ export function ProductDetailPage() {
 
   return (
     <div className="mx-auto grid max-w-[1440px] gap-10 px-5 py-8 md:px-8 lg:grid-cols-2 lg:gap-14 lg:px-16">
-      <ProductGallery images={selection.images} productName={product.name} />
+      <ProductGallery key={`${product.id}:${selection.selectedColor}`} images={selection.images} productName={product.name} />
 
       <section className="grid content-start gap-7 lg:pt-4">
         <div className="border-b border-[#E3E2E2] pb-6">
@@ -140,8 +140,6 @@ export function ProductDetailPage() {
           </h1>
           <p className="mt-4 text-2xl font-semibold text-[#1C1B1B]">{formatCurrency(selection.price)}</p>
         </div>
-
-        <p className="max-w-prose text-base leading-7 text-[#5D5853]">{product.description}</p>
 
         <ColorSelector options={selection.colorOptions} selectedColor={selection.selectedColor} onChange={handleColorChange} />
         <SizeSelector options={selection.sizeOptions} selectedSize={selectedSize} onChange={handleSizeChange} />
@@ -193,6 +191,13 @@ export function ProductDetailPage() {
           <DetailRow label="Phong cách" value={styleLabels.join(', ')} />
           <DetailRow label="Dịp sử dụng" value={occasionLabels.join(', ')} />
         </dl>
+
+        {product.description && (
+          <section className="grid gap-3 border-t border-[#EFEDED] pt-6">
+            <h2 className="text-lg font-semibold text-[#222222]">Mô tả sản phẩm</h2>
+            <p className="max-w-prose whitespace-pre-line break-words text-base leading-7 text-[#5D5853]">{product.description}</p>
+          </section>
+        )}
       </section>
     </div>
   )

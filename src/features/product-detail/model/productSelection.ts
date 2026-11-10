@@ -1,4 +1,9 @@
 import type { Product, ProductImage, ProductSize, ProductVariant } from '@/entities/product/model/types'
+import { normalizeColorName } from '@/shared/lib/colorSwatch'
+import catalogImageColors from '../data/catalogImageColors.json'
+
+// Compatibility for imported galleries whose API alt text lost the source colour.
+const importedImageColors: Record<string, string> = catalogImageColors
 
 const SIZE_ORDER: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL']
 
@@ -52,11 +57,13 @@ function uniqueColorOptions(variants: ProductVariant[]): ProductColorOption[] {
   return Array.from(options.values())
 }
 
-function colorImages(variants: ProductVariant[]) {
+function colorImages(variants: ProductVariant[], color: string) {
+  const matchesColor = (image: ProductImage) =>
+    normalizeColorName(importedImageColors[image.url]) === normalizeColorName(color)
   return Array.from(
     new Map(variants.flatMap(variant => variant.images).map(image => [image.url, image])).values(),
   )
-    .sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.order - b.order)
+    .sort((a, b) => Number(matchesColor(b)) - Number(matchesColor(a)) || Number(b.isPrimary) - Number(a.isPrimary) || a.order - b.order)
 }
 
 function sizeOptions(variants: ProductVariant[]): ProductSizeOption[] {
@@ -87,7 +94,7 @@ export function getProductSelection(product: Product, selection: ProductSelectio
     ? variantsByColor.find(variant => variant.size === selection.size) ?? null
     : null
   const displayVariant = requestedVariant ?? variantsByColor[0] ?? fallbackVariant
-  const images = colorImages(variantsByColor.length ? variantsByColor : variants)
+  const images = colorImages(variantsByColor.length ? variantsByColor : variants, selectedColor)
   const canPurchase = Boolean(requestedVariant?.active)
 
   return {
