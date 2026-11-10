@@ -19,6 +19,7 @@ import { CartPage } from '@/features/cart'
 import { ShopPage } from '@/features/catalog'
 import { CheckoutPage, OrderSuccessPage, QrPaymentPage } from '@/features/checkout'
 import GuestOrderPage from '@/features/checkout/pages/GuestOrderPage'
+import QrCheckoutPage from '@/features/checkout/pages/QrCheckoutPage'
 import { HomePage } from '@/features/home'
 import { MessagesPage } from '@/features/messages'
 import FriendsPage from '@/features/friends/pages/FriendsPage'
@@ -65,7 +66,9 @@ export const appRoutes: RouteObject[] = [
       { path: 'cart', element: <CartPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'guest/orders/:orderId', element: <GuestOrderPage /> },
+      { path: 'guest/checkout/qr/:checkoutId', element: <QrCheckoutPage guest /> },
       { path: 'checkout/qr', element: <AuthGuard><QrPaymentPage /></AuthGuard> },
+      { path: 'checkout/qr/:checkoutId', element: <AuthGuard><QrCheckoutPage /></AuthGuard> },
       { path: 'order-success/:orderId', element: <AuthGuard><OrderSuccessPage /></AuthGuard> },
       { path: 'orders', element: <AuthGuard><OrdersPage /></AuthGuard> },
       { path: 'orders/:orderId', element: <AuthGuard><OrderDetailPage /></AuthGuard> },

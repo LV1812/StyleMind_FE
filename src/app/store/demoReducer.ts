@@ -540,6 +540,7 @@ export function demoReducer(state: DemoDatabase, action: DemoAction): DemoDataba
             ? {
                 ...item,
                 status: action.payload.decision,
+                refundStatus: action.payload.refundStatus,
                 reviewedBy: action.payload.reviewerId,
                 reviewedAt: action.payload.reviewedAt,
                 adminNote: action.payload.note,
