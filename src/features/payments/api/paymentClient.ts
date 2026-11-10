@@ -26,6 +26,10 @@ export function paymentErrorMessage(error: unknown): string {
       PAYMENT_AMOUNT_MISMATCH: 'Số tiền thu phải bằng đúng số tiền của đơn hàng.',
       PAYMENT_ATTEMPT_NOT_PENDING: 'Khoản thanh toán không còn chờ thu. Không ghi nhận lại.',
       PAYMENT_ALREADY_CONFIRMED: 'Khoản thanh toán đã được ghi nhận. Không ghi nhận lại.',
+      CANCELLATION_REVIEW_REQUIRED: 'Đơn cần được cửa hàng xem xét trước khi hủy. Vui lòng tải lại đơn hàng.',
+      PAYMENT_CHECK_UNAVAILABLE: 'Chưa thể xác minh thanh toán. Vui lòng thử lại sau hoặc liên hệ cửa hàng.',
+      PAYMENT_RECONCILIATION_REQUIRED: 'Giao dịch cần được đối soát trước khi xử lý hủy.',
+      CANCELLATION_NOT_ALLOWED: 'Đơn không còn đủ điều kiện hủy ngay. Vui lòng tải lại trạng thái đơn.',
       INVALID_REQUEST: 'Thông tin chưa hợp lệ. Vui lòng kiểm tra lại.',
     }
     return messages[error.code] ?? 'Không thể xử lý yêu cầu. Vui lòng kiểm tra lại trạng thái đơn hàng.'
@@ -34,3 +38,4 @@ export function paymentErrorMessage(error: unknown): string {
 }
 
 export const isUuid = (value: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+

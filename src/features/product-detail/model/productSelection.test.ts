@@ -32,7 +32,7 @@ describe('getProductSelection', () => {
     expect(white.images[0]?.url).not.toBe(black.images[0]?.url)
   })
 
-  it('treats an active variant as purchasable without stock checks', () => {
+  it('does not allow a zero-stock active variant to be purchased', () => {
     const zeroStockVariant = product.variants.find(variant => variant.active && variant.stock === 0)
 
     expect(zeroStockVariant).toBeDefined()
@@ -42,7 +42,7 @@ describe('getProductSelection', () => {
       size: zeroStockVariant!.size,
     })
 
-    expect(result.canPurchase).toBe(true)
-    expect(result.error).toBeUndefined()
+    expect(result.canPurchase).toBe(false)
+    expect(result.error).toContain('hết hàng')
   })
 })

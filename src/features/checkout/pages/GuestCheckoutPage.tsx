@@ -65,6 +65,10 @@ export default function GuestCheckoutPage() {
       })
   }, [draft.orderId, navigate])
 
+  useEffect(() => {
+    if (draft.qrCheckoutId) navigate('/guest/checkout/qr/' + encodeURIComponent(draft.qrCheckoutId), { replace: true })
+  }, [draft.qrCheckoutId, navigate])
+
   const update = (next: typeof draft) => {
     saveGuestDraft(next)
     setDraft(next)
@@ -73,6 +77,12 @@ export default function GuestCheckoutPage() {
     if (inFlight.current || !key) return
     inFlight.current = true; setBusy(true); setError('')
     try {
+      if (draft.method === 'vietqr') {
+        const checkout = await guestCheckoutApi.recoverQr(key, draft.checkoutKey)
+        update({ ...draft, qrCheckoutId: checkout.checkoutId })
+        if (mounted.current) navigate('/guest/checkout/qr/' + encodeURIComponent(checkout.checkoutId), { replace: true })
+        return
+      }
       const order = await guestCheckoutApi.recoverCheckout(key, draft.checkoutKey)
       if (!order.order_id) throw new Error('Missing order id')
       window.localStorage.setItem(GUEST_LATEST_ORDER, order.order_id)
@@ -100,8 +110,18 @@ export default function GuestCheckoutPage() {
           draft.method === "cod" ? "COD" as const : "SEPAY_VIETQR" as const,
         shipping_address: address,
       }
-      const pending = { ...draft, address, submitted: body }
+      const selection = draft.selection ?? (prices ? { kind: 'selected' as const, cart_item_ids: prices.items.map(item => item.cart_item_id) } : undefined)
+      const pending = { ...draft, address, submitted: body, ...(body.payment_method === 'SEPAY_VIETQR' ? { selection } : {}) }
       update(pending)
+      if (body.payment_method === 'SEPAY_VIETQR') {
+        if (!selection) throw new Error('Chưa có sản phẩm để thanh toán')
+        const checkout = selection.kind === 'buy-now'
+          ? await guestCheckoutApi.prepareQrBuyNow(key, { ...body, variant_id: selection.variant_id, quantity: selection.quantity })
+          : await guestCheckoutApi.prepareQrSelection(key, { ...body, cart_item_ids: selection.cart_item_ids })
+        update({ ...pending, qrCheckoutId: checkout.checkoutId })
+        if (mounted.current) navigate('/guest/checkout/qr/' + encodeURIComponent(checkout.checkoutId), { replace: true })
+        return
+      }
       const order = draft.selection?.kind === 'selected' ? await guestCheckoutApi.checkoutSelection(key, { ...body, cart_item_ids: draft.selection.cart_item_ids })
         : draft.selection?.kind === 'buy-now' ? await guestCheckoutApi.checkoutBuyNow(key, { ...body, variant_id: draft.selection.variant_id, quantity: draft.selection.quantity })
         : await guestCheckoutApi.createOrder(key, body)

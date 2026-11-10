@@ -14,6 +14,14 @@ export interface PaymentAttempt {
   qrPayload: string | null
 }
 
+export interface QrCheckout {
+  checkoutId: string
+  customerId: string
+  totalVnd: number
+  status: 'PREPARING' | 'AWAITING_PAYMENT' | 'CANCELLED' | 'EXPIRED' | 'ORDER_CREATED' | 'RECONCILIATION_REQUIRED'
+  expiresAt: string
+}
+
 export interface CheckoutRequest {
   checkout_key: string
   shipping_address_id: string
@@ -25,6 +33,7 @@ export interface OrderResponse {
   order_number: string
   customer_id: string | null
   checkout_key: string
+  confirmation_state?: 'UNCONFIRMED' | 'CONFIRMED' | 'LEGACY_UNKNOWN'
   order_status: string
   payment_method: PaymentMethod
   accepted_total_vnd: number
@@ -68,6 +77,7 @@ export interface OrderResponse {
     reviewed_by_user_id: string | null
     reviewed_at: string | null
     decision_reason: string | null
+    refund_status?: 'PENDING_REFUND' | null
   } | null
 }
 
@@ -102,3 +112,4 @@ export interface PaymentExceptionList {
   limit: number
   offset: number
 }
+

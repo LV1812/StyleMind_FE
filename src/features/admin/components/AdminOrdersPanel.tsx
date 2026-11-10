@@ -17,6 +17,7 @@ import { StatusBadge } from './AdminCommon'
 interface AdminOrdersPanelProps {
   database: DemoDatabase
   dispatch: React.Dispatch<DemoAction>
+  onReload?: () => void
 }
 
 const statusOptions: { value: 'all' | OrderStatus; label: string }[] = [
@@ -84,7 +85,7 @@ function OrderItemImage({ src, name }: { src: string; name: string }) {
   return <img src={src} alt={name} onError={() => setFailed(true)} className="h-20 w-20 shrink-0 rounded-lg bg-[#EFEDED] object-cover" />
 }
 
-export function AdminOrdersPanel({ database, dispatch }: AdminOrdersPanelProps) {
+export function AdminOrdersPanel({ database, dispatch, onReload }: AdminOrdersPanelProps) {
   const toast = useToast()
   const [filters, setFilters] = useState<AdminOrderFilters>({ query: '', status: 'all', paymentMethod: 'all' })
   const [searchParams, setSearchParams] = useSearchParams()
@@ -107,6 +108,19 @@ export function AdminOrdersPanel({ database, dispatch }: AdminOrdersPanelProps) 
       next.delete('orderId')
       return next
     })
+  }
+
+  const [confirming, setConfirming] = useState<string | null>(null)
+  const confirmOrder = async (orderId: string) => {
+    if (confirming) return
+    setConfirming(orderId)
+    try {
+      const result = await commerceApi.orders.confirm(orderId)
+      if (result.confirmation_state !== 'CONFIRMED') throw new Error('Chưa nhận được xác nhận từ máy chủ.')
+      toast.success('Đã xác nhận đơn hàng.')
+      onReload?.()
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Không thể xác nhận đơn hàng.') }
+    finally { setConfirming(null) }
   }
 
   const changeStatus = async (orderId: string, status: OrderStatus) => {
@@ -217,7 +231,10 @@ export function AdminOrdersPanel({ database, dispatch }: AdminOrdersPanelProps) 
               {rows.length === 0 ? (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-[#5E5F5D]">Không có đơn hàng phù hợp.</td></tr>
               ) : rows.map(row => {
-                const next = nextStatuses(row.status)
+                const original = database.orders.find(order => order.id === row.id)
+                const hasConfirmation = Boolean(original?.confirmationState)
+                const needsConfirmation = original?.confirmationState === 'UNCONFIRMED' && ['PLACED', 'PAID'].includes(original.backendStatus ?? '')
+                const next = hasConfirmation ? (original?.confirmationState === 'CONFIRMED' && ['PLACED', 'PAID'].includes(original.backendStatus ?? '') ? ['processing' as OrderStatus] : needsConfirmation || (original?.confirmationState === 'LEGACY_UNKNOWN' && ['PLACED', 'PAID'].includes(original.backendStatus ?? '')) ? [] : nextStatuses(row.status)) : nextStatuses(row.status)
 
                 return (
                   <tr key={row.id} className="align-middle hover:bg-[#FBF9F9]/70">
@@ -231,7 +248,7 @@ export function AdminOrdersPanel({ database, dispatch }: AdminOrdersPanelProps) 
                       <p className="text-[#3A3632]">{paymentMethodLabel[row.paymentMethod]}</p>
                       <p className="mt-0.5 text-xs text-[#5E5F5D]">{paymentStatusLabel[row.paymentStatus]}</p>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3"><StatusBadge tone={statusTone(row.status)}>{orderStatusLabel[row.status]}</StatusBadge></td>
+                    <td className="whitespace-nowrap px-4 py-3"><StatusBadge tone={statusTone(row.status)}>{needsConfirmation ? 'Chờ xác nhận' : orderStatusLabel[row.status]}</StatusBadge></td>
                     <td className="whitespace-nowrap px-4 py-3 text-right font-semibold tabular-nums text-[#222222]">{formatCurrency(row.total)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
@@ -245,8 +262,8 @@ export function AdminOrdersPanel({ database, dispatch }: AdminOrdersPanelProps) 
                         >
                           Chi tiết
                         </Button>
-                        {next.length === 0 ? (
-                          <span className="whitespace-nowrap text-xs font-medium text-[#5E5F5D]">Trạng thái cuối</span>
+                        {needsConfirmation ? <Button type="button" size="sm" disabled={Boolean(confirming)} onClick={() => void confirmOrder(row.id)}>Xác nhận đơn</Button> : next.length === 0 ? (
+                          <span className="whitespace-nowrap text-xs font-medium text-[#5E5F5D]">{original?.confirmationState === 'LEGACY_UNKNOWN' && ['PLACED', 'PAID'].includes(original.backendStatus ?? '') ? 'Đơn cũ cần kiểm tra' : 'Trạng thái cuối'}</span>
                         ) : next.map(status => (
                           <Button
                             key={`${row.id}-${status}`}
@@ -271,3 +288,6 @@ export function AdminOrdersPanel({ database, dispatch }: AdminOrdersPanelProps) 
     </section>
   )
 }
+
+
+

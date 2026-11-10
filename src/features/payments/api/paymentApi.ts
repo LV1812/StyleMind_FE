@@ -1,6 +1,6 @@
 import type {
   CheckoutRequest, CodCollectionRequest, OrderResponse, PaymentAttempt,
-  PaymentExceptionList, PaymentExceptionQuery,
+  PaymentExceptionList, PaymentExceptionQuery, QrCheckout,
 } from './types'
 import type { GuestCart } from '@/features/cart/data/guestCartApi'
 import type { GuestPrices } from '@/features/checkout/data/guestCheckoutApi'
@@ -95,6 +95,12 @@ export function createPaymentApi(options: PaymentApiOptions) {
   }
 
   return {
+    prepareQrSelection: (body: CheckoutRequest & { cart_item_ids: string[] }) => request<QrCheckout>('/commerce/api/v1/qr-checkouts/selected', 'POST', body),
+    prepareQrBuyNow: (body: CheckoutRequest & { variant_id: string; quantity: number }) => request<QrCheckout>('/commerce/api/v1/qr-checkouts/buy-now', 'POST', body),
+    recoverQrCheckout: (key: string) => request<QrCheckout>('/commerce/api/v1/qr-checkouts/recover', 'POST', { checkout_key: key }),
+    getQrCheckout: (id: string, requestOptions?: RequestOptions) => request<QrCheckout>(`/commerce/api/v1/qr-checkouts/${encodeURIComponent(id)}`, 'GET', undefined, requestOptions),
+    getQrAttempt: (id: string, requestOptions?: RequestOptions) => request<PaymentAttempt>(`/commerce/api/v1/qr-checkouts/${encodeURIComponent(id)}/payment-attempt`, 'POST', undefined, requestOptions),
+    cancelQrCheckout: (id: string) => request<QrCheckout>(`/commerce/api/v1/qr-checkouts/${encodeURIComponent(id)}/cancel`, 'POST'),
     getPrices: (requestOptions?: RequestOptions) => request<GuestPrices>('/commerce/api/v1/checkout/prices', 'GET', undefined, requestOptions),
     previewSelection: (body: { cart_item_ids: string[] }, requestOptions?: RequestOptions) => request<GuestPrices>('/commerce/api/v1/checkout/selected/prices', 'POST', body, requestOptions),
     previewBuyNow: (body: { variant_id: string; quantity: number }, requestOptions?: RequestOptions) => request<GuestPrices>('/commerce/api/v1/checkout/buy-now/prices', 'POST', body, requestOptions),
@@ -108,6 +114,7 @@ export function createPaymentApi(options: PaymentApiOptions) {
       return request<{ items: OrderResponse[]; page: number; total_pages: number; total_elements: number }>(`/commerce/api/v1/orders?${params}`, 'GET', undefined, requestOptions)
     },
     requestCancellation: (orderId: string, reason: string) => request<unknown>(`/commerce/api/v1/orders/${encodeURIComponent(orderId)}/cancellation-requests`, 'POST', { reason }),
+    cancelOrder: (orderId: string, reason: string) => request<OrderResponse>(`/commerce/api/v1/orders/${encodeURIComponent(orderId)}/cancel`, 'POST', { reason }),
     mergeGuestCart: (key: string) => request<GuestCart>('/commerce/api/v1/cart/merge', 'POST', { guest_session_key: key }),
     addCartItem: (variantId: string, quantity: number) => request<GuestCart>('/commerce/api/v1/cart/items', 'POST', { variant_id: variantId, quantity, guest_session_key: null }),
     updateCartItem: (id: string, quantity: number) => request<GuestCart>(`/commerce/api/v1/cart/items/${encodeURIComponent(id)}`, 'PUT', { quantity, guest_session_key: null }),

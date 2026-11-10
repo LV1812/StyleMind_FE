@@ -125,7 +125,7 @@ export function AdminPage() {
     if (activeSection === 'overview') return apiMode() ? <AdminOverviewLive {...summary} loading={commerceLoading} /> : <AdminOverviewPanel database={state} />
     if (activeSection === 'products') return <AdminProductsPanel database={state} dispatch={dispatch} />
     if (activeSection === 'categories') return <AdminCategoriesPanel database={state} dispatch={dispatch} />
-    if (activeSection === 'orders') return <AdminOrdersPanel database={state} dispatch={dispatch} />
+    if (activeSection === 'orders') return <AdminOrdersPanel database={state} dispatch={dispatch} onReload={() => setReloadVersion(value => value + 1)} />
     if (activeSection === 'requests') return <AdminRequestsPanel database={state} dispatch={dispatch} reviewerId={currentUser?.id ?? ''} />
     if (activeSection === 'customers') return <AdminCustomersPanel />
     if (activeSection === 'notifications') return <AdminNotificationsUnavailable />
@@ -153,3 +153,4 @@ export function AdminPage() {
     </AdminShell>
   )
 }
+

@@ -13,7 +13,6 @@ import { useAuth } from '@/features/auth'
 import { useActiveCommerce } from '@/features/cart/model/AccountCommerceProvider'
 import { guestCartErrorMessage } from '@/features/cart/data/guestCartApi'
 import { beginAccountSelection } from '@/features/checkout/model/accountSelection'
-import { beginGuestSelection } from '@/features/checkout/model/guestSelection'
 
 import { ColorSelector } from '../components/ColorSelector'
 import { ProductGallery } from '../components/ProductGallery'
@@ -87,7 +86,7 @@ export function ProductDetailPage() {
   const handleSizeChange = (size: ProductSize) => {
     const nextSelection = getProductSelection(product, { color: selection.selectedColor, size })
     setSelectedSize(size)
-    setQuantity(current => normalizeQuantity(current))
+    setQuantity(current => Math.min(normalizeQuantity(current), nextSelection.stock || 1))
     setValidationError(nextSelection.error ?? null)
   }
 
@@ -102,9 +101,18 @@ export function ProductDetailPage() {
       return
     }
 
+    if (quantity > selection.stock) {
+      setValidationError(`Chỉ còn ${selection.stock} sản phẩm trong kho`)
+      return
+    }
+
     if (buyNow) {
+      if (!currentUser) {
+        navigate(ROUTES.login, { state: { from: { pathname: `/products/${encodeURIComponent(product.id)}` }, checkoutLoginRequired: true } })
+        return
+      }
       const choice = { kind: 'buy-now' as const, variant_id: selection.variant.id, quantity }
-      const started = currentUser ? beginAccountSelection(currentUser.id, choice) : beginGuestSelection(choice)
+      const started = beginAccountSelection(currentUser.id, choice)
       if (!started) {
         setValidationError('Có yêu cầu đặt hàng trước đó chưa rõ kết quả. Vui lòng kiểm tra đơn trước khi tạo lần mới.')
         return
@@ -148,7 +156,9 @@ export function ProductDetailPage() {
           <div className="flex items-center justify-between gap-4">
             <span className="text-sm font-bold text-[#222222]">Số lượng</span>
             <span className="text-sm font-semibold text-[#5E5F5D]">
-              {selection.canPurchase ? 'Sẵn sàng thêm vào giỏ' : 'Chọn kích thước để tiếp tục'}
+              {selection.variant
+                ? `Tồn kho: ${selection.stock} sản phẩm`
+                : 'Chọn màu và kích thước để xem tồn kho'}
             </span>
           </div>
           <div className="inline-flex w-fit items-center rounded-lg border border-[#C4C7C7] bg-white">
@@ -166,7 +176,8 @@ export function ProductDetailPage() {
             <button
               type="button"
               aria-label="Tăng số lượng"
-              onClick={() => setQuantity(current => normalizeQuantity(current + 1))}
+              disabled={!selection.canPurchase || quantity >= selection.stock}
+              onClick={() => setQuantity(current => Math.min(selection.stock, normalizeQuantity(current + 1)))}
               className="grid h-11 w-11 place-items-center text-[#3A3632] transition hover:bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
             >
               <Plus size={16} aria-hidden="true" />
