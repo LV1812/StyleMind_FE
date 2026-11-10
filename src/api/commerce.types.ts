@@ -173,6 +173,7 @@ export interface CancellationRequestResponse {
   reviewed_by_user_id: UUID | null
   reviewed_at: string | null
   decision_reason: string | null
+  refund_status?: 'PENDING_REFUND' | null
 }
 
 export interface OrderResponse {
@@ -181,6 +182,7 @@ export interface OrderResponse {
   customer_id: UUID
   checkout_key: string
   order_status: string
+  confirmation_state?: 'UNCONFIRMED' | 'CONFIRMED' | 'LEGACY_UNKNOWN'
   payment_method: 'COD' | 'SEPAY_VIETQR'
   accepted_total_vnd: number
   placed_at: string | null
@@ -222,3 +224,5 @@ export interface PaymentAttempt {
   transferContent: string | null
   qrPayload: string | null
 }
+
+

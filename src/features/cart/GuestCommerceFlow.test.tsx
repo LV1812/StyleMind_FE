@@ -95,30 +95,18 @@ async function chooseSize() {
 }
 
 describe('Guest Commerce integration', () => {
-  it('shows server catalog and creates a backend cart before checkout; COD clears the server cart', async () => {
+  it('asks guests to sign in before buying and returns to the selected product', async () => {
     const view = mount()
     const user = userEvent.setup()
     await user.click(await screen.findByRole('link', { name: /Áo từ máy chủ/ }))
     expect(view.router.state.location.pathname).toBe('/products/' + productId)
     await user.click(await screen.findByRole('button', { name: 'Kích thước M' }))
     await user.click(screen.getByRole('button', { name: 'Mua ngay' }))
-    expect(await screen.findByRole('heading', { name: 'Thanh toán không cần đăng nhập' })).toBeInTheDocument()
-    expect(await screen.findByText('Tổng tiền: 123.000 ₫')).toBeInTheDocument()
-    await user.type(screen.getByLabelText('Tên người nhận'), 'An')
-    await user.type(screen.getByLabelText('Số điện thoại'), '123 abc')
-    await user.type(screen.getByLabelText('Địa chỉ giao hàng đầy đủ'), 'Số 1 Hà Nội')
-    await user.click(screen.getByRole('button', { name: 'Đặt hàng' }))
-    await screen.findByRole('heading', { name: 'Kết quả đơn hàng khách' })
-    await waitFor(() => expect(screen.getByLabelText('Giỏ hàng (0 sản phẩm)')).toBeInTheDocument())
+    expect(await screen.findByRole('heading', { name: 'Đăng nhập' })).toBeInTheDocument()
+    expect(view.router.state.location.state.from.pathname).toBe('/products/' + productId)
+    expect(calls.some(call => call.path.includes('/guest/orders') && call.init.method === 'POST')).toBe(false)
     expect(items).toHaveLength(0)
     expect(addCalls()).toHaveLength(0)
-    const key = window.localStorage.getItem(GUEST_SESSION_KEY)!
-    for (const call of calls.filter(call => !call.path.includes('/products?'))) {
-      expect(new Headers(call.init.headers).get('X-Guest-Session-Key')).toBe(key)
-      expect(call.path).not.toContain(key)
-      expect(call.path).not.toContain('guest_session_key=')
-      expect(new Headers(call.init.headers).has('Authorization')).toBe(false)
-    }
   })
 
   it('keeps backend quantities after remount and uses header-only DELETE after confirmation', async () => {
@@ -141,7 +129,7 @@ describe('Guest Commerce integration', () => {
     expect(addCalls()).toHaveLength(1)
   })
 
-  it('sends only selected guest cart IDs to checkout preview', async () => {
+  it('asks guests to sign in before checkout and keeps items in the cart', async () => {
     const view = mount('/products/' + productId)
     const user = await chooseSize()
     await user.click(screen.getByRole('button', { name: 'Thêm vào giỏ' }))
@@ -149,8 +137,10 @@ describe('Guest Commerce integration', () => {
     await act(async () => { await view.router.navigate('/cart') })
     await waitFor(() => expect(screen.getByRole('button', { name: 'Tiến hành thanh toán' })).toBeEnabled())
     await user.click(screen.getByRole('button', { name: 'Tiến hành thanh toán' }))
-    await screen.findByRole('heading', { name: 'Thanh toán không cần đăng nhập' })
-    await waitFor(() => expect(calls.some(call => call.path.endsWith('/guest/checkout/selected/prices') && JSON.parse(String(call.init.body)).cart_item_ids[0] === itemId)).toBe(true))
+    await screen.findByRole('heading', { name: 'Đăng nhập' })
+    expect(view.router.state.location.state.from.pathname).toBe('/cart')
+    expect(items).toHaveLength(1)
+    expect(calls.some(call => call.path.includes('/guest/orders') && call.init.method === 'POST')).toBe(false)
   })
 
   it('does not submit demo cart lines and explains why old local products need choosing again', async () => {

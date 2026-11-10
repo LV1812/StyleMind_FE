@@ -13,6 +13,7 @@ export interface GuestDraft {
   // Freeze the submitted body for safe retries after an unknown result.
   submitted?: GuestCheckoutRequest
   orderId?: string
+  qrCheckoutId?: string
   recoveryRequired?: boolean
   selection?: AccountSelection
 }
@@ -46,7 +47,7 @@ export function loadGuestDraft(): GuestDraft {
     checkoutKey: meta.checkoutKey ?? crypto.randomUUID(),
     address: { recipient_name: "", recipient_phone: "", address_line: "" },
     method: "cod",
-    ...(meta.checkoutKey ? { checkoutKey: meta.checkoutKey, method: meta.method ?? 'cod', orderId: meta.orderId, recoveryRequired: meta.recoveryRequired, selection: meta.selection } : {}),
+    ...(meta.checkoutKey ? { checkoutKey: meta.checkoutKey, method: meta.method ?? 'cod', orderId: meta.orderId, qrCheckoutId: meta.qrCheckoutId, recoveryRequired: meta.recoveryRequired, selection: meta.selection } : {}),
   }
   saveGuestDraft(draft)
   return draft
@@ -54,7 +55,7 @@ export function loadGuestDraft(): GuestDraft {
 
 export function saveGuestDraft(draft: GuestDraft) {
   window.sessionStorage.setItem(GUEST_CHECKOUT_DRAFT, JSON.stringify(draft))
-  window.localStorage.setItem(GUEST_CHECKOUT_DRAFT + '.meta', JSON.stringify({ checkoutKey: draft.checkoutKey, method: draft.method, orderId: draft.orderId, recoveryRequired: Boolean(draft.submitted || draft.recoveryRequired), selection: draft.selection }))
+  window.localStorage.setItem(GUEST_CHECKOUT_DRAFT + '.meta', JSON.stringify({ checkoutKey: draft.checkoutKey, method: draft.method, orderId: draft.orderId, qrCheckoutId: draft.qrCheckoutId, recoveryRequired: Boolean(draft.submitted || draft.recoveryRequired), selection: draft.selection }))
 }
 
 export function trimGuestAddress(

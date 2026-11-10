@@ -110,6 +110,7 @@ export const commerceApi = {
     listAdmin: (query: OrderListQuery = {}) =>
       get<OrderListResponse>(`/api/v1/admin/orders${queryString(query)}`),
     getAdmin: (id: UUID) => get<OrderResponse>(`/api/v1/admin/orders/${id}`),
+    confirm: (id: UUID) => post<OrderResponse>(`/api/v1/admin/orders/${id}/confirm`),
     updateStatus: (id: UUID, orderStatus: string, reason: string | null = null) =>
       put<OrderResponse>(`/api/v1/admin/orders/${id}/status`, {
         order_status: orderStatus,
@@ -124,3 +125,4 @@ export const commerceApi = {
 }
 
 export type CommerceApi = typeof commerceApi
+
