@@ -559,7 +559,11 @@ describe('AdminPage', () => {
 
   it('approves a cancellation request and creates a customer notification', async () => {
     const user = setupUser()
-    const reviewCancellation = vi.spyOn(commerceApi.orders, 'reviewCancellation').mockResolvedValue({} as never)
+    const reviewCancellation = vi.spyOn(commerceApi.orders, 'reviewCancellation').mockResolvedValue({
+      request_status: 'APPROVED',
+      decision_reason: null,
+      refund_status: null,
+    })
     renderAt('/admin?section=requests', adminDatabase())
 
     const row = await screen.findByRole('row', { name: /cancel-1001/ })
