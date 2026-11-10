@@ -71,6 +71,12 @@ export function AdminPage() {
   const activeSection = resolveSection(searchParams.get('section'))
 
   useEffect(() => {
+    if (!apiMode()) {
+      setCommerceLoading(false)
+      setCommerceError(null)
+      return
+    }
+
     let active = true
     setCommerceLoading(true)
     setSummary({ productCount: null, orderCount: null })

@@ -1,5 +1,5 @@
 import { FormEvent, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { ROUTES } from '@/app/router/routes'
 import { identityErrorMessage, storePasswordResetToken } from '@/shared/api/identityApi'
@@ -7,6 +7,9 @@ import { Button, TextField } from '@/shared/ui'
 
 import { AuthLayout } from '../components/AuthLayout'
 import { useAuth } from '../model/useAuth'
+import { isValidEmail } from '../model/validators'
+
+const EMAIL_FIELD_ID = 'verify-otp-email'
 
 export function VerifyOtpPage() {
   const navigate = useNavigate()
@@ -15,7 +18,7 @@ export function VerifyOtpPage() {
   const routeState = location.state as { flow?: 'registration' | 'password-reset'; email?: string; notice?: string } | null
   const flow = routeState?.flow ?? 'registration'
   const isPasswordReset = flow === 'password-reset'
-  const email = routeState?.email ?? ''
+  const [email, setEmail] = useState(routeState?.email?.trim() ?? '')
   const [digits, setDigits] = useState(['', '', '', '', '', ''])
   const digitInputs = useRef<Array<HTMLInputElement | null>>([])
   const [emailError, setEmailError] = useState('')
@@ -25,6 +28,13 @@ export function VerifyOtpPage() {
   const [submitting, setSubmitting] = useState(false)
   const [resending, setResending] = useState(false)
   const code = useMemo(() => digits.join(''), [digits])
+
+  const checkEmail = () => {
+    const message = !email.trim() ? 'Vui lòng nhập email đã đăng ký.' : !isValidEmail(email) ? 'Email không hợp lệ.' : ''
+    setEmailError(message)
+    if (message) document.getElementById(EMAIL_FIELD_ID)?.focus()
+    return !message
+  }
 
   const applyDigits = (startIndex: number, value: string) => {
     const nextDigits = value.replace(/\D/g, '').slice(0, 6 - startIndex).split('')
@@ -46,10 +56,7 @@ export function VerifyOtpPage() {
     setError('')
     setEmailError('')
     setNotice('')
-    if (!email.trim()) {
-      setEmailError('Vui lòng nhập email đã đăng ký.')
-      return
-    }
+    if (!checkEmail()) return
     if (!/^\d{6}$/.test(code)) {
       setError('Mã xác thực gồm sáu chữ số.')
       return
@@ -57,12 +64,12 @@ export function VerifyOtpPage() {
     setSubmitting(true)
     try {
       if (isPasswordReset) {
-        const result = await auth.verifyPasswordReset(email, code)
+        const result = await auth.verifyPasswordReset(email.trim(), code)
         storePasswordResetToken(result.reset_token, result.expires_in)
         navigate(ROUTES.resetPassword, { replace: true })
       } else {
-        await auth.verifyEmail(email, code)
-        navigate(ROUTES.login, { replace: true, state: { verifiedEmail: email } })
+        await auth.verifyEmail(email.trim(), code)
+        navigate(ROUTES.login, { replace: true, state: { verifiedEmail: email.trim() } })
       }
     } catch (err) {
       setError(identityErrorMessage(err, 'Không thể xác thực mã'))
@@ -75,10 +82,11 @@ export function VerifyOtpPage() {
     setError('')
     setEmailError('')
     setNotice('')
+    if (!checkEmail()) return
     setResending(true)
     try {
-      if (isPasswordReset) await auth.requestPasswordReset(email)
-      else await auth.resendEmailVerification(email)
+      if (isPasswordReset) await auth.requestPasswordReset(email.trim())
+      else await auth.resendEmailVerification(email.trim())
       setNoticeKind('success')
       setNotice(isPasswordReset ? 'Nếu email hợp lệ, hướng dẫn đặt lại mật khẩu sẽ được gửi.' : 'Đã yêu cầu gửi mã xác thực mới.')
     } catch (err) {
@@ -98,17 +106,17 @@ export function VerifyOtpPage() {
       <p className="mt-2 text-sm leading-6 text-[#5E5F5D]">
         Nhập mã gồm sáu chữ số đã gửi đến email của bạn. Mã có hiệu lực trong 5 phút.
       </p>
-      <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
+      <form className="mt-6 grid gap-4" noValidate onSubmit={handleSubmit}>
         <TextField
           label="Email"
           type="email"
           autoComplete="email"
           className="!rounded-none !border-0 !border-b !border-[#C4C7C7] !bg-transparent !px-0"
+          id={EMAIL_FIELD_ID}
           value={email}
-          readOnly
+          onChange={event => { setEmail(event.target.value); if (emailError) setEmailError('') }}
           error={emailError}
         />
-        {!email && <p className="text-sm text-[#A94B4B]">Không tìm thấy email. Vui lòng quay lại <Link className="underline" to={isPasswordReset ? ROUTES.forgotPassword : ROUTES.register}>{isPasswordReset ? 'quên mật khẩu' : 'đăng ký'}</Link> để nhận mã.</p>}
         <div className="grid grid-cols-6 gap-2">
           {digits.map((digit, index) => (
             <input
@@ -153,8 +161,8 @@ export function VerifyOtpPage() {
           </p>
         )}
         {error && <p id="verification-code-error" className="rounded-lg bg-[#FCEAEA] px-3 py-2 text-sm font-semibold text-[#A94B4B]" role="alert">{error}</p>}
-        <Button type="submit" loading={submitting} disabled={!email.trim()}>{isPasswordReset ? 'Xác nhận mã' : 'Xác thực email'}</Button>
-        <Button type="button" variant="secondary" loading={resending} disabled={!email.trim()} onClick={handleResend}>
+        <Button type="submit" loading={submitting}>{isPasswordReset ? 'Xác nhận mã' : 'Xác thực email'}</Button>
+        <Button type="button" variant="secondary" loading={resending} onClick={handleResend}>
           Gửi mã mới
         </Button>
       </form>

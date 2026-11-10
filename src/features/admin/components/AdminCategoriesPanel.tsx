@@ -207,7 +207,7 @@ export function AdminCategoriesPanel({ database, dispatch }: AdminCategoriesPane
             onChange={event => updateField('id', event.target.value)}
           />
           <TextField label="Tên danh mục" value={form.label} onChange={event => updateField('label', event.target.value)} />
-          <TextField label="Mô tả danh mục" value={form.description} onChange={event => updateField('description', event.target.value)} />
+          <TextField label="Slug danh mục" value={form.description} onChange={event => updateField('description', event.target.value)} placeholder="ao-dai" />
           <TextField
             label="Thứ tự hiển thị"
             type="number"

@@ -174,7 +174,7 @@ export function AddressBookPage() {
         <p className="mt-1 text-sm text-[#5E5F5D]">Địa chỉ mặc định sẽ được chọn trước khi thanh toán.</p>
       </div>
 
-      {message && (
+      {message && !(showForm && messageIsError) && (
         <p className={`rounded-lg border px-4 py-3 text-sm font-semibold ${messageIsError ? 'border-[#E7BBBB] bg-[#FCEAEA] text-[#A94B4B]' : 'border-[#B7D3BF] bg-[#EAF2EC] text-[#294C36]'}`} role="status">
           {message}
         </p>
@@ -188,6 +188,7 @@ export function AddressBookPage() {
           wards={wards}
           wardLoading={wardLoading}
           saving={saving}
+          serverError={messageIsError ? message : ''}
           onProvinceChange={handleProvinceChange}
           onSubmit={handleSubmit}
           onCancel={() => { setCreating(false); setEditingAddress(null); setWards([]) }}

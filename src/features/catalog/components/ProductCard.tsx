@@ -33,9 +33,9 @@ export function ProductCard({ product }: ProductCardProps) {
           <h2 className="mt-1 break-words text-base font-semibold leading-snug text-[#222222]">{product.name}</h2>
           {soldOut && <p className="mt-2 text-sm font-semibold text-red-700">Hết hàng</p>}
           <p className="mt-2 text-base font-semibold text-[#1C1B1B]">{formatCurrency(product.basePrice)}</p>
-          <div className="mt-3 flex gap-1.5" aria-label={`Màu của ${product.name}`}>
+          <div className="mt-3 flex gap-1.5" role="group" aria-label={`Màu của ${product.name}: ${colors.map(([color]) => color).join(', ')}`}>
             {colors.slice(0, 5).map(([color, hex]) => (
-              <span key={color} title={color} className="h-4 w-4 rounded-full border border-[#C4C7C7]" style={{ backgroundColor: hex }} />
+              <span key={color} aria-hidden="true" title={color} className="h-4 w-4 rounded-full border border-[#C4C7C7]" style={{ backgroundColor: hex }} />
             ))}
           </div>
         </div>

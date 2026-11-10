@@ -233,3 +233,45 @@ describe('Admin Payment page', () => {
     ))
   })
 })
+
+describe('Payment status check feedback', () => {
+  const check = () => fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra trạng thái đơn' }))
+
+  it('locks the button while checking, then reports that the status did not change', async () => {
+    let finish: (value: unknown) => void = () => {}
+    customer()
+    await screen.findByRole('img')
+    api.getOrder.mockReturnValueOnce(new Promise(resolve => { finish = resolve }))
+    check()
+    const button = await screen.findByRole('button', { name: 'Đang xử lý' })
+    expect(button).toBeDisabled()
+    await act(async () => { finish(order) })
+    expect(await screen.findByText(new RegExp('Trạng thái chưa thay đổi \\(kiểm tra lúc \\d{2}:\\d{2}\\)'))).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Kiểm tra trạng thái đơn' })).toBeEnabled()
+  })
+
+  it('reports "Đã cập nhật lúc HH:mm" when the order status changed', async () => {
+    customer()
+    await screen.findByRole('img')
+    api.getOrder.mockResolvedValueOnce({ ...order, order_status: 'PAID' })
+    check()
+    expect(await screen.findByText(new RegExp('Đã cập nhật lúc \\d{2}:\\d{2}\\.'))).toBeInTheDocument()
+  })
+
+  it('shows the error when the check fails and keeps the button usable', async () => {
+    customer()
+    await screen.findByRole('img')
+    api.getOrder.mockRejectedValueOnce(new PaymentApiError(503, {}))
+    check()
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+    expect(screen.queryByText(/Đã cập nhật lúc/)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Kiểm tra trạng thái đơn' })).toBeEnabled()
+  })
+
+  it('explains that a COD order waits for the cash to be collected', async () => {
+    api.getOrder.mockResolvedValue({ ...order, payment_method: 'COD', order_status: 'PLACED' })
+    api.getOrderPaymentAttempt.mockResolvedValue({ ...attempt, method: 'COD', qrPayload: null, expiresAt: null })
+    customer()
+    expect(await screen.findByText(/Đơn đang chờ thu tiền khi giao hàng/)).toBeInTheDocument()
+  })
+})

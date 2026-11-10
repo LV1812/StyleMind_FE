@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { createDemoSeed } from '@/app/data/demoSeed'
 import { AppProviders } from '@/app/providers/AppProviders'
@@ -10,6 +10,11 @@ import type { DemoDatabase } from '@/app/store/types'
 import type { WardrobePublicLink, WardrobeShare } from '@/entities/share/model/types'
 import type { User } from '@/entities/user/model/types'
 import { DEMO_STORAGE_KEY } from '@/shared/storage/demoStorage'
+
+vi.mock('@/shared/api/http', async importOriginal => ({
+  ...await importOriginal<typeof import('@/shared/api/http')>(),
+  apiMode: () => false,
+}))
 
 function databaseWithCustomer(overrides: Partial<DemoDatabase> = {}): DemoDatabase {
   return {

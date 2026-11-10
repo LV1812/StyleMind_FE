@@ -34,7 +34,8 @@ it('sends images as multipart and downloads private bytes with bearer authorizat
   expect((request.headers as Record<string, string>)['Content-Type']).toBeUndefined()
   expect((request.headers as Record<string, string>).Authorization).toBe('Bearer test-token')
   const result = await chatApi.attachment(id, id)
-  expect(result).toBeInstanceOf(Blob)
+  expect(result).toMatchObject({ size: 2, type: 'text/plain;charset=utf-8' })
+  expect(await result.text()).toBe('{}')
   expect(fetcher.mock.calls[1][0]).toContain(`/chats/${id}/attachments/${id}/content`)
 })
 it('preserves boundary messages when a new history window shifts', () => {

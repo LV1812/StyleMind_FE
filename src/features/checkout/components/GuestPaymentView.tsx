@@ -5,6 +5,7 @@ import type { OrderResponse, PaymentAttempt } from '@/features/payments/api/type
 import { Button } from '@/shared/ui'
 import { formatCurrency } from '@/shared/lib/formatCurrency'
 import { ROUTES } from '@/app/router/routes'
+import type { PaymentStatusCheck } from '@/features/payments/model/useOrderPayment'
 
 interface GuestPaymentViewProps {
   ownerType?: 'guest' | 'account'
@@ -17,6 +18,8 @@ interface GuestPaymentViewProps {
   pending: boolean
   busy: boolean
   error: string
+  /** Result of the last manual status check; shown next to the check button. */
+  lastCheck?: PaymentStatusCheck | null
   imageFailed: boolean
   onImageError: () => void
   onRecover: () => void
@@ -30,8 +33,14 @@ const orderLabels: Record<string, string> = {
   CANCELLED: 'Đã hủy', EXPIRED: 'Đã hết hạn',
 }
 
+function CheckFeedback({ lastCheck, busy }: { lastCheck?: PaymentStatusCheck | null; busy: boolean }) {
+  if (busy || !lastCheck) return null // while busy the button itself shows the loading state
+  const time = new Date(lastCheck.at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+  return <p role="status" aria-live="polite" className="text-xs text-secondary">{lastCheck.changed ? `Đã cập nhật lúc ${time}.` : `Trạng thái chưa thay đổi (kiểm tra lúc ${time}).`}</p>
+}
+
 export default function GuestPaymentView({
-  ownerType = 'guest', orderId, order, attempt, countdownSeconds, expired, showQr, pending, busy, error, imageFailed,
+  ownerType = 'guest', orderId, order, attempt, countdownSeconds, expired, showQr, pending, busy, error, imageFailed, lastCheck,
   onImageError, onRecover, onRefresh,
 }: GuestPaymentViewProps) {
   const [copied, setCopied] = useState('')
@@ -97,6 +106,7 @@ export default function GuestPaymentView({
       <QrCode size={36} className="mx-auto text-accent-light" aria-hidden="true" />
       <p className="text-sm text-secondary">{busy ? 'Đang tải thông tin thanh toán…' : 'Chưa tải được thông tin đơn hàng.'}</p>
       <Button variant="secondary" loading={busy} onClick={onRefresh} icon={<RefreshCw size={15} aria-hidden="true" />}>Kiểm tra trạng thái đơn</Button>
+      <CheckFeedback lastCheck={lastCheck} busy={busy} />
       <p className="max-w-sm break-all text-xs text-muted">Mã đơn hàng: {orderId}</p>
     </section> : <section aria-label={ownerType === 'guest' ? 'Đơn hàng khách' : 'Thông tin thanh toán'} className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-7">
       <div className="overflow-hidden rounded-3xl border border-sand bg-white shadow-[0_12px_40px_-24px_rgba(58,54,50,0.2)]">
@@ -148,6 +158,7 @@ export default function GuestPaymentView({
             <Button className={`rounded-xl ${pending ? '' : 'sm:col-span-2'}`} loading={busy} onClick={onRefresh} icon={<RefreshCw size={15} aria-hidden="true" />}>Kiểm tra trạng thái đơn</Button>
             {pending && !blocked && !expired && <Button variant="ghost" className="rounded-xl text-xs" disabled={busy} onClick={onRecover}>Tải lại thông tin thanh toán</Button>}
           </div>
+          <div className="mt-3"><CheckFeedback lastCheck={lastCheck} busy={busy} /></div>
           {pending && !blocked && !expired && <p className="mt-3 text-xs text-secondary">Tải lại thông tin của đơn này khi mã thanh toán chưa hiển thị. Thao tác không tạo đơn mới.</p>}
         </div>
       </div>

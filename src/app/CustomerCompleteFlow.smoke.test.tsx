@@ -1,13 +1,18 @@
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { createDemoSeed } from '@/app/data/demoSeed'
 import { AppProviders } from '@/app/providers/AppProviders'
 import { appRoutes } from '@/app/router/AppRouter'
 import type { DemoDatabase } from '@/app/store/types'
 import { DEMO_STORAGE_KEY } from '@/shared/storage/demoStorage'
+
+vi.mock('@/shared/api/http', async importOriginal => ({
+  ...await importOriginal<typeof import('@/shared/api/http')>(),
+  apiMode: () => false,
+}))
 
 function databaseWithCustomer(overrides: Partial<DemoDatabase> = {}): DemoDatabase {
   return {
@@ -83,33 +88,12 @@ describe('complete customer flow smoke', () => {
     expect(getDatabase().orders).toHaveLength(0)
   }, 10_000)
 
-  it('creates an AI outfit and shares the entire wardrobe by email', async () => {
-    const user = userEvent.setup()
-    const router = renderAt('/wardrobes/new/ai')
+  it('keeps the AI route on the API flow instead of creating a local mock outfit', async () => {
+    renderAt('/wardrobes/new/ai')
 
-    await user.type(await screen.findByLabelText('Tin nhắn cho AI Stylist'), 'Tôi cần outfit đi làm tối giản với áo và chân váy')
-    await user.click(screen.getByRole('button', { name: 'Gửi yêu cầu' }))
-    await screen.findByRole('region', { name: 'Gợi ý outfit từ AI' })
-    await user.type(screen.getByLabelText('Tên outfit AI'), 'Outfit AI public smoke')
-    await user.click(screen.getByRole('button', { name: 'Lưu outfit AI' }))
-
-    expect(await screen.findByRole('heading', { name: 'Outfit AI public smoke' })).toBeInTheDocument()
-    expect(screen.queryByRole('region', { name: 'Chia sẻ outfit' })).not.toBeInTheDocument()
-
-    await act(async () => {
-      await router.navigate('/wardrobes')
-    })
-
-    await user.click(await screen.findByRole('button', { name: 'Chia sẻ tủ đồ' }))
-    await screen.findByRole('dialog', { name: 'Chia sẻ tủ đồ' })
-    await user.type(screen.getByLabelText('Email được chia sẻ'), 'stylist@example.com')
-    await user.click(screen.getByRole('button', { name: 'Xác nhận chia sẻ' }))
-
-    await waitFor(() => {
-      const database = getDatabase()
-      const created = database.outfits.find(item => item.name === 'Outfit AI public smoke')
-      expect(created).toBeTruthy()
-      expect(database.outfitShares.some(share => share.viewerEmail === 'stylist@example.com' && share.outfitId === created?.id)).toBe(true)
-    })
-  }, 10_000)
+    expect(await screen.findByRole('heading', { name: 'AI Stylist' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Mô tả nhu cầu')).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Gợi ý outfit từ AI' })).not.toBeInTheDocument()
+    expect(getDatabase().outfits).toHaveLength(createDemoSeed().outfits.length)
+  })
 })

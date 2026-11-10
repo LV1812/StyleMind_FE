@@ -38,6 +38,7 @@ import { OutfitDetailPage, WardrobePage } from '@/features/wardrobe'
 import { NotFoundPage } from '@/shared/ui/NotFoundPage'
 
 import { PaymentPage, AdminPaymentsPage } from '@/features/payments'
+import { ApiAiStylistCreatePage } from '@/features/ai-stylist/pages/ApiAiStylistCreatePage'
 
 import { ROUTES } from './routes'
 
@@ -78,7 +79,7 @@ export const appRoutes: RouteObject[] = [
       { path: 'wardrobes', element: <AuthGuard><CommunityScreen demo={<WardrobePage />} live={<ApiWardrobePage />} /></AuthGuard> },
       { path: 'wardrobes/access', element: <AuthGuard><CommunityScreen demo={<WardrobeAccessPage />} live={<ApiWardrobeAccessPage />} /></AuthGuard> },
       { path: 'wardrobes/new', element: <AuthGuard><ManualOutfitBuilderPage /></AuthGuard> },
-      { path: 'wardrobes/new/ai', element: <AuthGuard><UnavailableFeature title="AI Stylist" /></AuthGuard> },
+      { path: 'wardrobes/new/ai', element: <AuthGuard><ApiAiStylistCreatePage /></AuthGuard> },
       { path: 'outfits/:outfitId', element: <AuthGuard><CommunityScreen demo={<OutfitDetailPage />} live={<ApiOutfitDetailPage kind="owner" />} /></AuthGuard> },
       { path: 'shared-with-me', element: <AuthGuard><CommunityScreen demo={<SharedWithMePage />} live={<ApiSharedWithMePage />} /></AuthGuard> },
       { path: 'shared-with-me/:ownerId', element: <AuthGuard><CommunityScreen demo={<SharedWardrobePage />} live={<ApiFriendWardrobePage />} /></AuthGuard> },

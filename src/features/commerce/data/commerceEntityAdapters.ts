@@ -9,31 +9,9 @@ import type {
   OrderResponse,
   ProductVariant as CommerceVariant,
 } from '@/api/commerce.types'
+import { colorSwatchHex } from '@/shared/lib/colorSwatch'
 
 const sizes = new Set<ProductSize>(['XS', 'S', 'M', 'L', 'XL'])
-
-const namedColors: Record<string, string> = {
-  black: '#222222',
-  white: '#f7f5ef',
-  red: '#9f3f45',
-  blue: '#496781',
-  green: '#58705a',
-  beige: '#d8c5aa',
-  brown: '#76584a',
-  gray: '#918d88',
-  grey: '#918d88',
-  pink: '#d6a6ad',
-  navy: '#26384c',
-}
-
-function colorHex(value: string | null): string {
-  const color = (value || '').trim().toLowerCase()
-  const known = Object.entries(namedColors).find(([name]) => color.includes(name))
-  if (known) return known[1]
-  let hash = 0
-  for (const character of color) hash = (hash * 31 + character.charCodeAt(0)) >>> 0
-  return `hsl(${hash % 360} 28% 55%)`
-}
 
 function productSize(value: string | null): ProductSize {
   const normalized = value?.toUpperCase() as ProductSize | undefined
@@ -70,7 +48,7 @@ export function commerceProductToEntity(product: CommerceProduct): Product {
     variants: product.variants.map(variant => ({
       id: variant.variant_id,
       color: variant.color || 'Mặc định',
-      colorHex: colorHex(variant.color),
+      colorHex: colorSwatchHex(variant.color),
       size: productSize(variant.size),
       stock: variant.available_quantity,
       priceOverride: variant.unit_price_vnd,

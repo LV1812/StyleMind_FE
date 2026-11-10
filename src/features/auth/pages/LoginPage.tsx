@@ -8,6 +8,7 @@ import { Button, TextField } from '@/shared/ui'
 
 import { AuthLayout } from '../components/AuthLayout'
 import type { LoginInput } from '../data/authRepository'
+import { intendedPathFromState } from '../model/redirect'
 import { useAuth } from '../model/useAuth'
 import { validateLoginInput } from '../model/validators'
 
@@ -25,8 +26,7 @@ export function LoginPage() {
 
   const redirectAfterLogin = (role: 'customer' | 'admin') => {
     if (role === 'admin') return ROUTES.admin
-    const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname
-    return from && from !== ROUTES.login ? from : ROUTES.shop
+    return intendedPathFromState(location.state) ?? ROUTES.shop
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
