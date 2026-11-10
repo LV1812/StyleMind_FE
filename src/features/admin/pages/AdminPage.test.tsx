@@ -286,6 +286,7 @@ describe('AdminPage', () => {
     fireEvent.change(within(dialog).getByLabelText('Màu'), { target: { value: 'Trắng' } })
     fireEvent.change(within(dialog).getByLabelText('Mã màu'), { target: { value: '#FFFFFF' } })
     fireEvent.change(within(dialog).getByLabelText('Size'), { target: { value: 'M' } })
+    fireEvent.change(within(dialog).getByLabelText('Tồn kho'), { target: { value: '12' } })
     await user.upload(within(dialog).getByLabelText('Ảnh sản phẩm'), file)
     await user.click(within(dialog).getByRole('button', { name: 'Lưu sản phẩm' }))
 
@@ -298,7 +299,7 @@ describe('AdminPage', () => {
       product_status: 'ACTIVE',
     }))
     expect(createVariant).toHaveBeenCalledWith(productId, expect.objectContaining({
-      size: 'M', color: 'Trắng', material: 'Linen', unit_price_vnd: 580000, variant_status: 'ACTIVE',
+      size: 'M', color: 'Trắng', material: 'Linen', unit_price_vnd: 580000, quantity: 12, variant_status: 'ACTIVE',
     }))
     expect(uploadImage).toHaveBeenCalledWith(variantId, file, 'Áo linen test')
     await waitFor(() => {
@@ -389,6 +390,7 @@ describe('AdminPage', () => {
       color: 'Kem',
       material: 'Linen',
       unit_price_vnd: 610000,
+      quantity: 0,
       variant_status: 'INACTIVE',
     })
     expect(uploadImage).toHaveBeenCalledWith(variantId, expect.any(File), 'Áo metadata test')

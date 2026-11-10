@@ -1,8 +1,5 @@
 import { commerceRequest, queryString } from './http'
 import type {
-  Branch,
-  BranchInput,
-  BranchListResponse,
   CancellationRequestResponse,
   CartResponse,
   CatalogReference,
@@ -82,15 +79,6 @@ export const commerceApi = {
     removeImage: (imageId: UUID) => del(`/api/v1/admin/variant-images/${imageId}`),
     getLegacyImage: (imageId: UUID) =>
       commerceRequest<Blob>(`/api/v1/variant-images/${imageId}/content`, { responseType: 'blob', auth: false }),
-  },
-  branches: {
-    list: () => get<BranchListResponse>('/api/v1/branches'),
-    get: (id: UUID) => get<Branch>(`/api/v1/branches/${id}`),
-    listAdmin: () => get<BranchListResponse>('/api/v1/admin/branches'),
-    getAdmin: (id: UUID) => get<Branch>(`/api/v1/admin/branches/${id}`),
-    create: (input: BranchInput) => post<Branch>('/api/v1/admin/branches', input),
-    replace: (id: UUID, input: BranchInput) => put<Branch>(`/api/v1/admin/branches/${id}`, input),
-    remove: (id: UUID) => del(`/api/v1/admin/branches/${id}`),
   },
   cart: {
     get: (guestSessionKey?: string | null) => get<CartResponse>(`/api/v1/cart${guestQuery(guestSessionKey)}`),

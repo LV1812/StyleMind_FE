@@ -95,33 +95,13 @@ export interface VariantInput {
   color: string | null
   material: string | null
   unit_price_vnd: number
+  quantity: number
   variant_status: string
 }
 
 export interface ImageOrderInput {
   items: Array<{ image_id: UUID; display_order: number }>
   primary_image_id: UUID | null
-}
-
-export interface Branch {
-  branch_id: UUID
-  branch_code: string
-  name: string
-  address_line: string
-  contact_phone: string | null
-  branch_status: string
-}
-
-export interface BranchListResponse {
-  items: Branch[]
-}
-
-export interface BranchInput {
-  branch_code: string
-  name: string
-  address_line: string
-  contact_phone: string | null
-  branch_status: string
 }
 
 export interface CartItemResponse {

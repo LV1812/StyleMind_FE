@@ -45,7 +45,7 @@ function uniqueColorOptions(variants: ProductVariant[]): ProductColorOption[] {
     options.set(variant.color, {
       color: variant.color,
       colorHex: variant.colorHex,
-      available: Boolean(current?.available || variant.active),
+      available: Boolean(current?.available || (variant.active && variant.stock > 0)),
     })
   })
 
@@ -67,7 +67,7 @@ function sizeOptions(variants: ProductVariant[]): ProductSizeOption[] {
     options.set(variant.size, {
       size: variant.size,
       stock: Math.max(current?.stock ?? 0, variant.stock),
-      available: Boolean(current?.available || variant.active),
+      available: Boolean(current?.available || (variant.active && variant.stock > 0)),
     })
   })
 
@@ -88,7 +88,7 @@ export function getProductSelection(product: Product, selection: ProductSelectio
     : null
   const displayVariant = requestedVariant ?? variantsByColor[0] ?? fallbackVariant
   const images = colorImages(variantsByColor.length ? variantsByColor : variants)
-  const canPurchase = Boolean(requestedVariant?.active)
+  const canPurchase = Boolean(requestedVariant?.active && requestedVariant.stock > 0)
 
   return {
     selectedColor,
@@ -99,7 +99,9 @@ export function getProductSelection(product: Product, selection: ProductSelectio
     price: variantPrice(product, displayVariant),
     stock: requestedVariant?.stock ?? displayVariant?.stock ?? 0,
     canPurchase,
-    error: selection.size && !canPurchase ? 'Phiên bản này hiện chưa thể mua' : undefined,
+    error: selection.size && !canPurchase
+      ? requestedVariant?.active ? 'Phiên bản này đã hết hàng' : 'Phiên bản này hiện chưa thể mua'
+      : undefined,
     colorOptions: uniqueColorOptions(variants),
     sizeOptions: sizeOptions(variantsByColor),
   }

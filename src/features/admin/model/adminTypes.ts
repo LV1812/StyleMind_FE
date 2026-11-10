@@ -40,7 +40,7 @@ export interface AdminProductRow {
   imageUrl: string | null
   variantCount: number
   colors: { color: string; colorHex: string }[]
-  variants: { id: string; color: string; colorHex: string; size: ProductSize; active: boolean; price: number }[]
+  variants: { id: string; color: string; colorHex: string; size: ProductSize; active: boolean; price: number; stock: number }[]
 }
 
 export interface AdminOrderFilters {

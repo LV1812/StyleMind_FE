@@ -35,6 +35,7 @@ interface ProductFormState {
   colorHex: string
   size: ProductSize
   variantPriceOverride: string
+  quantity: string
   variantActive: boolean
   imageUrl: string
 }
@@ -82,6 +83,7 @@ function createInitialForm(categoryId: string, database: DemoDatabase): ProductF
     colorHex: '#FFFFFF',
     size: 'M',
     variantPriceOverride: '',
+    quantity: '0',
     variantActive: true,
     imageUrl: '',
   }
@@ -109,6 +111,7 @@ function createFormFromProduct(product: Product, database: DemoDatabase): Produc
     colorHex: variant?.colorHex ?? '#FFFFFF',
     size: variant?.size ?? 'M',
     variantPriceOverride: variant?.priceOverride ? String(variant.priceOverride) : '',
+    quantity: String(variant?.stock ?? 0),
     variantActive: variant?.active ?? true,
     imageUrl: primaryImage?.url ?? '',
   }
@@ -212,6 +215,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
     const duplicate = database.products.some(product => product.id === productId && product.id !== editingProductId)
     const basePrice = Number(form.basePrice)
     const variantPriceOverride = form.variantPriceOverride.trim() ? Number(form.variantPriceOverride) : undefined
+    const quantity = Number(form.quantity)
 
     if (
       !productId ||
@@ -236,6 +240,11 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
 
     if (variantPriceOverride !== undefined && (!Number.isFinite(variantPriceOverride) || variantPriceOverride <= 0)) {
       setFormError('Giá biến thể phải lớn hơn 0 hoặc để trống.')
+      return
+    }
+
+    if (!Number.isInteger(quantity) || quantity < 0) {
+      setFormError('Tồn kho phải là số nguyên lớn hơn hoặc bằng 0.')
       return
     }
 
@@ -280,6 +289,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
         color: form.color.trim(),
         material: form.material.trim() || null,
         unit_price_vnd: variantPriceOverride ?? basePrice,
+        quantity,
         variant_status: form.variantActive ? 'ACTIVE' : 'INACTIVE',
       }
       variantCreateStarted = !currentVariant
@@ -445,6 +455,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                                   <th scope="col" className="px-3 py-2">Màu</th>
                                   <th scope="col" className="px-3 py-2">Cỡ</th>
                                   <th scope="col" className="px-3 py-2 text-right">Giá</th>
+                                  <th scope="col" className="px-3 py-2 text-right">Tồn kho</th>
                                   <th scope="col" className="px-3 py-2 text-center">Đang bán</th>
                                   <th scope="col" className="px-3 py-2 text-right">Ảnh</th>
                                 </tr>
@@ -460,6 +471,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                                     </td>
                                     <td className="px-3 py-2.5 font-medium text-[#3A3632]">{variant.size}</td>
                                     <td className="whitespace-nowrap px-3 py-2.5 text-right tabular-nums text-[#3A3632]">{formatCurrency(variant.price)}</td>
+                                    <td className="whitespace-nowrap px-3 py-2.5 text-right tabular-nums text-[#3A3632]">{variant.stock}</td>
                                     <td className="px-3 py-2.5 text-center">
                                       <span className="inline-flex justify-center">
                                         <ToggleSwitch
@@ -475,6 +487,7 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
                                                 color: source.color,
                                                 material: source.material,
                                                 unit_price_vnd: source.unit_price_vnd,
+                                                quantity: source.available_quantity,
                                                 variant_status: active ? 'ACTIVE' : 'INACTIVE',
                                               })
                                               return commerceApi.products.getAdmin(row.id)
@@ -572,6 +585,14 @@ export function AdminProductsPanel({ database, dispatch }: AdminProductsPanelPro
               min="0"
               value={form.variantPriceOverride}
               onChange={event => updateField('variantPriceOverride', event.target.value)}
+            />
+            <TextField
+              label="Tồn kho"
+              type="number"
+              min="0"
+              step="1"
+              value={form.quantity}
+              onChange={event => updateField('quantity', event.target.value)}
             />
             <label className="grid gap-2 text-sm font-semibold">Ảnh sản phẩm<input aria-label="Ảnh sản phẩm" type="file" accept="image/jpeg,image/png,image/webp" onChange={event => {
               const file = event.target.files?.[0] ?? null

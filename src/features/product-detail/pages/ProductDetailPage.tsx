@@ -87,7 +87,7 @@ export function ProductDetailPage() {
   const handleSizeChange = (size: ProductSize) => {
     const nextSelection = getProductSelection(product, { color: selection.selectedColor, size })
     setSelectedSize(size)
-    setQuantity(current => normalizeQuantity(current))
+    setQuantity(current => Math.min(normalizeQuantity(current), nextSelection.stock || 1))
     setValidationError(nextSelection.error ?? null)
   }
 
@@ -99,6 +99,11 @@ export function ProductDetailPage() {
 
     if (!selection.variant || !selection.canPurchase) {
       setValidationError(selection.error ?? 'Phiên bản này hiện chưa thể mua')
+      return
+    }
+
+    if (quantity > selection.stock) {
+      setValidationError(`Chỉ còn ${selection.stock} sản phẩm trong kho`)
       return
     }
 
@@ -150,7 +155,9 @@ export function ProductDetailPage() {
           <div className="flex items-center justify-between gap-4">
             <span className="text-sm font-bold text-[#222222]">Số lượng</span>
             <span className="text-sm font-semibold text-[#5E5F5D]">
-              {selection.canPurchase ? 'Sẵn sàng thêm vào giỏ' : 'Chọn kích thước để tiếp tục'}
+              {selection.variant
+                ? `Tồn kho: ${selection.stock} sản phẩm`
+                : 'Chọn màu và kích thước để xem tồn kho'}
             </span>
           </div>
           <div className="inline-flex w-fit items-center rounded-lg border border-[#C4C7C7] bg-white">
@@ -168,7 +175,8 @@ export function ProductDetailPage() {
             <button
               type="button"
               aria-label="Tăng số lượng"
-              onClick={() => setQuantity(current => normalizeQuantity(current + 1))}
+              disabled={!selection.canPurchase || quantity >= selection.stock}
+              onClick={() => setQuantity(current => Math.min(selection.stock, normalizeQuantity(current + 1)))}
               className="grid h-11 w-11 place-items-center text-[#3A3632] transition hover:bg-[#EFEDED] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C1B1B]"
             >
               <Plus size={16} aria-hidden="true" />
